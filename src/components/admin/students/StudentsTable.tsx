@@ -10,21 +10,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MoreHorizontal, Edit, Trash2, Eye } from "lucide-react"; // Added Eye icon
+import { Edit, Trash2, Eye } from "lucide-react";
 import type { Student } from "@/types/student";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import Link from "next/link"; // Added Link for navigation
+import Link from "next/link";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 
 interface StudentsTableProps {
   students: Student[];
@@ -58,7 +52,7 @@ export function StudentsTable({ students, onEdit, onDelete }: StudentsTableProps
   }
 
   return (
-    <>
+    <TooltipProvider>
       <div className="rounded-lg border shadow-sm bg-card">
         <Table>
           <TableHeader>
@@ -68,7 +62,7 @@ export function StudentsTable({ students, onEdit, onDelete }: StudentsTableProps
               <TableHead>Class</TableHead>
               <TableHead>Gender</TableHead>
               <TableHead>Created At</TableHead>
-              <TableHead className="text-right w-[80px]">Actions</TableHead>
+              <TableHead className="text-right w-[130px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -96,34 +90,45 @@ export function StudentsTable({ students, onEdit, onDelete }: StudentsTableProps
                 </TableCell>
                 <TableCell>{new Date(student.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                       <Link href={`/admin/students/${student.id}/id-card`} passHref legacyBehavior>
-                        <DropdownMenuItem asChild>
-                          <a>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View ID Card
-                          </a>
-                        </DropdownMenuItem>
-                      </Link>
-                      <DropdownMenuItem onClick={() => onEdit(student)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => handleDeleteClick(student)} className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div className="flex justify-end items-center gap-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" asChild>
+                          <Link href={`/admin/students/${student.id}/id-card`}>
+                            <Eye className="h-4 w-4" />
+                            <span className="sr-only">View ID Card</span>
+                          </Link>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>View ID Card</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={() => onEdit(student)}>
+                          <Edit className="h-4 w-4" />
+                          <span className="sr-only">Edit Student</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Edit Student</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(student)} className="text-destructive hover:text-destructive/90 hover:bg-destructive/10">
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Delete Student</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Delete Student</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -148,6 +153,6 @@ export function StudentsTable({ students, onEdit, onDelete }: StudentsTableProps
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </TooltipProvider>
   );
 }
