@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Edit, Trash2, Eye } from "lucide-react";
+import { Edit, Trash2, Eye, ChevronsUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import type { Student } from "@/types/student";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import React from "react";
@@ -19,14 +19,23 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
+type SortableStudentKeys = 'studentId' | 'name' | 'class' | 'gender' | 'createdAt';
+type SortDirection = 'ascending' | 'descending';
+
+interface SortConfig {
+  key: SortableStudentKeys | null;
+  direction: SortDirection;
+}
 
 interface StudentsTableProps {
   students: Student[];
   onEdit: (student: Student) => void;
   onDelete: (studentId: string) => void;
+  sortConfig: SortConfig;
+  onSort: (key: SortableStudentKeys) => void;
 }
 
-export function StudentsTable({ students, onEdit, onDelete }: StudentsTableProps) {
+export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }: StudentsTableProps) {
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
   const [studentToDelete, setStudentToDelete] = React.useState<Student | null>(null);
 
@@ -42,11 +51,30 @@ export function StudentsTable({ students, onEdit, onDelete }: StudentsTableProps
     setShowDeleteDialog(false);
     setStudentToDelete(null);
   };
+
+  const renderSortIcon = (columnKey: SortableStudentKeys) => {
+    if (sortConfig.key !== columnKey) {
+      return <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />;
+    }
+    return sortConfig.direction === 'ascending' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
+  };
+
+  const SortableTableHead = ({ columnKey, children }: { columnKey: SortableStudentKeys, children: React.ReactNode }) => (
+    <TableHead
+      className="cursor-pointer hover:bg-muted/50 transition-colors group"
+      onClick={() => onSort(columnKey)}
+    >
+      <div className="flex items-center">
+        {children}
+        {renderSortIcon(columnKey)}
+      </div>
+    </TableHead>
+  );
   
   if (students.length === 0) {
     return (
       <div className="text-center py-10 text-muted-foreground">
-        No students found. Add a new student to get started.
+        No students found. Check your search term or add new students.
       </div>
     );
   }
@@ -57,11 +85,11 @@ export function StudentsTable({ students, onEdit, onDelete }: StudentsTableProps
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[120px]">Student ID</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Class</TableHead>
-              <TableHead>Gender</TableHead>
-              <TableHead>Created At</TableHead>
+              <SortableTableHead columnKey="studentId">Student ID</SortableTableHead>
+              <SortableTableHead columnKey="name">Name</SortableTableHead>
+              <SortableTableHead columnKey="class">Class</SortableTableHead>
+              <SortableTableHead columnKey="gender">Gender</SortableTableHead>
+              <SortableTableHead columnKey="createdAt">Created At</SortableTableHead>
               <TableHead className="text-right w-[130px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
