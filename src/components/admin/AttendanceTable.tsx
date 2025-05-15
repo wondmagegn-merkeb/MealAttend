@@ -13,8 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CheckCircle, XCircle, ChevronsUpDown, ArrowUp, ArrowDown } from "lucide-react";
-import type { Department } from "@/types/department"; // Keep if used elsewhere, but not directly here
-import { cn } from '@/lib/utils'; // Added import
+import { cn } from '@/lib/utils';
 
 export interface AttendanceRecord {
   id: string; // Unique record ID
@@ -37,14 +36,20 @@ export interface SortConfig {
 
 interface AttendanceTableProps {
   records: AttendanceRecord[];
-  sortConfig: SortConfig;
-  onSort: (key: SortableAttendanceKeys) => void;
-  studentsMap: Map<string, Student>; // For fetching avatar
+  sortConfig?: SortConfig; // Made optional
+  onSort?: (key: SortableAttendanceKeys) => void; // Made optional
+  studentsMap?: Map<string, Student>; // Made optional
 }
 
-export function AttendanceTable({ records, sortConfig, onSort, studentsMap }: AttendanceTableProps) {
+export function AttendanceTable({ 
+  records, 
+  sortConfig = { key: 'date', direction: 'descending' }, // Default value
+  onSort = () => {}, // Default no-op function
+  studentsMap = new Map<string, Student>() // Default empty map
+}: AttendanceTableProps) {
+  
   const renderSortIcon = (columnKey: SortableAttendanceKeys) => {
-    if (sortConfig.key !== columnKey) {
+    if (!sortConfig || sortConfig.key !== columnKey) {
       return <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />;
     }
     return sortConfig.direction === 'ascending' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
@@ -62,7 +67,7 @@ export function AttendanceTable({ records, sortConfig, onSort, studentsMap }: At
     </TableHead>
   );
 
-  if (records.length === 0) {
+  if (!records || records.length === 0) {
     return (
       <div className="text-center py-10 text-muted-foreground">
         No attendance records found.
