@@ -5,7 +5,7 @@ import type { Student } from "@/types/student";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from 'next/image';
-import { School } from "lucide-react"; // Using School icon as placeholder
+import { School } from "lucide-react"; 
 
 interface StudentIdCardProps {
   student: Student;
@@ -15,61 +15,74 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
   const schoolName = "Greenfield Secondary School"; // Placeholder school name
   const validUntil = "July 2026"; // Placeholder valid until
 
-  // Use student.qrCodeData if available, otherwise fallback to student.id
-  // Ensure data is URL encoded for the QR server API
   const qrDataToEncode = student.qrCodeData || student.id;
-  const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrDataToEncode)}&format=png`;
+  const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrDataToEncode)}&format=png&qzone=1`; // Increased size & qzone
 
   return (
-    <Card className="w-full max-w-md mx-auto shadow-lg rounded-xl overflow-hidden">
-      <CardHeader className="bg-primary text-primary-foreground p-4">
+    <Card className="w-full max-w-lg mx-auto shadow-xl rounded-xl overflow-hidden border-2 border-primary/20">
+      <CardHeader className="bg-primary text-primary-foreground p-3">
         <div className="flex items-center space-x-3">
-          <Avatar className="h-10 w-10 border-2 border-primary-foreground">
-            <AvatarImage src="https://placehold.co/40x40.png?text=S" alt="School Logo" data-ai-hint="school logo" />
-            <AvatarFallback><School className="h-5 w-5" /></AvatarFallback>
+          <Avatar className="h-9 w-9 border-2 border-primary-foreground bg-white">
+            {/* Placeholder for school logo, you can replace src with an actual logo URL */}
+            <AvatarImage src="https://placehold.co/40x40.png?text=GS" alt="School Logo" data-ai-hint="school logo" className="p-0.5" />
+            <AvatarFallback><School className="h-5 w-5 text-primary" /></AvatarFallback>
           </Avatar>
-          <h2 className="text-xl font-semibold">{schoolName}</h2>
+          <h2 className="text-lg font-semibold">{schoolName}</h2>
         </div>
       </CardHeader>
-      <CardContent className="p-6 grid grid-cols-3 gap-4 items-center">
-        <div className="col-span-1 flex flex-col items-center space-y-3">
-          <Avatar className="h-28 w-28 rounded-lg border-2 border-muted shadow-md">
-            <AvatarImage 
-              src={student.profileImageURL || `https://placehold.co/100x100.png?text=${student.name.split(' ').map(n=>n[0]).join('')}`} 
-              alt={student.name} 
-              className="object-cover"
-              data-ai-hint="student profile"
-            />
-            <AvatarFallback>{student.name.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
-          </Avatar>
-        </div>
-        <div className="col-span-2 space-y-1.5">
-          <p className="text-sm text-muted-foreground">Name</p>
-          <h3 className="text-lg font-semibold text-primary truncate" title={student.name}>{student.name}</h3>
-          
-          <p className="text-sm text-muted-foreground pt-1">Gender</p>
-          <p className="font-medium">{student.gender || 'N/A'}</p>
-          
-          <p className="text-sm text-muted-foreground pt-1">Class</p>
-          <p className="font-medium">{student.class}</p>
-          
-          <p className="text-sm text-muted-foreground pt-1">ID No</p>
-          <p className="font-medium">{student.studentId}</p>
-        </div>
-        <div className="col-span-3 pt-4 flex justify-center">
+      
+      <CardContent className="p-4 md:p-6">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
+          {/* Left part: Image and Details */}
+          <div className="flex-shrink-0 flex flex-col items-center sm:items-start w-full sm:w-auto">
+            <Avatar className="h-32 w-32 sm:h-36 sm:w-36 rounded-lg border-2 border-muted shadow-md mb-4">
+              <AvatarImage 
+                src={student.profileImageURL || `https://placehold.co/150x150.png?text=${student.name.split(' ').map(n=>n[0]).join('')}`} 
+                alt={student.name} 
+                className="object-cover"
+                data-ai-hint="student profile"
+              />
+              <AvatarFallback className="text-4xl">{student.name.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
+            </Avatar>
+            
+            <div className="space-y-1.5 text-sm text-left w-full">
+              <h3 className="text-xl font-semibold text-primary truncate" title={student.name}>{student.name}</h3>
+              
+              <div className="flex">
+                <p className="w-16 font-medium text-muted-foreground">Gender:</p>
+                <p className="font-medium">{student.gender || 'N/A'}</p>
+              </div>
+              
+              <div className="flex">
+                <p className="w-16 font-medium text-muted-foreground">Class:</p>
+                <p className="font-medium">{student.class}</p>
+              </div>
+              
+              <div className="flex">
+                <p className="w-16 font-medium text-muted-foreground">ID No:</p>
+                <p className="font-medium">{student.studentId}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Right part: QR Code */}
+          <div className="flex-grow flex items-center justify-center sm:justify-end w-full sm:w-auto mt-4 sm:mt-0">
             <Image
                 src={qrCodeImageUrl}
                 alt={`QR Code for ${student.name}`}
-                width={150}
-                height={150}
+                width={180} // Adjusted size
+                height={180} // Adjusted size
                 data-ai-hint="QR code"
-                className="rounded-md"
+                className="rounded-md border border-muted"
             />
+          </div>
         </div>
       </CardContent>
-      <CardFooter className="bg-secondary/50 p-3">
-        <p className="text-xs text-center w-full text-muted-foreground">Valid Until: {validUntil}</p>
+
+      <CardFooter className="bg-secondary/30 p-2 border-t border-primary/20">
+        <p className="text-xs text-center w-full text-muted-foreground font-medium">Valid Until: {validUntil}</p>
       </CardFooter>
     </Card>
   );
 }
+
