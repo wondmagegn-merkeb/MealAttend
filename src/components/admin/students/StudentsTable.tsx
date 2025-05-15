@@ -19,11 +19,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Eye } from "lucide-react"; // Added Eye icon
 import type { Student } from "@/types/student";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import React from "react";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link"; // Added Link for navigation
 
 interface StudentsTableProps {
   students: Student[];
@@ -104,6 +105,14 @@ export function StudentsTable({ students, onEdit, onDelete }: StudentsTableProps
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                       <Link href={`/admin/students/${student.id}/id-card`} passHref legacyBehavior>
+                        <DropdownMenuItem asChild>
+                          <a>
+                            <Eye className="mr-2 h-4 w-4" />
+                            View ID Card
+                          </a>
+                        </DropdownMenuItem>
+                      </Link>
                       <DropdownMenuItem onClick={() => onEdit(student)}>
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
