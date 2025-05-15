@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Edit, Trash2, Eye, ChevronsUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Edit, Trash2, Eye, ChevronsUpDown, ArrowUp, ArrowDown, Printer } from "lucide-react"; // Added Printer
 import type { Student } from "@/types/student";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import React from "react";
@@ -90,7 +90,7 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
               <SortableTableHead columnKey="class">Class</SortableTableHead>
               <SortableTableHead columnKey="gender">Gender</SortableTableHead>
               <SortableTableHead columnKey="createdAt">Created At</SortableTableHead>
-              <TableHead className="text-right w-[130px]">Actions</TableHead>
+              <TableHead className="text-right w-[170px]">Actions</TableHead> {/* Adjusted width for more icons */}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -130,6 +130,20 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>View ID Card</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" asChild>
+                          <Link href={`/admin/students/${student.id}/id-card?autoprint=true`} target="_blank" rel="noopener noreferrer">
+                            <Printer className="h-4 w-4" />
+                            <span className="sr-only">Print ID Card</span>
+                          </Link>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Print ID Card</p>
                       </TooltipContent>
                     </Tooltip>
 

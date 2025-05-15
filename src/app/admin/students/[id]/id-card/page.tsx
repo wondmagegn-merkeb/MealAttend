@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, AlertTriangle, Printer } from 'lucide-react';
@@ -15,12 +15,24 @@ import { useToast } from '@/hooks/use-toast';
 export default function StudentIdCardPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const studentId = typeof params.id === 'string' ? params.id : undefined;
 
   const [student, setStudent] = useState<Student | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [autoPrintTriggered, setAutoPrintTriggered] = useState(false);
+
+  const handlePrint = useCallback(() => {
+    // Optionally hide elements not meant for printing before calling window.print()
+    // e.g., document.getElementById('print-button-container').style.display = 'none';
+    // document.getElementById('back-button-container').style.display = 'none';
+    window.print();
+    // And restore them after:
+    // document.getElementById('print-button-container').style.display = 'flex';
+    // document.getElementById('back-button-container').style.display = 'block';
+  }, []);
 
   useEffect(() => {
     if (studentId) {
@@ -55,15 +67,18 @@ export default function StudentIdCardPage() {
     }
   }, [studentId, toast]);
 
-  const handlePrint = () => {
-    // Optionally hide elements not meant for printing before calling window.print()
-    // e.g., document.getElementById('print-button-container').style.display = 'none';
-    // document.getElementById('back-button-container').style.display = 'none';
-    window.print();
-    // And restore them after:
-    // document.getElementById('print-button-container').style.display = 'flex';
-    // document.getElementById('back-button-container').style.display = 'block';
-  };
+  useEffect(() => {
+    if (student && !isLoading && !notFound && !autoPrintTriggered) {
+      const autoprintQueryParam = searchParams.get('autoprint');
+      if (autoprintQueryParam === 'true') {
+        handlePrint();
+        setAutoPrintTriggered(true);
+        // Optionally, remove the query param to prevent re-print on manual refresh.
+        // router.replace(`/admin/students/${studentId}/id-card`, { scroll: false }); 
+      }
+    }
+  }, [student, isLoading, notFound, searchParams, autoPrintTriggered, handlePrint, studentId, router]);
+
 
   if (isLoading) {
     return (
