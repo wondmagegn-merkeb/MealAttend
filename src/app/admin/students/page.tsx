@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { PlusCircle, Users, Loader2, Search } from "lucide-react";
+import { PlusCircle, Users, Loader2, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { StudentsTable } from "@/components/admin/students/StudentsTable";
 import type { Student } from "@/types/student";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +20,11 @@ const initialSeedStudents: Student[] = [
   { id: 'clxkxk003', studentId: 'S1003', name: 'Carol Davis', gender: 'Female', class: 'Grade 11', profileImageURL: 'https://placehold.co/100x100.png?text=CD', qrCodeData: 'clxkxk003', createdAt: new Date('2023-03-10T09:00:00Z').toISOString(), updatedAt: new Date('2023-03-10T09:00:00Z').toISOString() },
   { id: 'clxkxk004', studentId: 'S1004', name: 'David Brown', gender: 'Male', class: 'Grade 10', profileImageURL: 'https://placehold.co/100x100.png?text=DB', qrCodeData: 'clxkxk004', createdAt: new Date('2022-12-01T14:00:00Z').toISOString(), updatedAt: new Date('2022-12-01T14:00:00Z').toISOString() },
   { id: 'clxkxk005', studentId: 'S1005', name: 'Eva Green', gender: 'Female', class: 'Grade 9', profileImageURL: 'https://placehold.co/100x100.png?text=EG', qrCodeData: 'clxkxk005', createdAt: new Date('2023-04-05T16:00:00Z').toISOString(), updatedAt: new Date('2023-04-05T16:00:00Z').toISOString() },
+  { id: 'clxkxk006', studentId: 'S1006', name: 'Frank Harris', gender: 'Male', class: 'Grade 12', profileImageURL: 'https://placehold.co/100x100.png?text=FH', qrCodeData: 'clxkxk006', createdAt: new Date('2023-05-01T08:00:00Z').toISOString(), updatedAt: new Date('2023-05-01T08:00:00Z').toISOString() },
+  { id: 'clxkxk007', studentId: 'S1007', name: 'Grace Lee', gender: 'Female', class: 'Grade 11', profileImageURL: 'https://placehold.co/100x100.png?text=GL', qrCodeData: 'clxkxk007', createdAt: new Date('2023-06-12T13:00:00Z').toISOString(), updatedAt: new Date('2023-06-12T13:00:00Z').toISOString() },
+  { id: 'clxkxk008', studentId: 'S1008', name: 'Henry Wilson', gender: 'Male', class: 'Grade 10', profileImageURL: 'https://placehold.co/100x100.png?text=HW', qrCodeData: 'clxkxk008', createdAt: new Date('2022-11-25T15:30:00Z').toISOString(), updatedAt: new Date('2022-11-25T15:30:00Z').toISOString() },
+  { id: 'clxkxk009', studentId: 'S1009', name: 'Ivy Clark', gender: 'Female', class: 'Grade 9', profileImageURL: 'https://placehold.co/100x100.png?text=IC', qrCodeData: 'clxkxk009', createdAt: new Date('2023-07-02T10:30:00Z').toISOString(), updatedAt: new Date('2023-07-02T10:30:00Z').toISOString() },
+  { id: 'clxkxk010', studentId: 'S1010', name: 'Jack Martinez', gender: 'Male', class: 'Grade 12', profileImageURL: 'https://placehold.co/100x100.png?text=JM', qrCodeData: 'clxkxk010', createdAt: new Date('2023-08-19T11:45:00Z').toISOString(), updatedAt: new Date('2023-08-19T11:45:00Z').toISOString() },
 ];
 
 type SortableStudentKeys = 'studentId' | 'name' | 'class' | 'gender' | 'createdAt';
@@ -30,6 +35,8 @@ interface SortConfig {
   direction: SortDirection;
 }
 
+const ITEMS_PER_PAGE = 5;
+
 export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [isMounted, setIsMounted] = useState(false);
@@ -39,6 +46,7 @@ export default function StudentsPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'createdAt', direction: 'descending' });
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     setIsMounted(true);
@@ -88,6 +96,18 @@ export default function StudentsPage() {
           title: "Student Deleted",
           description: "The student record has been successfully deleted.",
         });
+        // If on last page and it becomes empty, go to previous page
+        const totalPagesAfterDelete = Math.ceil(updatedStudents.filter(student =>
+          student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          student.studentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          student.class.toLowerCase().includes(searchTerm.toLowerCase())
+        ).length / ITEMS_PER_PAGE);
+        if (currentPage > totalPagesAfterDelete && totalPagesAfterDelete > 0) {
+          setCurrentPage(totalPagesAfterDelete);
+        } else if (totalPagesAfterDelete === 0) {
+          setCurrentPage(1);
+        }
+
       } catch (error) {
         console.error("Failed to delete student from localStorage", error);
         toast({
@@ -107,13 +127,19 @@ export default function StudentsPage() {
       direction = 'descending';
     }
     setSortConfig({ key, direction });
+    setCurrentPage(1); // Reset to first page on sort
+  };
+  
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page on search
   };
 
   const filteredAndSortedStudents = useMemo(() => {
-    let SorterStudents = [...students];
+    let processedStudents = [...students];
 
     if (searchTerm) {
-      SorterStudents = SorterStudents.filter(student =>
+      processedStudents = processedStudents.filter(student =>
         student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.studentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.class.toLowerCase().includes(searchTerm.toLowerCase())
@@ -121,7 +147,7 @@ export default function StudentsPage() {
     }
 
     if (sortConfig.key) {
-      SorterStudents.sort((a, b) => {
+      processedStudents.sort((a, b) => {
         const aValue = a[sortConfig.key!];
         const bValue = b[sortConfig.key!];
 
@@ -133,16 +159,32 @@ export default function StudentsPage() {
           comparison = aValue.localeCompare(bValue);
         } else if (typeof aValue === 'number' && typeof bValue === 'number') {
           comparison = aValue - bValue;
-        } else { // Fallback for mixed types or other types, treat as string
+        } else { 
           comparison = String(aValue).localeCompare(String(bValue));
         }
 
         return sortConfig.direction === 'ascending' ? comparison : -comparison;
       });
     }
-    return SorterStudents;
+    return processedStudents;
   }, [students, searchTerm, sortConfig]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredAndSortedStudents.length / ITEMS_PER_PAGE));
   
+  const currentTableData = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredAndSortedStudents.slice(startIndex, endIndex);
+  }, [filteredAndSortedStudents, currentPage]);
+
+  useEffect(() => {
+    // Adjust current page if it's out of bounds after filtering/sorting
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+
   if (!isMounted) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -178,7 +220,7 @@ export default function StudentsPage() {
               type="search"
               placeholder="Search by ID, name, or class..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
               className="pl-10 w-full sm:w-1/2 md:w-1/3"
             />
           </div>
@@ -191,12 +233,39 @@ export default function StudentsPage() {
             </div>
           )}
           <StudentsTable 
-            students={filteredAndSortedStudents} 
+            students={currentTableData} 
             onEdit={handleEditStudent} 
             onDelete={handleDeleteStudent}
             sortConfig={sortConfig}
             onSort={handleSort}
           />
+          {filteredAndSortedStudents.length > ITEMS_PER_PAGE && (
+            <div className="flex items-center justify-between pt-4 mt-4 border-t">
+              <p className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="mr-1 h-4 w-4" />
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                  <ChevronRight className="ml-1 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
