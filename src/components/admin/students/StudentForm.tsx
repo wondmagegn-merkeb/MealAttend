@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Loader2 } from "lucide-react";
 
 const studentFormSchema = z.object({
   studentId: z.string().min(1, { message: "Student ID is required." }),
@@ -40,16 +41,17 @@ export type StudentFormData = z.infer<typeof studentFormSchema>;
 
 interface StudentFormProps {
   onSubmit: (data: StudentFormData) => void;
-  studentToEdit?: Student | null;
+  initialData?: Student | null;
   isLoading?: boolean;
+  submitButtonText?: string;
 }
 
-export function StudentForm({ onSubmit, studentToEdit, isLoading }: StudentFormProps) {
+export function StudentForm({ onSubmit, initialData, isLoading, submitButtonText = "Submit" }: StudentFormProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   
   const form = useForm<StudentFormData>({
     resolver: zodResolver(studentFormSchema),
-    defaultValues: {
+    defaultValues: initialData || {
       studentId: "",
       name: "",
       gender: "",
@@ -59,17 +61,17 @@ export function StudentForm({ onSubmit, studentToEdit, isLoading }: StudentFormP
   });
 
   useEffect(() => {
-    if (studentToEdit) {
+    if (initialData) {
       form.reset({
-        studentId: studentToEdit.studentId,
-        name: studentToEdit.name,
-        gender: studentToEdit.gender || "",
-        class: studentToEdit.class,
-        profileImageURL: studentToEdit.profileImageURL || "",
+        studentId: initialData.studentId,
+        name: initialData.name,
+        gender: initialData.gender || "",
+        class: initialData.class,
+        profileImageURL: initialData.profileImageURL || "",
       });
-      setImagePreview(studentToEdit.profileImageURL || null);
+      setImagePreview(initialData.profileImageURL || null);
     } else {
-      form.reset({
+      form.reset({ // Ensure form is reset for 'new' student page if navigated back/forth
         studentId: "",
         name: "",
         gender: "",
@@ -78,7 +80,7 @@ export function StudentForm({ onSubmit, studentToEdit, isLoading }: StudentFormP
       });
       setImagePreview(null);
     }
-  }, [studentToEdit, form]);
+  }, [initialData, form]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -91,9 +93,7 @@ export function StudentForm({ onSubmit, studentToEdit, isLoading }: StudentFormP
       };
       reader.readAsDataURL(file);
     } else {
-      // If no file is selected (e.g., user cancels file dialog), 
-      // reset to original if editing, or clear if adding new
-      const originalImageUrl = studentToEdit?.profileImageURL || "";
+      const originalImageUrl = initialData?.profileImageURL || "";
       setImagePreview(originalImageUrl || null);
       form.setValue("profileImageURL", originalImageUrl, { shouldValidate: true });
     }
@@ -174,7 +174,7 @@ export function StudentForm({ onSubmit, studentToEdit, isLoading }: StudentFormP
               <AvatarImage 
                 src={imagePreview || `https://placehold.co/80x80.png?text=No+Image`} 
                 alt="Profile preview"
-                className="object-cover" 
+                className="object-cover"
                 data-ai-hint="student profile"
               />
               <AvatarFallback>IMG</AvatarFallback>
@@ -196,17 +196,23 @@ export function StudentForm({ onSubmit, studentToEdit, isLoading }: StudentFormP
            <FormDescription>
                 Upload a profile picture for the student.
             </FormDescription>
-          {/* Hidden field to store the URL string, managed by handleImageChange and useEffect */}
           <FormField
             control={form.control}
             name="profileImageURL"
             render={({ field }) => <Input type="hidden" {...field} />}
           />
-          <FormMessage />
+          <FormMessage /> {/* This will show validation errors for profileImageURL if any */}
         </FormItem>
 
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? (studentToEdit ? "Saving..." : "Adding...") : (studentToEdit ? "Save Changes" : "Add Student")}
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            submitButtonText
+          )}
         </Button>
       </form>
     </Form>

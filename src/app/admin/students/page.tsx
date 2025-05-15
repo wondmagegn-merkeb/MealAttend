@@ -2,16 +2,18 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, Users } from "lucide-react";
+import { PlusCircle, Users, Loader2 } from "lucide-react";
 import { StudentsTable } from "@/components/admin/students/StudentsTable";
-import { StudentFormDialog } from "@/components/admin/students/StudentFormDialog";
 import type { Student } from "@/types/student";
-import type { StudentFormData } from "@/components/admin/students/StudentForm";
 import { useToast } from "@/hooks/use-toast";
+import { STUDENTS_STORAGE_KEY } from '@/lib/constants';
 
-const initialStudents: Student[] = [
+// Initial seed data if localStorage is empty
+const initialSeedStudents: Student[] = [
   { id: 'clxkxk001', studentId: 'S1001', name: 'Alice Johnson', gender: 'Female', class: 'Grade 10', profileImageURL: 'https://placehold.co/100x100.png?text=AJ', createdAt: new Date('2023-01-15').toISOString(), updatedAt: new Date('2023-01-15').toISOString() },
   { id: 'clxkxk002', studentId: 'S1002', name: 'Bob Williams', gender: 'Male', class: 'Grade 9', profileImageURL: 'https://placehold.co/100x100.png?text=BW', createdAt: new Date('2023-02-20').toISOString(), updatedAt: new Date('2023-02-20').toISOString() },
   { id: 'clxkxk003', studentId: 'S1003', name: 'Carol Davis', gender: 'Female', class: 'Grade 11', profileImageURL: 'https://placehold.co/100x100.png?text=CD', createdAt: new Date('2023-03-10').toISOString(), updatedAt: new Date('2023-03-10').toISOString() },
@@ -20,76 +22,71 @@ const initialStudents: Student[] = [
 export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [isMounted, setIsMounted] = useState(false);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingTable, setIsLoadingTable] = useState(false); // For delete operation visual feedback
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
-    // Simulate fetching data
-    setStudents(initialStudents);
     setIsMounted(true);
-  }, []);
+    try {
+      const storedStudentsRaw = localStorage.getItem(STUDENTS_STORAGE_KEY);
+      if (storedStudentsRaw) {
+        setStudents(JSON.parse(storedStudentsRaw));
+      } else {
+        // If no students in localStorage, use initial seed and save it
+        setStudents(initialSeedStudents);
+        localStorage.setItem(STUDENTS_STORAGE_KEY, JSON.stringify(initialSeedStudents));
+      }
+    } catch (error) {
+      console.error("Failed to load students from localStorage", error);
+      setStudents(initialSeedStudents); // Fallback
+      toast({
+        title: "Error",
+        description: "Could not load student data. Displaying default list.",
+        variant: "destructive"
+      });
+    }
+  }, [toast]);
 
-
-  const handleAddStudent = () => {
-    setEditingStudent(null);
-    setIsFormOpen(true);
-  };
 
   const handleEditStudent = (student: Student) => {
-    setEditingStudent(student);
-    setIsFormOpen(true);
+    router.push(`/admin/students/${student.id}/edit`);
   };
 
-  const handleDeleteStudent = (studentId: string) => {
-    // Simulate API call
-    setIsLoading(true);
-    setTimeout(() => {
-      setStudents(prev => prev.filter(s => s.id !== studentId));
-      toast({
-        title: "Student Deleted",
-        description: "The student record has been successfully deleted.",
-        variant: "default",
-      });
-      setIsLoading(false);
-    }, 500);
-  };
-
-  const handleFormSubmit = (data: StudentFormData) => {
-    setIsLoading(true);
+  const handleDeleteStudent = (studentIdToDelete: string) => {
+    setIsLoadingTable(true);
     // Simulate API call
     setTimeout(() => {
-      if (editingStudent) {
-        // Update student
-        setStudents(prev => prev.map(s => s.id === editingStudent.id ? { ...editingStudent, ...data, updatedAt: new Date().toISOString() } : s));
+      try {
+        const updatedStudents = students.filter(s => s.id !== studentIdToDelete);
+        setStudents(updatedStudents);
+        localStorage.setItem(STUDENTS_STORAGE_KEY, JSON.stringify(updatedStudents));
         toast({
-          title: "Student Updated",
-          description: `${data.name}'s record has been updated.`,
+          title: "Student Deleted",
+          description: "The student record has been successfully deleted.",
+          variant: "default",
         });
-      } else {
-        // Add new student
-        const newStudent: Student = {
-          id: `stud_${Date.now()}`, // Simple unique ID generation for mock
-          ...data,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        setStudents(prev => [newStudent, ...prev]);
+      } catch (error) {
+        console.error("Failed to delete student from localStorage", error);
         toast({
-          title: "Student Added",
-          description: `${data.name} has been successfully added.`,
+          title: "Error",
+          description: "Failed to delete student. Please try again.",
+          variant: "destructive",
         });
+      } finally {
+        setIsLoadingTable(false);
       }
-      setIsLoading(false);
-      setIsFormOpen(false);
-      setEditingStudent(null);
-    }, 1000);
+    }, 500);
   };
   
   if (!isMounted) {
-    // You can return a loader here if needed
-    return <div className="flex justify-center items-center h-screen">Loading students...</div>;
+    // Prevent hydration mismatch and show a loader
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-2">Loading student management...</p>
+      </div>
+    );
   }
 
   return (
@@ -101,17 +98,25 @@ export default function StudentsPage() {
           </h2>
           <p className="text-muted-foreground">Add, edit, or remove student records.</p>
         </div>
-        <Button onClick={handleAddStudent} size="lg" className="shadow-md hover:shadow-lg transition-shadow">
-          <PlusCircle className="mr-2 h-5 w-5" /> Add New Student
+        <Button asChild size="lg" className="shadow-md hover:shadow-lg transition-shadow">
+          <Link href="/admin/students/new">
+            <PlusCircle className="mr-2 h-5 w-5" /> Add New Student
+          </Link>
         </Button>
       </div>
       
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Student List</CardTitle>
-          <CardDescription>Browse and manage all registered students.</CardDescription>
+          <CardDescription>Browse and manage all registered students. Data is stored in your browser's local storage.</CardDescription>
         </CardHeader>
         <CardContent>
+          {isLoadingTable && (
+            <div className="flex justify-center items-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <span className="ml-2">Updating table...</span>
+            </div>
+          )}
           <StudentsTable 
             students={students} 
             onEdit={handleEditStudent} 
@@ -119,14 +124,6 @@ export default function StudentsPage() {
           />
         </CardContent>
       </Card>
-
-      <StudentFormDialog
-        isOpen={isFormOpen}
-        onOpenChange={setIsFormOpen}
-        onSubmit={handleFormSubmit}
-        studentToEdit={editingStudent}
-        isLoading={isLoading}
-      />
     </div>
   );
 }
