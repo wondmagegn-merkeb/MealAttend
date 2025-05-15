@@ -16,7 +16,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import React from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-type SortableDepartmentKeys = 'name' | 'description' | 'headOfDepartment' | 'createdAt';
+type SortableDepartmentKeys = 'name'; // Only 'name' is sortable now
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -83,9 +83,6 @@ export function DepartmentsTable({ departments, onEdit, onDelete, sortConfig, on
           <TableHeader>
             <TableRow>
               <SortableTableHead columnKey="name">Name</SortableTableHead>
-              <SortableTableHead columnKey="description">Description</SortableTableHead>
-              <SortableTableHead columnKey="headOfDepartment">Head of Department</SortableTableHead>
-              <SortableTableHead columnKey="createdAt">Created At</SortableTableHead>
               <TableHead className="text-right w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -93,11 +90,6 @@ export function DepartmentsTable({ departments, onEdit, onDelete, sortConfig, on
             {departments.map((department) => (
               <TableRow key={department.id}>
                 <TableCell className="font-medium">{department.name}</TableCell>
-                <TableCell className="text-sm text-muted-foreground truncate max-w-xs">
-                  {department.description || 'N/A'}
-                </TableCell>
-                <TableCell>{department.headOfDepartment || 'N/A'}</TableCell>
-                <TableCell>{new Date(department.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end items-center gap-1">
                     <Tooltip>
@@ -137,7 +129,7 @@ export function DepartmentsTable({ departments, onEdit, onDelete, sortConfig, on
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the department
-              &quot;{departmentToDelete?.name}&quot; and remove its data.
+              &quot;{departmentToDelete?.name}&quot; and remove its data. Users associated with this department will need to be reassigned.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

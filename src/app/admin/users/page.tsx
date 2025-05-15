@@ -14,10 +14,11 @@ import { useToast } from "@/hooks/use-toast";
 import { USERS_STORAGE_KEY } from '@/lib/constants';
 
 // Initial seed data if localStorage is empty
+// Ensure department names match those in initialSeedDepartments from departments/page.tsx
 const initialSeedUsers: User[] = [
-  { id: 'usr_smp_001', fullName: 'Alice Admin', department: 'Management', email: 'alice.admin@example.com', createdAt: new Date('2023-01-10T10:00:00Z').toISOString(), updatedAt: new Date('2023-01-10T10:00:00Z').toISOString() },
-  { id: 'usr_smp_002', fullName: 'Bob Operator', department: 'Operations', email: 'bob.operator@example.com', createdAt: new Date('2023-02-15T11:30:00Z').toISOString(), updatedAt: new Date('2023-02-15T11:30:00Z').toISOString() },
-  { id: 'usr_smp_003', fullName: 'Carol Support', department: 'Customer Support', email: 'carol.support@example.com', createdAt: new Date('2023-03-20T09:15:00Z').toISOString(), updatedAt: new Date('2023-03-20T09:15:00Z').toISOString() },
+  { id: 'usr_smp_001', fullName: 'Alice Admin', department: 'Administration', email: 'alice.admin@example.com', createdAt: new Date('2023-01-10T10:00:00Z').toISOString(), updatedAt: new Date('2023-01-10T10:00:00Z').toISOString() },
+  { id: 'usr_smp_002', fullName: 'Bob Operator', department: 'Kitchen Staff', email: 'bob.operator@example.com', createdAt: new Date('2023-02-15T11:30:00Z').toISOString(), updatedAt: new Date('2023-02-15T11:30:00Z').toISOString() },
+  { id: 'usr_smp_003', fullName: 'Carol Support', department: 'Serving Team', email: 'carol.support@example.com', createdAt: new Date('2023-03-20T09:15:00Z').toISOString(), updatedAt: new Date('2023-03-20T09:15:00Z').toISOString() },
 ];
 
 type SortableUserKeys = 'fullName' | 'department' | 'email' | 'createdAt';

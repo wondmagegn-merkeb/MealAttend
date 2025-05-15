@@ -5,6 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import type { User } from "@/types/user";
+import type { Department } from "@/types/department";
+import { DEPARTMENTS_STORAGE_KEY } from '@/lib/constants';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +19,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useEffect } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -37,20 +46,36 @@ interface UserFormProps {
 }
 
 export function UserForm({ onSubmit, initialData, isLoading, submitButtonText = "Submit" }: UserFormProps) {
+  const [availableDepartments, setAvailableDepartments] = useState<Department[]>([]);
+
   const form = useForm<UserFormData>({
     resolver: zodResolver(userFormSchema),
     defaultValues: initialData || {
       fullName: "",
-      department: "",
+      department: "", // This will be the department name
       email: "",
     },
   });
 
   useEffect(() => {
+    // Load departments from localStorage
+    try {
+      const storedDepartmentsRaw = localStorage.getItem(DEPARTMENTS_STORAGE_KEY);
+      if (storedDepartmentsRaw) {
+        const departments: Department[] = JSON.parse(storedDepartmentsRaw);
+        setAvailableDepartments(departments.sort((a, b) => a.name.localeCompare(b.name)));
+      }
+    } catch (error) {
+      console.error("Failed to load departments from localStorage for UserForm", error);
+      // Handle error or set empty array
+    }
+  }, []);
+
+  useEffect(() => {
     if (initialData) {
       form.reset({
         fullName: initialData.fullName,
-        department: initialData.department,
+        department: initialData.department, // department name
         email: initialData.email,
       });
     } else {
@@ -86,9 +111,30 @@ export function UserForm({ onSubmit, initialData, isLoading, submitButtonText = 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Department</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Human Resources" {...field} />
-                  </FormControl>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value} 
+                    defaultValue={field.value}
+                    disabled={availableDepartments.length === 0}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={availableDepartments.length > 0 ? "Select a department" : "No departments available"} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {availableDepartments.map((dept) => (
+                        <SelectItem key={dept.id} value={dept.name}>
+                          {dept.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {availableDepartments.length === 0 && (
+                    <FormDescription>
+                        No departments found. Please add departments first.
+                    </FormDescription>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}

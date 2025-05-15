@@ -15,12 +15,14 @@ import { DEPARTMENTS_STORAGE_KEY } from '@/lib/constants';
 
 // Initial seed data if localStorage is empty
 const initialSeedDepartments: Department[] = [
-  { id: 'dept_smp_001', name: 'Kitchen Staff', description: 'Responsible for meal preparation and kitchen operations.', headOfDepartment: 'Chef Ramsey', createdAt: new Date('2023-01-01T10:00:00Z').toISOString(), updatedAt: new Date('2023-01-01T10:00:00Z').toISOString() },
-  { id: 'dept_smp_002', name: 'Serving Team', description: 'Manages meal distribution and dining hall services.', headOfDepartment: 'Alice Serverson', createdAt: new Date('2023-01-05T11:30:00Z').toISOString(), updatedAt: new Date('2023-01-05T11:30:00Z').toISOString() },
-  { id: 'dept_smp_003', name: 'Logistics & Supply', description: 'Handles inventory, procurement, and supplies.', headOfDepartment: 'Bob Stockman', createdAt: new Date('2023-02-10T09:15:00Z').toISOString(), updatedAt: new Date('2023-02-10T09:15:00Z').toISOString() },
+  { id: 'dept_kitchen', name: 'Kitchen Staff' },
+  { id: 'dept_serving', name: 'Serving Team' },
+  { id: 'dept_logistics', name: 'Logistics & Supply' },
+  { id: 'dept_admin', name: 'Administration' },
+  { id: 'dept_cleaning', name: 'Cleaning Crew' },
 ];
 
-type SortableDepartmentKeys = 'name' | 'description' | 'headOfDepartment' | 'createdAt';
+type SortableDepartmentKeys = 'name';
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -38,7 +40,7 @@ export default function DepartmentsPage() {
   const router = useRouter();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'createdAt', direction: 'descending' });
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'ascending' });
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -79,9 +81,7 @@ export default function DepartmentsPage() {
         });
         
         const totalPagesAfterDelete = Math.ceil(updatedDepartments.filter(dept =>
-          dept.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (dept.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (dept.headOfDepartment || '').toLowerCase().includes(searchTerm.toLowerCase())
+          dept.name.toLowerCase().includes(searchTerm.toLowerCase())
         ).length / ITEMS_PER_PAGE);
 
         if (currentPage > totalPagesAfterDelete && totalPagesAfterDelete > 0) {
@@ -122,9 +122,7 @@ export default function DepartmentsPage() {
 
     if (searchTerm) {
       processedDepartments = processedDepartments.filter(dept =>
-        dept.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (dept.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (dept.headOfDepartment || '').toLowerCase().includes(searchTerm.toLowerCase())
+        dept.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -132,17 +130,8 @@ export default function DepartmentsPage() {
       processedDepartments.sort((a, b) => {
         const aValue = a[sortConfig.key!];
         const bValue = b[sortConfig.key!];
-
-        if (aValue === undefined || aValue === null) return 1;
-        if (bValue === undefined || bValue === null) return -1;
         
-        let comparison = 0;
-        if (typeof aValue === 'string' && typeof bValue === 'string') {
-          comparison = aValue.localeCompare(bValue);
-        } else { 
-          comparison = String(aValue).localeCompare(String(bValue));
-        }
-
+        let comparison = aValue.localeCompare(bValue);
         return sortConfig.direction === 'ascending' ? comparison : -comparison;
       });
     }
@@ -197,7 +186,7 @@ export default function DepartmentsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search by name, description, or head..."
+              placeholder="Search by name..."
               value={searchTerm}
               onChange={handleSearchChange}
               className="pl-10 w-full sm:w-1/2 md:w-1/3"

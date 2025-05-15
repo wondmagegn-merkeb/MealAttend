@@ -63,9 +63,8 @@ export default function EditDepartmentPage() {
 
     setTimeout(() => {
       const updatedDepartment: Department = {
-        ...department,
-        ...data,
-        updatedAt: new Date().toISOString(),
+        id: department.id,
+        name: data.name,
       };
       
       try {
@@ -127,7 +126,7 @@ export default function EditDepartmentPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-semibold tracking-tight text-primary">Edit Department</h2>
-          <p className="text-muted-foreground">Update the details for {department?.name}.</p>
+          <p className="text-muted-foreground">Update the name for {department?.name}.</p>
         </div>
          <Button variant="outline" asChild>
           <Link href="/admin/departments">

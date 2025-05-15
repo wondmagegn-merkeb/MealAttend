@@ -10,22 +10,18 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const departmentFormSchema = z.object({
   name: z.string().min(1, { message: "Department Name is required." }),
-  description: z.string().optional(),
-  headOfDepartment: z.string().optional(),
 });
 
 export type DepartmentFormData = z.infer<typeof departmentFormSchema>;
@@ -42,8 +38,6 @@ export function DepartmentForm({ onSubmit, initialData, isLoading, submitButtonT
     resolver: zodResolver(departmentFormSchema),
     defaultValues: initialData || {
       name: "",
-      description: "",
-      headOfDepartment: "",
     },
   });
 
@@ -53,8 +47,6 @@ export function DepartmentForm({ onSubmit, initialData, isLoading, submitButtonT
     } else {
       form.reset({
         name: "",
-        description: "",
-        headOfDepartment: "",
       });
     }
   }, [initialData, form]);
@@ -73,35 +65,6 @@ export function DepartmentForm({ onSubmit, initialData, isLoading, submitButtonT
                   <FormControl>
                     <Input placeholder="e.g., Kitchen Staff" {...field} />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description (Optional)</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Brief description of the department's role..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="headOfDepartment"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Head of Department (Optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Mr. John Chef" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Name or ID of the person leading this department.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

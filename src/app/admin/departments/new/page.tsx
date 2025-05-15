@@ -20,12 +20,10 @@ export default function NewDepartmentPage() {
     setIsLoading(true);
     
     setTimeout(() => {
-      const newDepartmentId = `dept_${Date.now()}`;
+      const newDepartmentId = `dept_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
       const newDepartment: Department = {
         id: newDepartmentId, 
-        ...data,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        name: data.name,
       };
 
       try {
@@ -57,7 +55,7 @@ export default function NewDepartmentPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-semibold tracking-tight text-primary">Add New Department</h2>
-          <p className="text-muted-foreground">Fill in the details to add a new department record.</p>
+          <p className="text-muted-foreground">Enter the name for the new department.</p>
         </div>
         <Button variant="outline" asChild>
           <Link href="/admin/departments">
