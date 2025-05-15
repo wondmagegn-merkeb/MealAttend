@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, BookUser, Settings, QrCode, UsersRound } from 'lucide-react'; // Added UsersRound
+import { LayoutDashboard, BookUser, Settings, QrCode, UsersRound, Users as UsersIcon } from 'lucide-react'; // Added UsersRound, UsersIcon
 import { cn } from '@/lib/utils';
 import {
   SidebarContent as ShadSidebarContent,
@@ -20,7 +20,8 @@ import { Button } from '../ui/button';
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, tooltip: 'Dashboard Overview' },
   { href: '/admin/attendance', label: 'Attendance', icon: BookUser, tooltip: 'Manage Attendance Records' },
-  { href: '/admin/students', label: 'Students', icon: UsersRound, tooltip: 'Manage Students' }, // Added Students
+  { href: '/admin/students', label: 'Students', icon: UsersRound, tooltip: 'Manage Students' }, 
+  { href: '/admin/users', label: 'Users', icon: UsersIcon, tooltip: 'Manage Users' }, // Added Users
   { href: '/admin/settings', label: 'Settings', icon: Settings, tooltip: 'Application Settings' },
 ];
 
