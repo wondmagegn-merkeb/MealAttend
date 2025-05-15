@@ -64,7 +64,6 @@ export function StudentsTable({ students, onEdit, onDelete }: StudentsTableProps
             <TableRow>
               <TableHead className="w-[120px]">Student ID</TableHead>
               <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
               <TableHead>Class</TableHead>
               <TableHead>Gender</TableHead>
               <TableHead>Created At</TableHead>
@@ -90,7 +89,6 @@ export function StudentsTable({ students, onEdit, onDelete }: StudentsTableProps
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>{student.email}</TableCell>
                 <TableCell>{student.class}</TableCell>
                 <TableCell>
                   {student.gender ? <Badge variant="secondary">{student.gender}</Badge> : 'N/A'}
@@ -144,4 +142,3 @@ export function StudentsTable({ students, onEdit, onDelete }: StudentsTableProps
     </>
   );
 }
-
