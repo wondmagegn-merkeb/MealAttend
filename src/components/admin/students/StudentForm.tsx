@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import type { Student } from "@/types/student";
-import Image from 'next/image';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +27,7 @@ import {
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 const studentFormSchema = z.object({
   studentId: z.string().min(1, { message: "Student ID is required." }),
@@ -71,7 +71,7 @@ export function StudentForm({ onSubmit, initialData, isLoading, submitButtonText
       });
       setImagePreview(initialData.profileImageURL || null);
     } else {
-      form.reset({ // Ensure form is reset for 'new' student page if navigated back/forth
+      form.reset({ 
         studentId: "",
         name: "",
         gender: "",
@@ -100,121 +100,127 @@ export function StudentForm({ onSubmit, initialData, isLoading, submitButtonText
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="studentId"
-          render={({ field }) => (
+    <Card className="shadow-md border-border">
+      <CardContent className="pt-6">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="studentId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Student ID</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., S1001" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    The unique identifier for the student.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Full Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., John Doe" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="gender"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Gender</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="class"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Class/Grade</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Grade 10" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormItem>
-              <FormLabel>Student ID</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., S1001" {...field} />
-              </FormControl>
-              <FormDescription>
-                The unique identifier for the student.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Full Name</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., John Doe" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="gender"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Gender</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+              <FormLabel>Profile Image</FormLabel>
+              <div className="flex items-center gap-4">
+                <Avatar className="h-20 w-20 rounded-md">
+                  <AvatarImage 
+                    src={imagePreview || `https://placehold.co/80x80.png?text=No+Image`} 
+                    alt="Profile preview"
+                    className="object-cover"
+                    data-ai-hint="student profile"
+                  />
+                  <AvatarFallback>IMG</AvatarFallback>
+                </Avatar>
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
+                    <Input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleImageChange} 
+                      className="block w-full text-sm text-slate-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-primary/10 file:text-primary
+                        hover:file:bg-primary/20"
+                    />
                 </FormControl>
-                <SelectContent>
-                  <SelectItem value="Male">Male</SelectItem>
-                  <SelectItem value="Female">Female</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="class"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Class/Grade</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., Grade 10" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormItem>
-          <FormLabel>Profile Image</FormLabel>
-          <div className="flex items-center gap-4">
-            <Avatar className="h-20 w-20 rounded-md">
-              <AvatarImage 
-                src={imagePreview || `https://placehold.co/80x80.png?text=No+Image`} 
-                alt="Profile preview"
-                className="object-cover"
-                data-ai-hint="student profile"
+              </div>
+              <FormDescription>
+                    Upload a profile picture for the student.
+                </FormDescription>
+              <FormField
+                control={form.control}
+                name="profileImageURL"
+                render={({ field }) => <Input type="hidden" {...field} />}
               />
-              <AvatarFallback>IMG</AvatarFallback>
-            </Avatar>
-            <FormControl>
-                <Input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handleImageChange} 
-                  className="block w-full text-sm text-slate-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-full file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-primary/10 file:text-primary
-                    hover:file:bg-primary/20"
-                />
-            </FormControl>
-          </div>
-           <FormDescription>
-                Upload a profile picture for the student.
-            </FormDescription>
-          <FormField
-            control={form.control}
-            name="profileImageURL"
-            render={({ field }) => <Input type="hidden" {...field} />}
-          />
-          <FormMessage /> {/* This will show validation errors for profileImageURL if any */}
-        </FormItem>
+              <FormMessage /> 
+            </FormItem>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Processing...
-            </>
-          ) : (
-            submitButtonText
-          )}
-        </Button>
-      </form>
-    </Form>
+            <div className="flex justify-end pt-2">
+              <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  submitButtonText
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 }
