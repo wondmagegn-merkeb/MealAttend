@@ -21,9 +21,11 @@ export default function NewStudentPage() {
     
     // Simulate API call / localStorage update
     setTimeout(() => {
+      const studentInternalId = `stud_${Date.now()}`; // Simple unique ID for internal use
       const newStudent: Student = {
-        id: `stud_${Date.now()}`, // Simple unique ID
+        id: studentInternalId, 
         ...data,
+        qrCodeData: studentInternalId, // Use the internal unique ID for QR code data
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

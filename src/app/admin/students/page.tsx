@@ -14,9 +14,9 @@ import { STUDENTS_STORAGE_KEY } from '@/lib/constants';
 
 // Initial seed data if localStorage is empty
 const initialSeedStudents: Student[] = [
-  { id: 'clxkxk001', studentId: 'S1001', name: 'Alice Johnson', gender: 'Female', class: 'Grade 10', profileImageURL: 'https://placehold.co/100x100.png?text=AJ', createdAt: new Date('2023-01-15').toISOString(), updatedAt: new Date('2023-01-15').toISOString() },
-  { id: 'clxkxk002', studentId: 'S1002', name: 'Bob Williams', gender: 'Male', class: 'Grade 9', profileImageURL: 'https://placehold.co/100x100.png?text=BW', createdAt: new Date('2023-02-20').toISOString(), updatedAt: new Date('2023-02-20').toISOString() },
-  { id: 'clxkxk003', studentId: 'S1003', name: 'Carol Davis', gender: 'Female', class: 'Grade 11', profileImageURL: 'https://placehold.co/100x100.png?text=CD', createdAt: new Date('2023-03-10').toISOString(), updatedAt: new Date('2023-03-10').toISOString() },
+  { id: 'clxkxk001', studentId: 'S1001', name: 'Alice Johnson', gender: 'Female', class: 'Grade 10', profileImageURL: 'https://placehold.co/100x100.png?text=AJ', qrCodeData: 'clxkxk001', createdAt: new Date('2023-01-15').toISOString(), updatedAt: new Date('2023-01-15').toISOString() },
+  { id: 'clxkxk002', studentId: 'S1002', name: 'Bob Williams', gender: 'Male', class: 'Grade 9', profileImageURL: 'https://placehold.co/100x100.png?text=BW', qrCodeData: 'clxkxk002', createdAt: new Date('2023-02-20').toISOString(), updatedAt: new Date('2023-02-20').toISOString() },
+  { id: 'clxkxk003', studentId: 'S1003', name: 'Carol Davis', gender: 'Female', class: 'Grade 11', profileImageURL: 'https://placehold.co/100x100.png?text=CD', qrCodeData: 'clxkxk003', createdAt: new Date('2023-03-10').toISOString(), updatedAt: new Date('2023-03-10').toISOString() },
 ];
 
 export default function StudentsPage() {
@@ -31,9 +31,23 @@ export default function StudentsPage() {
     try {
       const storedStudentsRaw = localStorage.getItem(STUDENTS_STORAGE_KEY);
       if (storedStudentsRaw) {
-        setStudents(JSON.parse(storedStudentsRaw));
+        let loadedStudents: Student[] = JSON.parse(storedStudentsRaw);
+        // Ensure all loaded students have qrCodeData
+        let updated = false;
+        loadedStudents = loadedStudents.map(s => {
+          if (!s.qrCodeData) {
+            updated = true;
+            return { ...s, qrCodeData: s.id };
+          }
+          return s;
+        });
+        setStudents(loadedStudents);
+        // If any student was updated with qrCodeData, re-save to localStorage
+        if (updated) {
+          localStorage.setItem(STUDENTS_STORAGE_KEY, JSON.stringify(loadedStudents));
+        }
       } else {
-        // If no students in localStorage, use initial seed and save it
+        // If no students in localStorage, use initial seed (which now includes qrCodeData)
         setStudents(initialSeedStudents);
         localStorage.setItem(STUDENTS_STORAGE_KEY, JSON.stringify(initialSeedStudents));
       }

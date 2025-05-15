@@ -15,6 +15,11 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
   const schoolName = "Greenfield Secondary School"; // Placeholder school name
   const validUntil = "July 2026"; // Placeholder valid until
 
+  // Use student.qrCodeData if available, otherwise fallback to student.id
+  // Ensure data is URL encoded for the QR server API
+  const qrDataToEncode = student.qrCodeData || student.id;
+  const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrDataToEncode)}&format=png`;
+
   return (
     <Card className="w-full max-w-md mx-auto shadow-lg rounded-xl overflow-hidden">
       <CardHeader className="bg-primary text-primary-foreground p-4">
@@ -53,8 +58,8 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
         </div>
         <div className="col-span-3 pt-4 flex justify-center">
             <Image
-                src="https://placehold.co/150x150.png"
-                alt="QR Code Placeholder"
+                src={qrCodeImageUrl}
+                alt={`QR Code for ${student.name}`}
                 width={150}
                 height={150}
                 data-ai-hint="QR code"
