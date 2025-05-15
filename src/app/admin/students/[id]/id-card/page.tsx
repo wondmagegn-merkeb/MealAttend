@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertTriangle, Printer } from 'lucide-react';
 import type { Student } from '@/types/student';
 import { StudentIdCard } from '@/components/admin/students/StudentIdCard';
 import { STUDENTS_STORAGE_KEY } from '@/lib/constants';
@@ -55,6 +55,16 @@ export default function StudentIdCardPage() {
     }
   }, [studentId, toast]);
 
+  const handlePrint = () => {
+    // Optionally hide elements not meant for printing before calling window.print()
+    // e.g., document.getElementById('print-button-container').style.display = 'none';
+    // document.getElementById('back-button-container').style.display = 'none';
+    window.print();
+    // And restore them after:
+    // document.getElementById('print-button-container').style.display = 'flex';
+    // document.getElementById('back-button-container').style.display = 'block';
+  };
+
   if (isLoading) {
     return (
       <div className="flex flex-col justify-center items-center h-screen space-y-4">
@@ -89,8 +99,8 @@ export default function StudentIdCardPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-xl mx-auto py-8 px-4">
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6 max-w-xl mx-auto py-8 px-4 print:py-0 print:px-0">
+      <div className="flex items-center justify-between mb-6 print:hidden" id="page-header">
         <div>
           <h2 className="text-3xl font-semibold tracking-tight text-primary">Student ID Card</h2>
           <p className="text-muted-foreground">Viewing ID card for {student?.name}.</p>
@@ -105,12 +115,36 @@ export default function StudentIdCardPage() {
       
       {student && <StudentIdCard student={student} />}
 
-      {/* Add a print button if desired */}
-      {/* <div className="flex justify-center mt-6">
-        <Button onClick={() => window.print()} size="lg">
+      <div className="flex justify-center mt-6 print:hidden" id="print-button-container">
+        <Button onClick={handlePrint} size="lg">
           <Printer className="mr-2 h-4 w-4" /> Print ID Card
         </Button>
-      </div> */}
+      </div>
+
+      <style jsx global>{`
+        @media print {
+          body {
+            -webkit-print-color-adjust: exact; /* Chrome, Safari, Edge */
+            print-color-adjust: exact; /* Firefox */
+          }
+          .print\\:hidden {
+            display: none !important;
+          }
+          .print\\:py-0 {
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+          }
+          .print\\:px-0 {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+          }
+           /* Ensure the card itself takes up the space, adjust as needed */
+          .max-w-xl {
+            max-width: 100% !important;
+            width: 100% !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
