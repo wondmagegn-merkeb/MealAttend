@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label"; // Added import
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -62,7 +63,7 @@ export default function AttendancePage() {
         const loadedStudents: Student[] = JSON.parse(storedStudentsRaw);
         setStudents(loadedStudents);
         const map = new Map<string, Student>();
-        loadedStudents.forEach(s => map.set(s.studentId, s));
+        loadedStudents.forEach(s => map.set(s.studentId, s)); // Assuming studentId is the key for student selection
         setStudentsMap(map);
       }
     } catch (error) {
@@ -86,7 +87,7 @@ export default function AttendancePage() {
   };
   
   const handleGenerateReport = () => {
-    if (!reportStudentId && !reportDateRange) {
+    if (!reportStudentId && !reportDateRange?.from) { // Check if at least one filter is applied
         alert("Please select a student or a date range to generate a report.");
         return;
     }
@@ -106,7 +107,7 @@ export default function AttendancePage() {
 
     // Apply report filters if in report view
     if (isReportView) {
-      if (reportStudentId) {
+      if (reportStudentId && reportStudentId !== 'all_students') { // Handle "All Students" selection for date range only
         recordsToProcess = recordsToProcess.filter(record => record.studentId === reportStudentId);
       }
       if (reportDateRange?.from) {
@@ -126,7 +127,7 @@ export default function AttendancePage() {
           record.studentName.toLowerCase().includes(lowerSearchTerm) ||
           (record.studentEmail && record.studentEmail.toLowerCase().includes(lowerSearchTerm)) ||
           record.mealType.toLowerCase().includes(lowerSearchTerm) ||
-          record.date.includes(searchTerm) // Date search might need specific parsing if format varies
+          record.date.includes(searchTerm) 
         );
       }
     }
@@ -188,14 +189,14 @@ export default function AttendancePage() {
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <div>
             <Label htmlFor="student-select" className="mb-1 block text-sm font-medium">Student</Label>
-            <Select value={reportStudentId} onValueChange={setReportStudentId}>
+            <Select value={reportStudentId} onValueChange={(value) => setReportStudentId(value === 'all_students' ? undefined : value)}>
               <SelectTrigger id="student-select">
                 <SelectValue placeholder="Select a student" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all_students">All Students (for date range only)</SelectItem>
                 {students.map(student => (
-                  <SelectItem key={student.id} value={student.studentId}>
+                  <SelectItem key={student.id} value={student.studentId}> {/* Assuming student.studentId is the value for filtering */}
                     {student.name} ({student.studentId})
                   </SelectItem>
                 ))}
@@ -244,7 +245,7 @@ export default function AttendancePage() {
           </div>
           <div className="flex gap-2">
             <Button onClick={handleGenerateReport} className="w-full md:w-auto">Generate Report</Button>
-            {isReportView && (
+            {(isReportView || reportStudentId || reportDateRange?.from) && ( // Show clear if any filter is active or report view is on
                  <Button onClick={clearReportFilters} variant="outline" className="w-full md:w-auto">
                     <FilterX className="mr-2 h-4 w-4" /> Clear
                 </Button>
@@ -258,7 +259,7 @@ export default function AttendancePage() {
           <CardTitle>{isReportView ? "Report Results" : "All Records"}</CardTitle>
           <CardDescription>
             {isReportView 
-              ? `Showing records for ${reportStudentId && reportStudentId !== 'all_students' ? students.find(s => s.studentId === reportStudentId)?.name || 'selected student' : 'all students'}${reportDateRange?.from ? ` from ${format(reportDateRange.from, "LLL dd, y")}` : ''}${reportDateRange?.to ? ` to ${format(reportDateRange.to, "LLL dd, y")}` : reportDateRange?.from ? '' : ''}.`
+              ? `Showing records for ${reportStudentId && reportStudentId !== 'all_students' ? (students.find(s => s.studentId === reportStudentId)?.name || 'selected student') : 'all students'}${reportDateRange?.from ? ` from ${format(reportDateRange.from, "LLL dd, y")}` : ''}${reportDateRange?.to ? ` to ${format(reportDateRange.to, "LLL dd, y")}` : reportDateRange?.from ? '' : ''}.`
               : "Detailed list of all attendance entries. Use search below or report filters above."}
           </CardDescription>
           {!isReportView && (
@@ -279,7 +280,7 @@ export default function AttendancePage() {
             records={currentTableData} 
             sortConfig={sortConfig}
             onSort={handleSort}
-            studentsMap={studentsMap}
+            studentsMap={studentsMap} // Pass studentsMap here
           />
           {processedRecords.length > ITEMS_PER_PAGE && (
             <div className="flex items-center justify-between pt-4 mt-4 border-t">
@@ -313,3 +314,4 @@ export default function AttendancePage() {
     </div>
   );
 }
+
