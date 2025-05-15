@@ -11,28 +11,29 @@ import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AttendanceTable, type AttendanceRecord, type SortConfig, type SortableAttendanceKeys } from "@/components/admin/AttendanceTable";
 import type { Student } from "@/types/student";
-import { STUDENTS_STORAGE_KEY } from '@/lib/constants';
+import { STUDENTS_STORAGE_KEY, ATTENDANCE_RECORDS_STORAGE_KEY } from '@/lib/constants';
 import { Search, BookCopy, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FilterX } from "lucide-react";
 import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
-const initialAttendanceRecords: AttendanceRecord[] = [
-  // Student S1001 - Alice Johnson
+const seedAttendanceRecords: AttendanceRecord[] = [
+  // Student S1001 - Alice Johnson (internal id: clxkxk001)
   { id: 'att_001', studentId: 'S1001', studentName: 'Alice Johnson', studentEmail: 'alice.johnson@example.com', date: '2024-07-28', mealType: 'Lunch', scannedAt: '12:35 PM', status: 'Present' },
   { id: 'att_002', studentId: 'S1001', studentName: 'Alice Johnson', studentEmail: 'alice.johnson@example.com', date: '2024-07-29', mealType: 'Lunch', scannedAt: '12:30 PM', status: 'Present' },
   { id: 'att_003', studentId: 'S1001', studentName: 'Alice Johnson', studentEmail: 'alice.johnson@example.com', date: '2024-07-30', mealType: 'Lunch', scannedAt: 'N/A', status: 'Absent' },
-  // Student S1002 - Bob Williams
+  // Student S1002 - Bob Williams (internal id: clxkxk002)
   { id: 'att_004', studentId: 'S1002', studentName: 'Bob Williams', studentEmail: 'bob.williams@example.com', date: '2024-07-28', mealType: 'Lunch', scannedAt: '12:40 PM', status: 'Present' },
   { id: 'att_005', studentId: 'S1002', studentName: 'Bob Williams', studentEmail: 'bob.williams@example.com', date: '2024-07-29', mealType: 'Lunch', scannedAt: 'N/A', status: 'Absent' },
   { id: 'att_006', studentId: 'S1002', studentName: 'Bob Williams', studentEmail: 'bob.williams@example.com', date: '2024-07-30', mealType: 'Breakfast', scannedAt: '08:05 AM', status: 'Present' },
-  // Student S1003 - Carol Davis
+  // Student S1003 - Carol Davis (internal id: clxkxk003)
   { id: 'att_007', studentId: 'S1003', studentName: 'Carol Davis', studentEmail: 'carol.davis@example.com', date: '2024-07-28', mealType: 'Lunch', scannedAt: 'N/A', status: 'Absent' },
   { id: 'att_008', studentId: 'S1003', studentName: 'Carol Davis', studentEmail: 'carol.davis@example.com', date: '2024-07-29', mealType: 'Dinner', scannedAt: '07:10 PM', status: 'Present' },
-  // Student S1004 - David Brown
+  // Student S1004 - David Brown (internal id: clxkxk004)
   { id: 'att_009', studentId: 'S1004', studentName: 'David Brown', studentEmail: 'david.brown@example.com', date: '2024-07-27', mealType: 'Dinner', scannedAt: '07:15 PM', status: 'Present' },
   { id: 'att_010', studentId: 'S1004', studentName: 'David Brown', studentEmail: 'david.brown@example.com', date: '2024-07-30', mealType: 'Lunch', scannedAt: '12:55 PM', status: 'Present' },
-  // Student S1005 - Eva Green
+  // Student S1005 - Eva Green (internal id: clxkxk005)
   { id: 'att_011', studentId: 'S1005', studentName: 'Eva Green', studentEmail: 'eva.green@example.com', date: '2024-07-29', mealType: 'Lunch', scannedAt: '01:00 PM', status: 'Present' },
   { id: 'att_012', studentId: 'S1005', studentName: 'Eva Green', studentEmail: 'eva.green@example.com', date: '2024-07-30', mealType: 'Dinner', scannedAt: 'N/A', status: 'Absent' },
   { id: 'att_013', studentId: 'S1001', studentName: 'Alice Johnson', studentEmail: 'alice.johnson@example.com', date: '2024-08-01', mealType: 'Breakfast', scannedAt: '08:15 AM', status: 'Present' },
@@ -40,12 +41,13 @@ const initialAttendanceRecords: AttendanceRecord[] = [
   { id: 'att_015', studentId: 'S1003', studentName: 'Carol Davis', studentEmail: 'carol.davis@example.com', date: '2024-08-02', mealType: 'Lunch', scannedAt: 'N/A', status: 'Absent' },
 ];
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 5; // Changed from 10 to 5
 
 export default function AttendancePage() {
-  const [allAttendanceRecords, setAllAttendanceRecords] = useState<AttendanceRecord[]>(initialAttendanceRecords);
+  const [allAttendanceRecords, setAllAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [studentsMap, setStudentsMap] = useState<Map<string, Student>>(new Map());
+  const { toast } = useToast();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'date', direction: 'descending' });
@@ -55,21 +57,74 @@ export default function AttendancePage() {
   const [reportStudentId, setReportStudentId] = useState<string | undefined>(undefined);
   const [reportDateRange, setReportDateRange] = useState<DateRange | undefined>(undefined);
   const [isReportView, setIsReportView] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+    // Load students for the dropdown
     try {
       const storedStudentsRaw = localStorage.getItem(STUDENTS_STORAGE_KEY);
       if (storedStudentsRaw) {
         const loadedStudents: Student[] = JSON.parse(storedStudentsRaw);
         setStudents(loadedStudents);
         const map = new Map<string, Student>();
-        loadedStudents.forEach(s => map.set(s.studentId, s)); // Assuming studentId is the key for student selection
+        // Map by student.studentId for display consistency, but QR scans will use student.id
+        loadedStudents.forEach(s => map.set(s.studentId, s)); 
         setStudentsMap(map);
       }
     } catch (error) {
       console.error("Failed to load students from localStorage", error);
+      toast({ title: "Error", description: "Could not load student data.", variant: "destructive" });
     }
-  }, []);
+
+    // Load attendance records
+    try {
+      const storedAttendanceRaw = localStorage.getItem(ATTENDANCE_RECORDS_STORAGE_KEY);
+      if (storedAttendanceRaw) {
+        setAllAttendanceRecords(JSON.parse(storedAttendanceRaw));
+      } else {
+        setAllAttendanceRecords(seedAttendanceRecords);
+        localStorage.setItem(ATTENDANCE_RECORDS_STORAGE_KEY, JSON.stringify(seedAttendanceRecords));
+      }
+    } catch (error) {
+      console.error("Failed to load attendance records from localStorage", error);
+      setAllAttendanceRecords(seedAttendanceRecords);
+      toast({ title: "Error", description: "Could not load attendance records. Displaying default list.", variant: "destructive" });
+    }
+  }, [toast]);
+
+  // Effect to listen for localStorage changes from other tabs/windows (e.g., scan page)
+   useEffect(() => {
+    if (!isMounted) return;
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === ATTENDANCE_RECORDS_STORAGE_KEY && event.newValue) {
+        try {
+          setAllAttendanceRecords(JSON.parse(event.newValue));
+          toast({ title: "Attendance Updated", description: "Attendance records have been updated from another tab.", variant: "default" });
+        } catch (error) {
+          console.error("Error parsing updated attendance records from storage event:", error);
+        }
+      }
+       if (event.key === STUDENTS_STORAGE_KEY && event.newValue) {
+        try {
+          const loadedStudents: Student[] = JSON.parse(event.newValue);
+          setStudents(loadedStudents);
+          const map = new Map<string, Student>();
+          loadedStudents.forEach(s => map.set(s.studentId, s));
+          setStudentsMap(map);
+        } catch (error) {
+          console.error("Error parsing updated students from storage event:", error);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [isMounted, toast]);
+
 
   const handleSort = (key: SortableAttendanceKeys) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -83,16 +138,20 @@ export default function AttendancePage() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1);
-    setIsReportView(false); // Exit report view on new search
+    setIsReportView(false); 
   };
   
   const handleGenerateReport = () => {
-    if (!reportStudentId && !reportDateRange?.from) { // Check if at least one filter is applied
-        alert("Please select a student or a date range to generate a report.");
+    if (!reportStudentId && !reportDateRange?.from) { 
+        toast({
+          title: "Filter Required",
+          description: "Please select a student or a date range to generate a report.",
+          variant: "default"
+        });
         return;
     }
     setIsReportView(true);
-    setCurrentPage(1); // Reset to first page for report view
+    setCurrentPage(1); 
   };
 
   const clearReportFilters = () => {
@@ -105,9 +164,8 @@ export default function AttendancePage() {
   const processedRecords = useMemo(() => {
     let recordsToProcess = [...allAttendanceRecords];
 
-    // Apply report filters if in report view
     if (isReportView) {
-      if (reportStudentId && reportStudentId !== 'all_students') { // Handle "All Students" selection for date range only
+      if (reportStudentId && reportStudentId !== 'all_students') { 
         recordsToProcess = recordsToProcess.filter(record => record.studentId === reportStudentId);
       }
       if (reportDateRange?.from) {
@@ -119,7 +177,6 @@ export default function AttendancePage() {
         });
       }
     } else {
-    // Apply general search term if not in report view
       if (searchTerm) {
         const lowerSearchTerm = searchTerm.toLowerCase();
         recordsToProcess = recordsToProcess.filter(record =>
@@ -132,7 +189,6 @@ export default function AttendancePage() {
       }
     }
     
-    // Apply sorting
     if (sortConfig.key) {
       recordsToProcess.sort((a, b) => {
         const aValue = a[sortConfig.key!];
@@ -162,10 +218,14 @@ export default function AttendancePage() {
   }, [processedRecords, currentPage]);
 
    useEffect(() => {
-    if (currentPage > totalPages) {
+    if (currentPage > totalPages && totalPages > 0) { // Ensure totalPages is positive to avoid setting to 0
       setCurrentPage(totalPages);
+    } else if (currentPage === 0 && totalPages > 0) { // handle case where current page might become 0
+        setCurrentPage(1);
+    } else if (processedRecords.length === 0){ // If no records, reset to page 1
+        setCurrentPage(1);
     }
-  }, [currentPage, totalPages]);
+  }, [currentPage, totalPages, processedRecords.length]);
 
 
   return (
@@ -177,7 +237,6 @@ export default function AttendancePage() {
         </div>
       </div>
 
-      {/* Report Generation Section */}
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><BookCopy className="h-5 w-5" /> Attendance Report</CardTitle>
@@ -193,7 +252,7 @@ export default function AttendancePage() {
               <SelectContent>
                 <SelectItem value="all_students">All Students (for date range only)</SelectItem>
                 {students.map(student => (
-                  <SelectItem key={student.id} value={student.studentId}> {/* Assuming student.studentId is the value for filtering */}
+                  <SelectItem key={student.id} value={student.studentId}>
                     {student.name} ({student.studentId})
                   </SelectItem>
                 ))}
@@ -242,7 +301,7 @@ export default function AttendancePage() {
           </div>
           <div className="flex gap-2">
             <Button onClick={handleGenerateReport} className="w-full md:w-auto">Generate Report</Button>
-            {(isReportView || reportStudentId || reportDateRange?.from) && ( // Show clear if any filter is active or report view is on
+            {(isReportView || reportStudentId || reportDateRange?.from) && ( 
                  <Button onClick={clearReportFilters} variant="outline" className="w-full md:w-auto">
                     <FilterX className="mr-2 h-4 w-4" /> Clear
                 </Button>
@@ -277,8 +336,13 @@ export default function AttendancePage() {
             records={currentTableData} 
             sortConfig={sortConfig}
             onSort={handleSort}
-            studentsMap={studentsMap} // Pass studentsMap here
+            studentsMap={studentsMap} 
           />
+          {processedRecords.length === 0 && (
+            <p className="text-center py-4 text-muted-foreground">
+              {isReportView ? "No records match your report criteria." : "No attendance records found."}
+            </p>
+          )}
           {processedRecords.length > ITEMS_PER_PAGE && (
             <div className="flex items-center justify-between pt-4 mt-4 border-t">
               <p className="text-sm text-muted-foreground">
@@ -311,4 +375,3 @@ export default function AttendancePage() {
     </div>
   );
 }
-
