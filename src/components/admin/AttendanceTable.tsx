@@ -16,14 +16,14 @@ import { CheckCircle, XCircle, ChevronsUpDown, ArrowUp, ArrowDown } from "lucide
 import { cn } from '@/lib/utils';
 
 export interface AttendanceRecord {
-  id: string; // Unique record ID
-  studentId: string; // Link to Student
+  id: string; 
+  studentId: string; 
   studentName: string;
-  studentEmail?: string; // Optional
-  studentAvatar?: string; // Optional, derived from student's profileImageURL
-  date: string; // YYYY-MM-DD
+  studentAvatar?: string; 
+  // studentEmail removed
+  date: string; 
   mealType: "Breakfast" | "Lunch" | "Dinner";
-  scannedAt: string; // Time or "N/A"
+  scannedAt: string; 
   status: "Present" | "Absent";
 }
 
@@ -36,16 +36,16 @@ export interface SortConfig {
 
 interface AttendanceTableProps {
   records: AttendanceRecord[];
-  sortConfig?: SortConfig; // Made optional
-  onSort?: (key: SortableAttendanceKeys) => void; // Made optional
-  studentsMap?: Map<string, Student>; // Made optional
+  sortConfig?: SortConfig; 
+  onSort?: (key: SortableAttendanceKeys) => void; 
+  studentsMap?: Map<string, Student>; 
 }
 
 export function AttendanceTable({ 
   records, 
-  sortConfig = { key: 'date', direction: 'descending' }, // Default value
-  onSort = () => {}, // Default no-op function
-  studentsMap = new Map<string, Student>() // Default empty map
+  sortConfig = { key: 'date', direction: 'descending' }, 
+  onSort = () => {}, 
+  studentsMap = new Map<string, Student>() 
 }: AttendanceTableProps) {
   
   const renderSortIcon = (columnKey: SortableAttendanceKeys) => {
@@ -92,7 +92,6 @@ export function AttendanceTable({
           {records.map((record) => {
             const student = studentsMap.get(record.studentId);
             const avatarUrl = student?.profileImageURL || record.studentAvatar || `https://placehold.co/40x40.png?text=${record.studentName.split(' ').map(n => n[0]).join('')}`;
-            const studentEmail = student?.email || record.studentEmail || 'N/A';
             
             return (
               <TableRow key={record.id}>
@@ -105,7 +104,7 @@ export function AttendanceTable({
                     </Avatar>
                     <div>
                       <div className="font-medium">{record.studentName}</div>
-                      <div className="text-xs text-muted-foreground">{studentEmail}</div>
+                      {/* Removed student email display */}
                     </div>
                   </div>
                 </TableCell>
@@ -129,3 +128,5 @@ export function AttendanceTable({
     </div>
   );
 }
+
+  

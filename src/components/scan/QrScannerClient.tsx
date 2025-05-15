@@ -7,23 +7,23 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { QrCode, CheckCircle, AlertTriangle, Camera as CameraIcon, Loader2, Utensils, ScanLine } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Camera as CameraIcon, Loader2, Utensils, ScanLine } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import type { Student } from '@/types/student';
 import type { AttendanceRecord } from '@/components/admin/AttendanceTable';
 import { STUDENTS_STORAGE_KEY, ATTENDANCE_RECORDS_STORAGE_KEY } from '@/lib/constants';
 import { format } from 'date-fns';
+import jsQR from 'jsqr'; // User needs to `npm install jsqr` and `npm install --save-dev @types/jsqr`
 
 type MealType = "Breakfast" | "Lunch" | "Dinner";
-const MOCK_SCANNED_INTERNAL_ID = 'clxkxk001'; // Alice Johnson's internal ID for simulation
 const SCAN_COOLDOWN_MS = 5000; // Cooldown period of 5 seconds after a successful processing
 
 export function QrScannerClient() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false); // Renamed from isLoading for clarity
   const [selectedMealType, setSelectedMealType] = useState<MealType>("Lunch");
   const { toast } = useToast();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null); // For potential QR library integration
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameIdRef = useRef<number | null>(null);
   
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
@@ -37,21 +37,21 @@ export function QrScannerClient() {
   };
 
   const processAttendance = useCallback(async (studentInternalId: string, mealType: MealType) => {
-    if (isLoading) return; // Prevent multiple submissions if already processing
-    setIsLoading(true);
+    if (isProcessing) return;
+    setIsProcessing(true);
     try {
       const storedStudentsRaw = localStorage.getItem(STUDENTS_STORAGE_KEY);
       const students: Student[] = storedStudentsRaw ? JSON.parse(storedStudentsRaw) : [];
       
-      const student = students.find(s => s.id === studentInternalId);
+      const student = students.find(s => s.id === studentInternalId || s.qrCodeData === studentInternalId);
 
       if (student) {
         const newAttendanceRecord: AttendanceRecord = {
           id: `att_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-          studentId: student.studentId, // Store the display Student ID
+          studentId: student.studentId,
           studentName: student.name,
           studentAvatar: student.profileImageURL,
-          studentEmail: student.email, // Assuming student type has email
+          // studentEmail removed
           date: format(new Date(), 'yyyy-MM-dd'),
           mealType: mealType,
           scannedAt: format(new Date(), 'hh:mm a'),
@@ -76,19 +76,19 @@ export function QrScannerClient() {
           });
           playSound('error');
         } else {
-          attendanceRecords.unshift(newAttendanceRecord); // Add to the beginning
+          attendanceRecords.unshift(newAttendanceRecord);
           localStorage.setItem(ATTENDANCE_RECORDS_STORAGE_KEY, JSON.stringify(attendanceRecords));
           toast({
             title: "Attendance Recorded!",
             description: `${student.name} marked present for ${mealType}.`,
-            variant: "default", // Or a "success" variant if you have one
+            variant: "default",
           });
           playSound('success');
         }
       } else {
         toast({
           title: "Student Not Found",
-          description: `Student with scanned ID '${studentInternalId}' not found. Please ensure the QR code is valid.`,
+          description: `Student with scanned QR ID '${studentInternalId}' not found. Please ensure the QR code is valid.`,
           variant: "destructive",
         });
         playSound('error');
@@ -102,64 +102,59 @@ export function QrScannerClient() {
       });
       playSound('error');
     } finally {
-      setIsLoading(false);
-      setLastProcessTime(Date.now()); // Set cooldown after any processing attempt
+      setIsProcessing(false);
+      setLastProcessTime(Date.now());
     }
-  }, [toast, isLoading]);
-
+  }, [toast, isProcessing]);
 
   const attemptAutoScan = useCallback(() => {
-    if (!videoRef.current || !canvasRef.current || !hasCameraPermission || videoRef.current.paused || videoRef.current.ended) {
+    if (!videoRef.current || !canvasRef.current || !hasCameraPermission || videoRef.current.paused || videoRef.current.ended || isProcessing) {
       if (hasCameraPermission) animationFrameIdRef.current = requestAnimationFrame(attemptAutoScan);
       return;
     }
 
     const now = Date.now();
     if (now - lastProcessTime < SCAN_COOLDOWN_MS) {
-      animationFrameIdRef.current = requestAnimationFrame(attemptAutoScan); // Continue loop but don't process
+      animationFrameIdRef.current = requestAnimationFrame(attemptAutoScan);
       return;
     }
     
     const canvas = canvasRef.current;
     const video = videoRef.current;
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext('2d', { willReadFrequently: true }); // willReadFrequently for performance
 
     if (context) {
-      // Match canvas size to video element size (not necessarily video stream size)
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      // const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-
-      //
-      // IMPORTANT: QR Code Decoding Placeholder
-      //
-      // This is where you would integrate a QR code decoding library (e.g., jsQR).
-      // For example, with jsQR:
-      //   const code = jsQR(imageData.data, imageData.width, imageData.height);
-      //   if (code && code.data) {
-      //     const scannedStudentId = code.data;
-      //     console.log("QR Detected:", scannedStudentId);
-      //     if (selectedMealType && !isLoading) { // Ensure meal type is selected and not already loading
-      //       processAttendance(scannedStudentId, selectedMealType);
-      //     }
-      //   }
-      //
-      // For this demonstration, we will *simulate* a scan periodically.
-      // Remove this simulation block when you integrate a real QR library.
-      // This simulation will "scan" MOCK_SCANNED_INTERNAL_ID.
-      // 
-      if (selectedMealType && !isLoading) { // Ensure meal type is selected and not already loading
-        console.log(`Simulating scan for ${MOCK_SCANNED_INTERNAL_ID} at ${new Date().toLocaleTimeString()}`);
-        processAttendance(MOCK_SCANNED_INTERNAL_ID, selectedMealType);
+      if (canvas.width === 0 || canvas.height === 0) { // Video not ready
+        animationFrameIdRef.current = requestAnimationFrame(attemptAutoScan);
+        return;
       }
-      // End of simulation block
+      
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+      
+      try {
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: "dontInvert", // Or "attemptBoth" if needed
+        });
+
+        if (code && code.data) {
+          const scannedStudentId = code.data;
+          console.log("QR Detected:", scannedStudentId);
+          if (selectedMealType && !isProcessing) {
+            processAttendance(scannedStudentId, selectedMealType);
+          }
+        }
+      } catch (e) {
+        // jsQR might throw errors on certain images, ignore them and continue scanning
+        // console.error("jsQR error:", e); 
+      }
     }
     
     animationFrameIdRef.current = requestAnimationFrame(attemptAutoScan);
-  }, [hasCameraPermission, lastProcessTime, selectedMealType, processAttendance, isLoading]);
-
+  }, [hasCameraPermission, lastProcessTime, selectedMealType, processAttendance, isProcessing]);
 
   useEffect(() => {
     const getCameraPermissionAndStart = async () => {
@@ -177,7 +172,7 @@ export function QrScannerClient() {
         setHasCameraPermission(true);
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          videoRef.current.play().catch(err => console.error("Error playing video:", err)); // Autoplay
+          videoRef.current.play().catch(err => console.error("Error playing video:", err));
         }
       } catch (error) {
         console.error('Error accessing camera:', error);
@@ -192,7 +187,7 @@ export function QrScannerClient() {
 
     getCameraPermissionAndStart();
 
-    return () => { // Cleanup
+    return () => {
       if (videoRef.current && videoRef.current.srcObject) {
         const stream = videoRef.current.srcObject as MediaStream;
         stream.getTracks().forEach(track => track.stop());
@@ -204,11 +199,9 @@ export function QrScannerClient() {
   }, [toast]);
 
   useEffect(() => {
-    if (hasCameraPermission && videoRef.current) {
-       // Start the scanning loop only if permission is granted and video element exists
+    if (hasCameraPermission && videoRef.current && !videoRef.current.paused && !isProcessing) {
       animationFrameIdRef.current = requestAnimationFrame(attemptAutoScan);
     } else if (animationFrameIdRef.current) {
-      // Stop scanning loop if permission is lost or videoRef is not available
       cancelAnimationFrame(animationFrameIdRef.current);
       animationFrameIdRef.current = null;
     }
@@ -217,8 +210,7 @@ export function QrScannerClient() {
         cancelAnimationFrame(animationFrameIdRef.current);
       }
     };
-  }, [hasCameraPermission, attemptAutoScan]);
-
+  }, [hasCameraPermission, attemptAutoScan, isProcessing]); // Added isProcessing
 
   return (
     <Card className="w-full max-w-md shadow-2xl">
@@ -230,7 +222,7 @@ export function QrScannerClient() {
         <CardDescription>
           Select meal type. Auto-scanning will begin if camera is active.
           <br />
-          <span className="text-xs text-muted-foreground">(Current auto-scan is simulated. Real QR decoding requires library integration.)</span>
+          <span className="text-xs text-muted-foreground">Make sure to install `jsqr` and `@types/jsqr`.</span>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -240,7 +232,7 @@ export function QrScannerClient() {
           <Select 
             value={selectedMealType} 
             onValueChange={(value) => setSelectedMealType(value as MealType)}
-            disabled={isLoading}
+            disabled={isProcessing}
           >
             <SelectTrigger id="mealType">
               <SelectValue placeholder="Select meal type" />
@@ -271,9 +263,7 @@ export function QrScannerClient() {
             playsInline 
             muted 
           />
-          {/* Hidden canvas for QR processing */}
           <canvas ref={canvasRef} style={{ display: 'none' }} />
-
 
           {hasCameraPermission === true && !videoRef.current?.srcObject && (
              <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground p-4 text-center bg-black/50">
@@ -303,7 +293,7 @@ export function QrScannerClient() {
         
       </CardContent>
       <CardFooter className="flex flex-col gap-3">
-        {isLoading && (
+        {isProcessing && (
           <div className="flex items-center text-primary">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             <span>Processing...</span>
@@ -311,11 +301,10 @@ export function QrScannerClient() {
         )}
          <p className="text-xs text-muted-foreground text-center">
             {hasCameraPermission ? "Auto-scanning active. Point camera at QR code." : "Enable camera to start scanning."}
-        </p>
-        <p className="text-xs text-red-500 text-center font-semibold">
-            Note: QR code detection is currently SIMULATED.
-        </p>
+         </p>
       </CardFooter>
     </Card>
   );
 }
+
+  

@@ -20,28 +20,28 @@ import { useToast } from '@/hooks/use-toast';
 
 const seedAttendanceRecords: AttendanceRecord[] = [
   // Student S1001 - Alice Johnson (internal id: clxkxk001)
-  { id: 'att_001', studentId: 'S1001', studentName: 'Alice Johnson', studentEmail: 'alice.johnson@example.com', date: '2024-07-28', mealType: 'Lunch', scannedAt: '12:35 PM', status: 'Present' },
-  { id: 'att_002', studentId: 'S1001', studentName: 'Alice Johnson', studentEmail: 'alice.johnson@example.com', date: '2024-07-29', mealType: 'Lunch', scannedAt: '12:30 PM', status: 'Present' },
-  { id: 'att_003', studentId: 'S1001', studentName: 'Alice Johnson', studentEmail: 'alice.johnson@example.com', date: '2024-07-30', mealType: 'Lunch', scannedAt: 'N/A', status: 'Absent' },
+  { id: 'att_001', studentId: 'S1001', studentName: 'Alice Johnson', date: '2024-07-28', mealType: 'Lunch', scannedAt: '12:35 PM', status: 'Present' },
+  { id: 'att_002', studentId: 'S1001', studentName: 'Alice Johnson', date: '2024-07-29', mealType: 'Lunch', scannedAt: '12:30 PM', status: 'Present' },
+  { id: 'att_003', studentId: 'S1001', studentName: 'Alice Johnson', date: '2024-07-30', mealType: 'Lunch', scannedAt: 'N/A', status: 'Absent' },
   // Student S1002 - Bob Williams (internal id: clxkxk002)
-  { id: 'att_004', studentId: 'S1002', studentName: 'Bob Williams', studentEmail: 'bob.williams@example.com', date: '2024-07-28', mealType: 'Lunch', scannedAt: '12:40 PM', status: 'Present' },
-  { id: 'att_005', studentId: 'S1002', studentName: 'Bob Williams', studentEmail: 'bob.williams@example.com', date: '2024-07-29', mealType: 'Lunch', scannedAt: 'N/A', status: 'Absent' },
-  { id: 'att_006', studentId: 'S1002', studentName: 'Bob Williams', studentEmail: 'bob.williams@example.com', date: '2024-07-30', mealType: 'Breakfast', scannedAt: '08:05 AM', status: 'Present' },
+  { id: 'att_004', studentId: 'S1002', studentName: 'Bob Williams', date: '2024-07-28', mealType: 'Lunch', scannedAt: '12:40 PM', status: 'Present' },
+  { id: 'att_005', studentId: 'S1002', studentName: 'Bob Williams', date: '2024-07-29', mealType: 'Lunch', scannedAt: 'N/A', status: 'Absent' },
+  { id: 'att_006', studentId: 'S1002', studentName: 'Bob Williams', date: '2024-07-30', mealType: 'Breakfast', scannedAt: '08:05 AM', status: 'Present' },
   // Student S1003 - Carol Davis (internal id: clxkxk003)
-  { id: 'att_007', studentId: 'S1003', studentName: 'Carol Davis', studentEmail: 'carol.davis@example.com', date: '2024-07-28', mealType: 'Lunch', scannedAt: 'N/A', status: 'Absent' },
-  { id: 'att_008', studentId: 'S1003', studentName: 'Carol Davis', studentEmail: 'carol.davis@example.com', date: '2024-07-29', mealType: 'Dinner', scannedAt: '07:10 PM', status: 'Present' },
+  { id: 'att_007', studentId: 'S1003', studentName: 'Carol Davis', date: '2024-07-28', mealType: 'Lunch', scannedAt: 'N/A', status: 'Absent' },
+  { id: 'att_008', studentId: 'S1003', studentName: 'Carol Davis', date: '2024-07-29', mealType: 'Dinner', scannedAt: '07:10 PM', status: 'Present' },
   // Student S1004 - David Brown (internal id: clxkxk004)
-  { id: 'att_009', studentId: 'S1004', studentName: 'David Brown', studentEmail: 'david.brown@example.com', date: '2024-07-27', mealType: 'Dinner', scannedAt: '07:15 PM', status: 'Present' },
-  { id: 'att_010', studentId: 'S1004', studentName: 'David Brown', studentEmail: 'david.brown@example.com', date: '2024-07-30', mealType: 'Lunch', scannedAt: '12:55 PM', status: 'Present' },
+  { id: 'att_009', studentId: 'S1004', studentName: 'David Brown', date: '2024-07-27', mealType: 'Dinner', scannedAt: '07:15 PM', status: 'Present' },
+  { id: 'att_010', studentId: 'S1004', studentName: 'David Brown', date: '2024-07-30', mealType: 'Lunch', scannedAt: '12:55 PM', status: 'Present' },
   // Student S1005 - Eva Green (internal id: clxkxk005)
-  { id: 'att_011', studentId: 'S1005', studentName: 'Eva Green', studentEmail: 'eva.green@example.com', date: '2024-07-29', mealType: 'Lunch', scannedAt: '01:00 PM', status: 'Present' },
-  { id: 'att_012', studentId: 'S1005', studentName: 'Eva Green', studentEmail: 'eva.green@example.com', date: '2024-07-30', mealType: 'Dinner', scannedAt: 'N/A', status: 'Absent' },
-  { id: 'att_013', studentId: 'S1001', studentName: 'Alice Johnson', studentEmail: 'alice.johnson@example.com', date: '2024-08-01', mealType: 'Breakfast', scannedAt: '08:15 AM', status: 'Present' },
-  { id: 'att_014', studentId: 'S1002', studentName: 'Bob Williams', studentEmail: 'bob.williams@example.com', date: '2024-08-01', mealType: 'Lunch', scannedAt: '12:30 PM', status: 'Present' },
-  { id: 'att_015', studentId: 'S1003', studentName: 'Carol Davis', studentEmail: 'carol.davis@example.com', date: '2024-08-02', mealType: 'Lunch', scannedAt: 'N/A', status: 'Absent' },
+  { id: 'att_011', studentId: 'S1005', studentName: 'Eva Green', date: '2024-07-29', mealType: 'Lunch', scannedAt: '01:00 PM', status: 'Present' },
+  { id: 'att_012', studentId: 'S1005', studentName: 'Eva Green', date: '2024-07-30', mealType: 'Dinner', scannedAt: 'N/A', status: 'Absent' },
+  { id: 'att_013', studentId: 'S1001', studentName: 'Alice Johnson', date: '2024-08-01', mealType: 'Breakfast', scannedAt: '08:15 AM', status: 'Present' },
+  { id: 'att_014', studentId: 'S1002', studentName: 'Bob Williams', date: '2024-08-01', mealType: 'Lunch', scannedAt: '12:30 PM', status: 'Present' },
+  { id: 'att_015', studentId: 'S1003', studentName: 'Carol Davis', date: '2024-08-02', mealType: 'Lunch', scannedAt: 'N/A', status: 'Absent' },
 ];
 
-const ITEMS_PER_PAGE = 5; // Changed from 10 to 5
+const ITEMS_PER_PAGE = 5;
 
 export default function AttendancePage() {
   const [allAttendanceRecords, setAllAttendanceRecords] = useState<AttendanceRecord[]>([]);
@@ -53,7 +53,6 @@ export default function AttendancePage() {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'date', direction: 'descending' });
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Report specific state
   const [reportStudentId, setReportStudentId] = useState<string | undefined>(undefined);
   const [reportDateRange, setReportDateRange] = useState<DateRange | undefined>(undefined);
   const [isReportView, setIsReportView] = useState(false);
@@ -61,14 +60,12 @@ export default function AttendancePage() {
 
   useEffect(() => {
     setIsMounted(true);
-    // Load students for the dropdown
     try {
       const storedStudentsRaw = localStorage.getItem(STUDENTS_STORAGE_KEY);
       if (storedStudentsRaw) {
         const loadedStudents: Student[] = JSON.parse(storedStudentsRaw);
         setStudents(loadedStudents);
         const map = new Map<string, Student>();
-        // Map by student.studentId for display consistency, but QR scans will use student.id
         loadedStudents.forEach(s => map.set(s.studentId, s)); 
         setStudentsMap(map);
       }
@@ -77,7 +74,6 @@ export default function AttendancePage() {
       toast({ title: "Error", description: "Could not load student data.", variant: "destructive" });
     }
 
-    // Load attendance records
     try {
       const storedAttendanceRaw = localStorage.getItem(ATTENDANCE_RECORDS_STORAGE_KEY);
       if (storedAttendanceRaw) {
@@ -93,7 +89,6 @@ export default function AttendancePage() {
     }
   }, [toast]);
 
-  // Effect to listen for localStorage changes from other tabs/windows (e.g., scan page)
    useEffect(() => {
     if (!isMounted) return;
 
@@ -101,7 +96,7 @@ export default function AttendancePage() {
       if (event.key === ATTENDANCE_RECORDS_STORAGE_KEY && event.newValue) {
         try {
           setAllAttendanceRecords(JSON.parse(event.newValue));
-          toast({ title: "Attendance Updated", description: "Attendance records have been updated from another tab.", variant: "default" });
+          toast({ title: "Attendance Updated", description: "Attendance records have been updated.", variant: "default" });
         } catch (error) {
           console.error("Error parsing updated attendance records from storage event:", error);
         }
@@ -182,7 +177,6 @@ export default function AttendancePage() {
         recordsToProcess = recordsToProcess.filter(record =>
           record.studentId.toLowerCase().includes(lowerSearchTerm) ||
           record.studentName.toLowerCase().includes(lowerSearchTerm) ||
-          (record.studentEmail && record.studentEmail.toLowerCase().includes(lowerSearchTerm)) ||
           record.mealType.toLowerCase().includes(lowerSearchTerm) ||
           record.date.includes(searchTerm) 
         );
@@ -218,11 +212,11 @@ export default function AttendancePage() {
   }, [processedRecords, currentPage]);
 
    useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) { // Ensure totalPages is positive to avoid setting to 0
+    if (currentPage > totalPages && totalPages > 0) { 
       setCurrentPage(totalPages);
-    } else if (currentPage === 0 && totalPages > 0) { // handle case where current page might become 0
+    } else if (currentPage === 0 && totalPages > 0) {
         setCurrentPage(1);
-    } else if (processedRecords.length === 0){ // If no records, reset to page 1
+    } else if (processedRecords.length === 0){
         setCurrentPage(1);
     }
   }, [currentPage, totalPages, processedRecords.length]);
@@ -323,7 +317,7 @@ export default function AttendancePage() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                 type="search"
-                placeholder="Search records by ID, name, email, meal type, date..."
+                placeholder="Search records by ID, name, meal type, date..."
                 value={searchTerm}
                 onChange={handleSearchChange}
                 className="pl-10 w-full sm:w-1/2 md:w-2/3"
@@ -375,3 +369,5 @@ export default function AttendancePage() {
     </div>
   );
 }
+
+  
