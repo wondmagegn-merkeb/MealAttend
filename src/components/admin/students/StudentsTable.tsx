@@ -23,6 +23,7 @@ import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import type { Student } from "@/types/student";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import React from "react";
+import { Badge } from "@/components/ui/badge";
 
 interface StudentsTableProps {
   students: Student[];
@@ -64,6 +65,8 @@ export function StudentsTable({ students, onEdit, onDelete }: StudentsTableProps
               <TableHead className="w-[120px]">Student ID</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>Class</TableHead>
+              <TableHead>Gender</TableHead>
               <TableHead>Created At</TableHead>
               <TableHead className="text-right w-[80px]">Actions</TableHead>
             </TableRow>
@@ -75,7 +78,11 @@ export function StudentsTable({ students, onEdit, onDelete }: StudentsTableProps
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9">
-                      <AvatarImage src={`https://placehold.co/40x40.png?text=${student.name.split(' ').map(n => n[0]).join('')}`} alt={student.name} data-ai-hint="person avatar" />
+                      <AvatarImage 
+                        src={student.profileImageURL || `https://placehold.co/40x40.png?text=${student.name.split(' ').map(n => n[0]).join('')}`} 
+                        alt={student.name} 
+                        data-ai-hint="student profile"
+                      />
                       <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                     </Avatar>
                     <div>
@@ -84,6 +91,10 @@ export function StudentsTable({ students, onEdit, onDelete }: StudentsTableProps
                   </div>
                 </TableCell>
                 <TableCell>{student.email}</TableCell>
+                <TableCell>{student.class}</TableCell>
+                <TableCell>
+                  {student.gender ? <Badge variant="secondary">{student.gender}</Badge> : 'N/A'}
+                </TableCell>
                 <TableCell>{new Date(student.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
@@ -133,3 +144,4 @@ export function StudentsTable({ students, onEdit, onDelete }: StudentsTableProps
     </>
   );
 }
+

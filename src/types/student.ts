@@ -2,9 +2,12 @@
 export interface Student {
   id: string; // Unique identifier, typically a UUID
   studentId: string; // School-specific or custom student ID
-  name: string;
+  name: string; // Full name
   email: string;
-  // qrCodeData?: string; // Data to be encoded in a QR code, can be added later
+  gender: 'Male' | 'Female' | 'Other' | ''; // Gender
+  class: string; // Class or grade
+  profileImageURL?: string; // Optional URL for profile picture
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
 }
+

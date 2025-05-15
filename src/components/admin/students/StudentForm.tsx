@@ -17,12 +17,22 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useEffect } from "react";
 
 const studentFormSchema = z.object({
   studentId: z.string().min(1, { message: "Student ID is required." }),
-  name: z.string().min(1, { message: "Name is required." }),
+  name: z.string().min(1, { message: "Full Name is required." }),
   email: z.string().min(1, { message: "Email is required." }).email({ message: "Invalid email address." }),
+  gender: z.enum(['Male', 'Female', 'Other', ''], { errorMap: () => ({ message: "Please select a gender." }) }).default(''),
+  class: z.string().min(1, { message: "Class is required." }),
+  profileImageURL: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
 });
 
 export type StudentFormData = z.infer<typeof studentFormSchema>;
@@ -40,6 +50,9 @@ export function StudentForm({ onSubmit, studentToEdit, isLoading }: StudentFormP
       studentId: "",
       name: "",
       email: "",
+      gender: "",
+      class: "",
+      profileImageURL: "",
     },
   });
 
@@ -49,12 +62,18 @@ export function StudentForm({ onSubmit, studentToEdit, isLoading }: StudentFormP
         studentId: studentToEdit.studentId,
         name: studentToEdit.name,
         email: studentToEdit.email,
+        gender: studentToEdit.gender || "",
+        class: studentToEdit.class,
+        profileImageURL: studentToEdit.profileImageURL || "",
       });
     } else {
       form.reset({
         studentId: "",
         name: "",
         email: "",
+        gender: "",
+        class: "",
+        profileImageURL: "",
       });
     }
   }, [studentToEdit, form]);
@@ -104,6 +123,57 @@ export function StudentForm({ onSubmit, studentToEdit, isLoading }: StudentFormP
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="gender"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Gender</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="Male">Male</SelectItem>
+                  <SelectItem value="Female">Female</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="class"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Class/Grade</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., Grade 10" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="profileImageURL"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Profile Image URL (Optional)</FormLabel>
+              <FormControl>
+                <Input placeholder="https://example.com/profile.png" {...field} />
+              </FormControl>
+              <FormDescription>
+                Link to the student's profile picture.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? (studentToEdit ? "Saving..." : "Adding...") : (studentToEdit ? "Save Changes" : "Add Student")}
         </Button>
@@ -111,3 +181,4 @@ export function StudentForm({ onSubmit, studentToEdit, isLoading }: StudentFormP
     </Form>
   );
 }
+

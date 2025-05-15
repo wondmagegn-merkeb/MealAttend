@@ -12,9 +12,9 @@ import type { StudentFormData } from "@/components/admin/students/StudentForm";
 import { useToast } from "@/hooks/use-toast";
 
 const initialStudents: Student[] = [
-  { id: 'clxkxk001', studentId: 'S1001', name: 'Alice Johnson', email: 'alice.johnson@example.com', createdAt: new Date('2023-01-15').toISOString(), updatedAt: new Date('2023-01-15').toISOString() },
-  { id: 'clxkxk002', studentId: 'S1002', name: 'Bob Williams', email: 'bob.williams@example.com', createdAt: new Date('2023-02-20').toISOString(), updatedAt: new Date('2023-02-20').toISOString() },
-  { id: 'clxkxk003', studentId: 'S1003', name: 'Carol Davis', email: 'carol.davis@example.com', createdAt: new Date('2023-03-10').toISOString(), updatedAt: new Date('2023-03-10').toISOString() },
+  { id: 'clxkxk001', studentId: 'S1001', name: 'Alice Johnson', email: 'alice.johnson@example.com', gender: 'Female', class: 'Grade 10', profileImageURL: 'https://placehold.co/100x100.png?text=AJ', createdAt: new Date('2023-01-15').toISOString(), updatedAt: new Date('2023-01-15').toISOString() },
+  { id: 'clxkxk002', studentId: 'S1002', name: 'Bob Williams', email: 'bob.williams@example.com', gender: 'Male', class: 'Grade 9', profileImageURL: 'https://placehold.co/100x100.png?text=BW', createdAt: new Date('2023-02-20').toISOString(), updatedAt: new Date('2023-02-20').toISOString() },
+  { id: 'clxkxk003', studentId: 'S1003', name: 'Carol Davis', email: 'carol.davis@example.com', gender: 'Female', class: 'Grade 11', createdAt: new Date('2023-03-10').toISOString(), updatedAt: new Date('2023-03-10').toISOString() },
 ];
 
 export default function StudentsPage() {
@@ -62,7 +62,7 @@ export default function StudentsPage() {
     setTimeout(() => {
       if (editingStudent) {
         // Update student
-        setStudents(prev => prev.map(s => s.id === editingStudent.id ? { ...s, ...data, updatedAt: new Date().toISOString() } : s));
+        setStudents(prev => prev.map(s => s.id === editingStudent.id ? { ...editingStudent, ...data, updatedAt: new Date().toISOString() } : s));
         toast({
           title: "Student Updated",
           description: `${data.name}'s record has been updated.`,
@@ -130,3 +130,4 @@ export default function StudentsPage() {
     </div>
   );
 }
+
