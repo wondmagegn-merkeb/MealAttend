@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CheckCircle, XCircle, ChevronsUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import type { Department } from "@/types/department"; // Keep if used elsewhere, but not directly here
+import { cn } from '@/lib/utils'; // Added import
 
 export interface AttendanceRecord {
   id: string; // Unique record ID
