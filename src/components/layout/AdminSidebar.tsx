@@ -1,8 +1,9 @@
+
 "use client";
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, BookUser, Settings, QrCode } from 'lucide-react';
+import { LayoutDashboard, BookUser, Settings, QrCode, UsersRound } from 'lucide-react'; // Added UsersRound
 import { cn } from '@/lib/utils';
 import {
   SidebarContent as ShadSidebarContent,
@@ -19,6 +20,7 @@ import { Button } from '../ui/button';
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, tooltip: 'Dashboard Overview' },
   { href: '/admin/attendance', label: 'Attendance', icon: BookUser, tooltip: 'Manage Attendance Records' },
+  { href: '/admin/students', label: 'Students', icon: UsersRound, tooltip: 'Manage Students' }, // Added Students
   { href: '/admin/settings', label: 'Settings', icon: Settings, tooltip: 'Application Settings' },
 ];
 

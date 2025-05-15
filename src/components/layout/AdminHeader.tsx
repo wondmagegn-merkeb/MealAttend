@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -11,6 +12,7 @@ import {
 import { LogOut, UserCircle, Settings as SettingsIcon } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
 import { SidebarTrigger } from "@/components/ui/sidebar"; // Import from ShadCN sidebar
+import Link from "next/link"; // Added Link
 
 export function AdminHeader() {
   return (
@@ -47,12 +49,17 @@ export function AdminHeader() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <SettingsIcon className="mr-2 h-4 w-4" />
-              <span>Settings</span>
-            </DropdownMenuItem>
+            <Link href="/admin/settings" passHref legacyBehavior>
+              <DropdownMenuItem asChild>
+                <a> {/* Using <a> tag for DropdownMenuItem when using Link */}
+                  <SettingsIcon className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </a>
+              </DropdownMenuItem>
+            </Link>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            {/* Placeholder for Log out functionality */}
+            <DropdownMenuItem onClick={() => alert("Log out clicked (placeholder)")}>
               <LogOut className="mr-2 h-4 w-4" />
               <span>Log out</span>
             </DropdownMenuItem>
