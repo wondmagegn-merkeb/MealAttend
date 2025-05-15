@@ -5,14 +5,14 @@ import { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label"; // Added import
+import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AttendanceTable, type AttendanceRecord, type SortConfig, type SortableAttendanceKeys } from "@/components/admin/AttendanceTable";
 import type { Student } from "@/types/student";
 import { STUDENTS_STORAGE_KEY } from '@/lib/constants';
-import { PlusCircle, Search, BookCopy, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FilterX } from "lucide-react";
+import { Search, BookCopy, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FilterX } from "lucide-react";
 import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
@@ -175,9 +175,6 @@ export default function AttendancePage() {
           <h2 className="text-3xl font-semibold tracking-tight text-primary">Attendance Records</h2>
           <p className="text-muted-foreground">View and manage all meal attendance records.</p>
         </div>
-        <Button disabled> {/* Kept as per user's existing code, but disabled as not functional in this scope */}
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Record 
-        </Button>
       </div>
 
       {/* Report Generation Section */}
