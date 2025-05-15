@@ -1,0 +1,153 @@
+
+"use client";
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Edit, Trash2, ChevronsUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import type { Department } from "@/types/department";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import React from "react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+type SortableDepartmentKeys = 'name' | 'description' | 'headOfDepartment' | 'createdAt';
+type SortDirection = 'ascending' | 'descending';
+
+interface SortConfig {
+  key: SortableDepartmentKeys | null;
+  direction: SortDirection;
+}
+
+interface DepartmentsTableProps {
+  departments: Department[];
+  onEdit: (department: Department) => void;
+  onDelete: (departmentId: string) => void;
+  sortConfig: SortConfig;
+  onSort: (key: SortableDepartmentKeys) => void;
+}
+
+export function DepartmentsTable({ departments, onEdit, onDelete, sortConfig, onSort }: DepartmentsTableProps) {
+  const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
+  const [departmentToDelete, setDepartmentToDelete] = React.useState<Department | null>(null);
+
+  const handleDeleteClick = (department: Department) => {
+    setDepartmentToDelete(department);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    if (departmentToDelete) {
+      onDelete(departmentToDelete.id);
+    }
+    setShowDeleteDialog(false);
+    setDepartmentToDelete(null);
+  };
+
+  const renderSortIcon = (columnKey: SortableDepartmentKeys) => {
+    if (sortConfig.key !== columnKey) {
+      return <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />;
+    }
+    return sortConfig.direction === 'ascending' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
+  };
+
+  const SortableTableHead = ({ columnKey, children }: { columnKey: SortableDepartmentKeys, children: React.ReactNode }) => (
+    <TableHead
+      className="cursor-pointer hover:bg-muted/50 transition-colors group"
+      onClick={() => onSort(columnKey)}
+    >
+      <div className="flex items-center">
+        {children}
+        {renderSortIcon(columnKey)}
+      </div>
+    </TableHead>
+  );
+  
+  if (departments.length === 0) {
+    return (
+      <div className="text-center py-10 text-muted-foreground">
+        No departments found. Check your search term or add new departments.
+      </div>
+    );
+  }
+
+  return (
+    <TooltipProvider>
+      <div className="rounded-lg border shadow-sm bg-card">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <SortableTableHead columnKey="name">Name</SortableTableHead>
+              <SortableTableHead columnKey="description">Description</SortableTableHead>
+              <SortableTableHead columnKey="headOfDepartment">Head of Department</SortableTableHead>
+              <SortableTableHead columnKey="createdAt">Created At</SortableTableHead>
+              <TableHead className="text-right w-[100px]">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {departments.map((department) => (
+              <TableRow key={department.id}>
+                <TableCell className="font-medium">{department.name}</TableCell>
+                <TableCell className="text-sm text-muted-foreground truncate max-w-xs">
+                  {department.description || 'N/A'}
+                </TableCell>
+                <TableCell>{department.headOfDepartment || 'N/A'}</TableCell>
+                <TableCell>{new Date(department.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end items-center gap-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={() => onEdit(department)}>
+                          <Edit className="h-4 w-4" />
+                          <span className="sr-only">Edit Department</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Edit Department</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(department)} className="text-destructive hover:text-destructive/90 hover:bg-destructive/10">
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Delete Department</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Delete Department</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the department
+              &quot;{departmentToDelete?.name}&quot; and remove its data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDepartmentToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </TooltipProvider>
+  );
+}
