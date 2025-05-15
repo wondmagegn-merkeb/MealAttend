@@ -137,7 +137,7 @@ export default function ViewAllIdCardsPage() {
             border: 1px solid #eee; /* Optional: add a light border for cutting guides */
             transform: scale(0.95); /* Slightly scale down to ensure fit, adjust as needed */
             transform-origin: top left;
-            margin-bottom: 5mm; /* Space below each card if they stack vertically */
+            /* margin-bottom: 5mm; Removed this to let grid gap control spacing */
           }
           /* Ensure StudentIdCard itself scales appropriately if needed */
           .id-card-container > div { /* Assuming StudentIdCard is the direct child */
@@ -149,4 +149,3 @@ export default function ViewAllIdCardsPage() {
     </div>
   );
 }
-
