@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { PlusCircle, Users, Loader2, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { PlusCircle, Users, Loader2, Search, ChevronLeft, ChevronRight, CreditCard } from "lucide-react"; // Added CreditCard for View All IDs
 import { StudentsTable } from "@/components/admin/students/StudentsTable";
 import type { Student } from "@/types/student";
 import { useToast } from "@/hooks/use-toast";
@@ -203,11 +203,18 @@ export default function StudentsPage() {
           </h2>
           <p className="text-muted-foreground">Add, edit, or remove student records.</p>
         </div>
-        <Button asChild size="lg" className="shadow-md hover:shadow-lg transition-shadow">
-          <Link href="/admin/students/new">
-            <PlusCircle className="mr-2 h-5 w-5" /> Add New Student
-          </Link>
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-2">
+           <Button asChild size="lg" variant="outline" className="shadow-md hover:shadow-lg transition-shadow">
+            <Link href="/admin/students/view-all-ids">
+              <CreditCard className="mr-2 h-5 w-5" /> View All ID Cards
+            </Link>
+          </Button>
+          <Button asChild size="lg" className="shadow-md hover:shadow-lg transition-shadow">
+            <Link href="/admin/students/new">
+              <PlusCircle className="mr-2 h-5 w-5" /> Add New Student
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <Card className="shadow-lg">
@@ -242,7 +249,7 @@ export default function StudentsPage() {
           {filteredAndSortedStudents.length > ITEMS_PER_PAGE && (
             <div className="flex items-center justify-between pt-4 mt-4 border-t">
               <p className="text-sm text-muted-foreground">
-                Page {currentPage} of {totalPages}
+                Page {currentPage} of {totalPages} ({filteredAndSortedStudents.length} students)
               </p>
               <div className="flex gap-2">
                 <Button
@@ -266,6 +273,9 @@ export default function StudentsPage() {
               </div>
             </div>
           )}
+           {filteredAndSortedStudents.length === 0 && !isLoadingTable && (
+             <p className="text-center text-muted-foreground py-4">No students match your current search criteria.</p>
+           )}
         </CardContent>
       </Card>
     </div>
