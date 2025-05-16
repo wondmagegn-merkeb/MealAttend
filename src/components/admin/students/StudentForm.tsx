@@ -32,7 +32,7 @@ import { Card, CardContent } from "@/components/ui/card";
 const studentFormSchema = z.object({
   name: z.string().min(1, { message: "Full Name is required." }),
   gender: z.enum(['Male', 'Female', 'Other', ''], { errorMap: () => ({ message: "Please select a gender." }) }).default(''),
-  classNumber: z.string().min(1, { message: "Class number is required." }).regex(/^\d+$/, "Class number must be a number."),
+  classNumber: z.string().regex(/^(?:[1-9]|1[0-2])$/, { message: "Class number must be between 1 and 12." }),
   classAlphabet: z.string().min(1, { message: "Grade/Alphabet is required." }),
   profileImageURL: z.string().optional().or(z.literal('')),
 });
@@ -172,7 +172,7 @@ export function StudentForm({
                     <FormControl>
                       <Input type="text" placeholder="e.g., 10" {...field} />
                     </FormControl>
-                    <FormDescription>Numeric part of the class (e.g., 1, 2, 10).</FormDescription>
+                    <FormDescription>Numeric part of the class (1-12).</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
