@@ -28,10 +28,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
+// Zod schema for validation
 const studentFormSchema = z.object({
   name: z.string().min(1, { message: "Full Name is required." }),
   gender: z.string().min(1, { message: "Please select a gender." }),
-  classNumber: z.string().min(1, { message: "Please select a class number (1-12)." }),
+  classNumber: z.string().min(1, { message: "Please select a class number." }),
   classAlphabet: z.string().min(1, { message: "Please select a grade alphabet." }),
   profileImageURL: z.string().optional().or(z.literal('')),
 });
@@ -46,7 +47,7 @@ interface StudentFormProps {
   isEditMode?: boolean;
 }
 
-const gradeAlphabetOptions = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+const gradeAlphabetOptions = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
 const classNumberOptions = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
 
 export function StudentForm({
@@ -54,7 +55,7 @@ export function StudentForm({
   initialData,
   isLoading,
   submitButtonText = "Submit",
-  isEditMode = false
+  isEditMode = false,
 }: StudentFormProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -80,7 +81,7 @@ export function StudentForm({
       });
       setImagePreview(initialData.profileImageURL || null);
     } else {
-      form.reset({
+      form.reset({ // Explicitly reset for new form as well
         name: "",
         gender: "",
         classNumber: "",
@@ -172,7 +173,7 @@ export function StudentForm({
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select number" />
-                        </SelectTrigger>
+                        </Trigger>
                       </FormControl>
                       <SelectContent>
                         {classNumberOptions.map(option => (
@@ -244,7 +245,8 @@ export function StudentForm({
                 name="profileImageURL"
                 render={({ field }) => <Input type="hidden" {...field} />} 
               />
-              {form.formState.errors.profileImageURL && <FormMessage>{form.formState.errors.profileImageURL.message}</FormMessage>}
+              {/* Ensure form.formState.errors.profileImageURL is accessed correctly */}
+              <FormMessage>{form.formState.errors.profileImageURL?.message}</FormMessage>
             </FormItem>
 
             <div className="flex justify-end pt-2">
