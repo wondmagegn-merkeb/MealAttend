@@ -1,5 +1,5 @@
 
-"use client"; // Added this line
+"use client"; 
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,14 +13,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LogOut, UserCircle, Settings as SettingsIcon } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
-import { SidebarTrigger } from "@/components/ui/sidebar"; // Import from ShadCN sidebar
-import Link from "next/link"; // Added Link
+import { SidebarTrigger } from "@/components/ui/sidebar"; 
+import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth"; // Import useAuth
 
 export function AdminHeader() {
+  const { logout } = useAuth(); // Get logout function from useAuth
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 backdrop-blur-md px-4 sm:px-6">
       <div className="flex items-center gap-4">
-        {/* SidebarTrigger is for mobile, hidden on md+ where permanent sidebar is shown */}
         <div className="md:hidden">
            <SidebarTrigger />
         </div>
@@ -46,22 +48,21 @@ export function AdminHeader() {
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">Admin User</p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  admin@mealattend.com
+                  admin@example.com
                 </p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <Link href="/admin/settings" passHref legacyBehavior>
               <DropdownMenuItem asChild>
-                <a> {/* Using <a> tag for DropdownMenuItem when using Link */}
+                <a> 
                   <SettingsIcon className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </a>
               </DropdownMenuItem>
             </Link>
             <DropdownMenuSeparator />
-            {/* Placeholder for Log out functionality */}
-            <DropdownMenuItem onClick={() => alert("Log out clicked (placeholder)")}>
+            <DropdownMenuItem onClick={logout}> {/* Use logout function here */}
               <LogOut className="mr-2 h-4 w-4" />
               <span>Log out</span>
             </DropdownMenuItem>
@@ -71,3 +72,5 @@ export function AdminHeader() {
     </header>
   );
 }
+
+    
