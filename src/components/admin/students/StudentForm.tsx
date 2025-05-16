@@ -32,16 +32,16 @@ import { Card, CardContent } from "@/components/ui/card";
 const studentFormSchema = z.object({
   name: z.string().min(1, { message: "Full Name is required." }),
   gender: z.string().min(1, { message: "Please select a gender." }),
-  classNumber: z.string().min(1, { message: "Please select a class number." }), // Values 1-12
-  classAlphabet: z.string().min(1, { message: "Please select a grade alphabet." }), // Values A-Z
-  profileImageURL: z.string().optional().or(z.literal('')), // Optional or empty string
+  classNumber: z.string().min(1, { message: "Please select a class number." }), // Simplified validation for Select
+  classAlphabet: z.string().min(1, { message: "Please select a grade alphabet." }), // Simplified validation for Select
+  profileImageURL: z.string().optional().or(z.literal('')),
 });
 
 export type StudentFormData = z.infer<typeof studentFormSchema>;
 
 interface StudentFormProps {
   onSubmit: (data: StudentFormData) => void;
-  initialData?: Partial<StudentFormData> & { studentId?: string };
+  initialData?: Partial<StudentFormData> & { studentId?: string }; // studentId is only for display in edit mode
   isLoading?: boolean;
   submitButtonText?: string;
   isEditMode?: boolean;
@@ -62,12 +62,11 @@ export function StudentForm({
   const form = useForm<StudentFormData>({
     resolver: zodResolver(studentFormSchema),
     defaultValues: {
-      name: "",
-      gender: "",
-      classNumber: "",
-      classAlphabet: "",
-      profileImageURL: "",
-      ...(initialData || {}), // Spread initialData if provided
+      name: initialData?.name || "",
+      gender: initialData?.gender || "",
+      classNumber: initialData?.classNumber || "",
+      classAlphabet: initialData?.classAlphabet || "",
+      profileImageURL: initialData?.profileImageURL || "",
     },
   });
 
@@ -82,7 +81,7 @@ export function StudentForm({
       });
       setImagePreview(initialData.profileImageURL || null);
     } else {
-      form.reset({ // Explicitly reset to empty if no initialData
+      form.reset({
         name: "",
         gender: "",
         classNumber: "",
@@ -174,7 +173,7 @@ export function StudentForm({
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select number" />
-                        </SelectTrigger>
+                        </Trigger>
                       </FormControl>
                       <SelectContent>
                         {classNumberOptions.map(option => (
@@ -244,7 +243,7 @@ export function StudentForm({
               <FormField
                 control={form.control}
                 name="profileImageURL"
-                render={({ field }) => <Input type="hidden" {...field} />} 
+                render={({ field }) => <Input type="hidden" {...field} />}
               />
               {form.formState.errors.profileImageURL && (
                 <FormMessage>{form.formState.errors.profileImageURL.message}</FormMessage>

@@ -111,6 +111,12 @@ export default function ExportStudentsPage() {
 
     return tempStudents;
   }, [allStudents, selectedClass, selectedYear]);
+  
+  const generatedHeaderTitle = useMemo(() => {
+    const gradeText = selectedClass === 'all' ? 'All Grades' : `Grade ${selectedClass}`;
+    const yearText = selectedYear === 'all' ? 'All Years' : `Year ${selectedYear}`;
+    return `Student List - ${gradeText} - ${yearText}`;
+  }, [selectedClass, selectedYear]);
 
   const handleCopyToClipboard = useCallback(() => {
     if (filteredStudents.length === 0) {
@@ -199,22 +205,27 @@ export default function ExportStudentsPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div>
-              <CardTitle>Filtered Student Data ({filteredStudents.length} records)</CardTitle>
-              <CardDescription>The table below shows students matching your filters.</CardDescription>
+              <CardTitle>Student Export Preview</CardTitle>
+              <CardDescription>
+                Review the filtered student list. {filteredStudents.length} record(s) found.
+              </CardDescription>
             </div>
-            <Button onClick={handleCopyToClipboard} disabled={filteredStudents.length === 0}>
+            <Button onClick={handleCopyToClipboard} disabled={filteredStudents.length === 0} className="w-full sm:w-auto">
               {hasCopied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
               {hasCopied ? 'Copied!' : 'Copy Table Data'}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
+          <div className="mb-4 p-3 bg-muted/60 rounded-md border border-border">
+            <h3 className="text-lg font-semibold text-primary text-center">{generatedHeaderTitle}</h3>
+          </div>
           {filteredStudents.length === 0 ? (
             <p className="text-center text-muted-foreground py-4">No students match your filter criteria.</p>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-md border">
               <table className="min-w-full divide-y divide-border text-sm">
                 <thead className="bg-muted/50">
                   <tr>
