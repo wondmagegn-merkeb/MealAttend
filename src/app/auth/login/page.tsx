@@ -13,29 +13,31 @@ import { Loader2, LogIn, Salad } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, isPasswordChangeRequired } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    if (!email || !password) {
+    if (!userId || !password) {
       toast({
         title: "Missing Fields",
-        description: "Please enter both email and password.",
+        description: "Please enter both User ID and password.",
         variant: "destructive",
       });
       setIsLoading(false);
       return;
     }
-    const success = await login(email, password);
+    const success = await login(userId, password);
     setIsLoading(false);
     if (success) {
-      router.push('/admin'); // Redirect to admin dashboard on successful login
+      // AuthGuard will handle redirection if password change is required
+      // So, we can directly try to push to /admin, AuthGuard will intercept if needed
+      router.push('/admin'); 
     }
   };
 
@@ -52,13 +54,13 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="userId">User ID</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="admin@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="userId"
+                type="text"
+                placeholder="e.g., ADERA/USR/2024/00001"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
                 required
                 disabled={isLoading}
               />
@@ -92,12 +94,11 @@ export default function LoginPage() {
             </a>
           </Link>
            <p className="text-xs text-muted-foreground mt-4">
-            Demo: admin@example.com / password123
+            Hint: Any User ID from seed data / password123
           </p>
         </CardFooter>
       </Card>
     </div>
   );
 }
-
     

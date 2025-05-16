@@ -16,18 +16,33 @@ import {
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/shared/Logo';
 import { Button } from '../ui/button';
+import { useAuth } from '@/hooks/useAuth'; // Import useAuth
 
-const navItems = [
+const navItemsBase = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, tooltip: 'Dashboard Overview' },
   { href: '/admin/attendance', label: 'Attendance', icon: BookUser, tooltip: 'Manage Attendance Records' },
   { href: '/admin/students', label: 'Students', icon: UsersRound, tooltip: 'Manage Students' }, 
-  { href: '/admin/users', label: 'Users', icon: UsersIcon, tooltip: 'Manage Users' },
-  { href: '/admin/departments', label: 'Departments', icon: DepartmentIcon, tooltip: 'Manage Departments' },
+];
+
+const adminOnlyNavItems = [
+  { href: '/admin/users', label: 'Users', icon: UsersIcon, tooltip: 'Manage Users (Admin)' },
+  { href: '/admin/departments', label: 'Departments', icon: DepartmentIcon, tooltip: 'Manage Departments (Admin)' },
+];
+
+const navItemsSettings = [
   { href: '/admin/settings', label: 'Settings', icon: Settings, tooltip: 'Application Settings' },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const { currentUserRole } = useAuth(); // Get current user's role
+
+  let navItems = [...navItemsBase];
+  if (currentUserRole === 'Admin') {
+    navItems = [...navItems, ...adminOnlyNavItems];
+  }
+  navItems = [...navItems, ...navItemsSettings];
+
 
   return (
     <>

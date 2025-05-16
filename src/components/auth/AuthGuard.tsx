@@ -6,71 +6,99 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
-import { AUTH_TOKEN_KEY } from '@/lib/constants';
+import type { User } from '@/types/user';
+
+const PUBLIC_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-password', '/auth/change-password'];
 
 interface AuthGuardProps {
   children: ReactNode;
+  requiredRole?: User['role'];
 }
 
-const PUBLIC_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-password'];
-
-export function AuthGuard({ children }: AuthGuardProps) {
-  const { isAuthenticated, setIsAuthenticated } = useAuth();
+export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
+  const { 
+    isAuthenticated, 
+    setIsAuthenticated, 
+    currentUserId, 
+    currentUserRole, 
+    isPasswordChangeRequired 
+  } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    // This effect runs on the client after initial mount and when isAuthenticated or pathname changes.
-    // It ensures the auth state is correctly synchronized with localStorage and redirects if necessary.
-    let currentToken = null;
-    try {
-        currentToken = localStorage.getItem(AUTH_TOKEN_KEY);
-    } catch (e) {
-        console.error("AuthGuard: localStorage access error", e);
-    }
-    
-    const isTokenValid = !!currentToken;
-
-    if (isAuthenticated === null) { // Initial state, determine from token
-        setIsAuthenticated(isTokenValid);
-        if (!isTokenValid && !PUBLIC_PATHS.includes(pathname)) {
-            router.replace('/auth/login');
-        }
-        return;
+    if (isAuthenticated === null) {
+      // Still determining auth state, do nothing until it's resolved by useAuth's own useEffect
+      return;
     }
 
-    if (isAuthenticated !== isTokenValid) { // State mismatch with token (e.g. token removed externally)
-        setIsAuthenticated(isTokenValid);
-    }
-    
-    if (!isTokenValid && !PUBLIC_PATHS.includes(pathname)) {
+    if (!isAuthenticated && !PUBLIC_PATHS.includes(pathname)) {
       router.replace('/auth/login');
+      return;
     }
 
-  }, [isAuthenticated, pathname, router, setIsAuthenticated]);
+    if (isAuthenticated) {
+      if (isPasswordChangeRequired && pathname !== '/auth/change-password') {
+        router.replace('/auth/change-password');
+        return;
+      }
 
+      if (!isPasswordChangeRequired && pathname === '/auth/change-password') {
+        // If somehow user lands on change-password but doesn't need to, redirect
+        router.replace('/admin');
+        return;
+      }
+
+      if (requiredRole && currentUserRole !== requiredRole) {
+        // User is authenticated but doesn't have the required role
+        toast({
+          title: "Access Denied",
+          description: "You do not have permission to view this page.",
+          variant: "destructive"
+        });
+        router.replace('/admin'); // Or a dedicated access-denied page
+        return;
+      }
+    }
+  }, [isAuthenticated, pathname, router, setIsAuthenticated, requiredRole, currentUserRole, currentUserId, isPasswordChangeRequired]);
+
+
+  // Initial loading state or if conditions for redirect are met but redirect hasn't completed
   if (isAuthenticated === null && !PUBLIC_PATHS.includes(pathname)) {
-    // Show loader if auth state is still being determined and not on a public path
     return (
       <div className="flex flex-col justify-center items-center h-screen bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <p className="text-muted-foreground">Checking authentication...</p>
+        <p className="text-muted-foreground">Verifying access...</p>
+      </div>
+    );
+  }
+  
+  if (isAuthenticated === true && isPasswordChangeRequired && pathname !== '/auth/change-password') {
+    // Show loader while redirecting to change password
+     return (
+      <div className="flex flex-col justify-center items-center h-screen bg-background">
+        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+        <p className="text-muted-foreground">Redirecting to update password...</p>
       </div>
     );
   }
 
-  if (!isAuthenticated && !PUBLIC_PATHS.includes(pathname)) {
-    // This case handles rendering while the redirect is in progress or if auth state is definitively false
-    return (
+  if (isAuthenticated === true && requiredRole && currentUserRole !== requiredRole && !PUBLIC_PATHS.includes(pathname) ) {
+    // Show loader while redirecting due to role mismatch
+     return (
       <div className="flex flex-col justify-center items-center h-screen bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <p className="text-muted-foreground">Redirecting to login...</p>
+        <p className="text-muted-foreground">Checking permissions...</p>
       </div>
     );
   }
 
-  // If authenticated, or on a public path, render children
+
+  // If authenticated (and password change not required or on the change page),
+  // or on a public path, or role check passes, render children
   return <>{children}</>;
 }
 
-    
+// Helper (could be in a different file or here for simplicity)
+// This is a client-side toast function, ensure your ToastProvider is set up
+import { toast } from '@/hooks/use-toast';

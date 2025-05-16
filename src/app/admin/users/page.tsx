@@ -18,6 +18,7 @@ const initialSeedUsers: User[] = [
   { id: 'usr_smp_001', userId: 'ADERA/USR/2024/00001', fullName: 'Alice Admin', department: 'Administration', email: 'alice.admin@example.com', role: 'Admin', profileImageURL: 'https://placehold.co/100x100.png?text=AA', createdAt: new Date('2023-01-10T10:00:00Z').toISOString(), updatedAt: new Date('2023-01-10T10:00:00Z').toISOString() },
   { id: 'usr_smp_002', userId: 'ADERA/USR/2024/00002', fullName: 'Bob Operator', department: 'Kitchen Staff', email: 'bob.operator@example.com', role: 'User', profileImageURL: 'https://placehold.co/100x100.png?text=BO', createdAt: new Date('2023-02-15T11:30:00Z').toISOString(), updatedAt: new Date('2023-02-15T11:30:00Z').toISOString() },
   { id: 'usr_smp_003', userId: 'ADERA/USR/2023/00003', fullName: 'Carol Support', department: 'Serving Team', email: 'carol.support@example.com', role: 'User', profileImageURL: 'https://placehold.co/100x100.png?text=CS', createdAt: new Date('2023-03-20T09:15:00Z').toISOString(), updatedAt: new Date('2023-03-20T09:15:00Z').toISOString() },
+  { id: 'usr_smp_004', userId: 'ADERA/USR/2024/00004', fullName: 'David Manager', department: 'Administration', email: 'david.manager@example.com', role: 'Admin', profileImageURL: 'https://placehold.co/100x100.png?text=DM', createdAt: new Date('2024-01-15T09:00:00Z').toISOString(), updatedAt: new Date('2024-01-15T09:00:00Z').toISOString() },
 ];
 
 type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'createdAt';
@@ -189,7 +190,7 @@ export default function UsersPage() {
           <h2 className="text-3xl font-semibold tracking-tight text-primary flex items-center">
             <UsersIcon className="mr-3 h-8 w-8" /> Manage Users
           </h2>
-          <p className="text-muted-foreground">Add, edit, or remove user records.</p>
+          <p className="text-muted-foreground">Add, edit, or remove user records. Access restricted to Admins.</p>
         </div>
         <Button asChild size="lg" className="shadow-md hover:shadow-lg transition-shadow">
           <Link href="/admin/users/new">
