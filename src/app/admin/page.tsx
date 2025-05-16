@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -6,22 +7,25 @@ import { DashboardMetrics } from "@/components/admin/DashboardMetrics";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Loader2, Users, CalendarDays, BarChartBig, FileDown } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip as RechartsTooltip, Legend as RechartsLegend } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
+import { Loader2, Users, CalendarDays, LineChart as LineChartIcon, FileDown } from "lucide-react"; // Changed BarChartBig to LineChartIcon
+import { LineChart, Line, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip as RechartsTooltip, Legend as RechartsLegend } from "recharts"; // Changed BarChart, Bar
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, type ChartConfig } from "@/components/ui/chart";
 import type { Student } from '@/types/student';
-import type { AttendanceRecord } from '@/components/admin/AttendanceTable'; // Assuming this is defined
+import type { AttendanceRecord } from '@/components/admin/AttendanceTable';
 import { STUDENTS_STORAGE_KEY, ATTENDANCE_RECORDS_STORAGE_KEY } from '@/lib/constants';
-import { format, getDaysInMonth, getMonth, getYear, parseISO, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
+import { format, getDaysInMonth, getMonth, getYear, parseISO } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 const CURRENT_GREGORIAN_YEAR = new Date().getFullYear();
-const CURRENT_GREGORIAN_MONTH = new Date().getMonth(); // 0-indexed
+const CURRENT_GREGORIAN_MONTH = new Date().getMonth(); // 0-indexed (January is 0)
 
-// Helper to extract year from student ID (e.g., ADERA/STU/2024/00001 -> 2024)
+const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const shortMonthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+
 const getYearFromStudentId = (studentId: string): string | null => {
   const parts = studentId.split('/');
   if (parts.length === 4 && /^\d{4}$/.test(parts[2])) {
@@ -34,6 +38,7 @@ export default function AdminDashboardPage() {
   const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [allAttendanceRecords, setAllAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [selectedYear, setSelectedYear] = useState<string>(String(CURRENT_GREGORIAN_YEAR));
+  const [selectedMonth, setSelectedMonth] = useState<number>(CURRENT_GREGORIAN_MONTH); // New state for selected month
   const [isMounted, setIsMounted] = useState(false);
   const { toast } = useToast();
 
@@ -73,47 +78,43 @@ export default function AdminDashboardPage() {
     return allStudents.filter(student => getYearFromStudentId(student.studentId) === selectedYear).length;
   }, [allStudents, selectedYear]);
 
-  const yearToFilterForCharts = useMemo(() => {
+  const yearForCharts = useMemo(() => {
     return selectedYear === 'all_years' ? CURRENT_GREGORIAN_YEAR : parseInt(selectedYear);
   }, [selectedYear]);
 
-  // Data for "This Month's Attendance by Day"
+  // Data for "Daily Attendance by Day" for the selectedMonth and yearForCharts
   const dailyAttendanceData = useMemo(() => {
-    const monthToFilter = selectedYear === 'all_years' ? CURRENT_GREGORIAN_MONTH : CURRENT_GREGORIAN_MONTH; // Always current month for this chart
-    const yearForDailyChart = yearToFilterForCharts;
-
     const recordsInSelectedMonthAndYear = allAttendanceRecords.filter(record => {
       const recordDate = parseISO(record.date);
-      return getYear(recordDate) === yearForDailyChart && getMonth(recordDate) === monthToFilter;
+      return getYear(recordDate) === yearForCharts && getMonth(recordDate) === selectedMonth;
     });
 
-    const daysInMonth = getDaysInMonth(new Date(yearForDailyChart, monthToFilter));
+    const daysInSelectedMonth = getDaysInMonth(new Date(yearForCharts, selectedMonth));
     const dailyCounts: { day: string; count: number }[] = [];
 
-    for (let i = 1; i <= daysInMonth; i++) {
+    for (let i = 1; i <= daysInSelectedMonth; i++) {
       const dayStr = i.toString().padStart(2, '0');
       const count = recordsInSelectedMonthAndYear.filter(r => format(parseISO(r.date), 'dd') === dayStr).length;
       dailyCounts.push({ day: dayStr, count });
     }
     return dailyCounts;
-  }, [allAttendanceRecords, yearToFilterForCharts, selectedYear]);
+  }, [allAttendanceRecords, yearForCharts, selectedMonth]);
 
   // Data for "[Selected Year]'s Attendance by Month"
   const monthlyAttendanceData = useMemo(() => {
     const recordsInSelectedYear = allAttendanceRecords.filter(record => {
       const recordDate = parseISO(record.date);
-      return getYear(recordDate) === yearToFilterForCharts;
+      return getYear(recordDate) === yearForCharts;
     });
 
     const monthlyCounts: { month: string; count: number }[] = [];
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
+    
     for (let i = 0; i < 12; i++) {
       const count = recordsInSelectedYear.filter(r => getMonth(parseISO(r.date)) === i).length;
-      monthlyCounts.push({ month: monthNames[i], count });
+      monthlyCounts.push({ month: shortMonthNames[i], count });
     }
     return monthlyCounts;
-  }, [allAttendanceRecords, yearToFilterForCharts]);
+  }, [allAttendanceRecords, yearForCharts]);
 
 
   const chartConfig = {
@@ -124,10 +125,11 @@ export default function AdminDashboardPage() {
     if (!isMounted) return;
     const doc = new jsPDF();
     const currentTimestamp = format(new Date(), "yyyy-MM-dd HH:mm");
-    const yearDisplay = selectedYear === 'all_years' ? 'All Years (Charts for Current Year)' : selectedYear;
+    const yearDisplay = selectedYear === 'all_years' ? `All Years (Charts for ${CURRENT_GREGORIAN_YEAR})` : selectedYear;
+    const monthDisplay = monthNames[selectedMonth];
 
     doc.setFontSize(18);
-    doc.text(`Dashboard Export - Year: ${yearDisplay}`, 14, 20);
+    doc.text(`Dashboard Export - Year: ${yearDisplay}, Month: ${monthDisplay}`, 14, 20);
     doc.setFontSize(10);
     doc.text(`Exported on: ${currentTimestamp}`, 14, 26);
     doc.setFontSize(12);
@@ -136,7 +138,7 @@ export default function AdminDashboardPage() {
     if (dailyAttendanceData.length > 0) {
         doc.addPage();
         doc.setFontSize(14);
-        doc.text(`Daily Attendance - ${format(new Date(yearToFilterForCharts, CURRENT_GREGORIAN_MONTH), 'MMMM yyyy')}`, 14, 20);
+        doc.text(`Daily Attendance - ${monthDisplay} ${yearForCharts}`, 14, 20);
         autoTable(doc, {
             startY: 25,
             head: [['Day', 'Attendance Count']],
@@ -149,7 +151,7 @@ export default function AdminDashboardPage() {
     if (monthlyAttendanceData.length > 0) {
         doc.addPage();
         doc.setFontSize(14);
-        doc.text(`Monthly Attendance - Year ${yearToFilterForCharts}`, 14, 20);
+        doc.text(`Monthly Attendance - Year ${yearForCharts}`, 14, 20);
         autoTable(doc, {
             startY: 25,
             head: [['Month', 'Attendance Count']],
@@ -159,19 +161,21 @@ export default function AdminDashboardPage() {
         });
     }
     
-    doc.save(`dashboard_export_${selectedYear}_${format(new Date(), "yyyyMMddHHmmss")}.pdf`);
+    doc.save(`dashboard_export_${selectedYear}_${shortMonthNames[selectedMonth]}_${format(new Date(), "yyyyMMddHHmmss")}.pdf`);
     toast({ title: "PDF Exported", description: "Dashboard data summary exported." });
-  }, [isMounted, selectedYear, totalStudentsInSelectedYear, dailyAttendanceData, monthlyAttendanceData, yearToFilterForCharts, toast]);
+  }, [isMounted, selectedYear, selectedMonth, totalStudentsInSelectedYear, dailyAttendanceData, monthlyAttendanceData, yearForCharts, toast]);
   
   const handleExportDashboardExcel = useCallback(() => {
     if (!isMounted) return;
     const wb = XLSX.utils.book_new();
-    const yearDisplay = selectedYear === 'all_years' ? 'All Years (Charts for Current Year)' : selectedYear;
+    const yearDisplay = selectedYear === 'all_years' ? `All Years (Charts for ${CURRENT_GREGORIAN_YEAR})` : selectedYear;
+    const monthDisplay = monthNames[selectedMonth];
 
     // Summary Sheet
     const summaryData = [
         ["Dashboard Export Summary"],
         [`Year Selected: ${yearDisplay}`],
+        [`Month Selected for Daily Chart: ${monthDisplay}`],
         [`Exported on: ${format(new Date(), "yyyy-MM-dd HH:mm")}`],
         [],
         [`Total Students (${selectedYear === 'all_years' ? 'All Time' : 'Year ' + selectedYear})`, totalStudentsInSelectedYear],
@@ -183,7 +187,7 @@ export default function AdminDashboardPage() {
     // Daily Attendance Sheet
     if (dailyAttendanceData.length > 0) {
         const dailyDataForSheet = [
-            [`Daily Attendance - ${format(new Date(yearToFilterForCharts, CURRENT_GREGORIAN_MONTH), 'MMMM yyyy')}`],
+            [`Daily Attendance - ${monthDisplay} ${yearForCharts}`],
             ['Day', 'Attendance Count'],
             ...dailyAttendanceData.map(d => [d.day, d.count]),
         ];
@@ -195,7 +199,7 @@ export default function AdminDashboardPage() {
     // Monthly Attendance Sheet
     if (monthlyAttendanceData.length > 0) {
         const monthlyDataForSheet = [
-            [`Monthly Attendance - Year ${yearToFilterForCharts}`],
+            [`Monthly Attendance - Year ${yearForCharts}`],
             ['Month', 'Attendance Count'],
             ...monthlyAttendanceData.map(m => [m.month, m.count]),
         ];
@@ -204,9 +208,9 @@ export default function AdminDashboardPage() {
         XLSX.utils.book_append_sheet(wb, monthlyWs, "Monthly Attendance");
     }
     
-    XLSX.writeFile(wb, `dashboard_export_${selectedYear}_${format(new Date(), "yyyyMMddHHmmss")}.xlsx`);
+    XLSX.writeFile(wb, `dashboard_export_${selectedYear}_${shortMonthNames[selectedMonth]}_${format(new Date(), "yyyyMMddHHmmss")}.xlsx`);
     toast({ title: "Excel Exported", description: "Dashboard data summary exported." });
-  }, [isMounted, selectedYear, totalStudentsInSelectedYear, dailyAttendanceData, monthlyAttendanceData, yearToFilterForCharts, toast]);
+  }, [isMounted, selectedYear, selectedMonth, totalStudentsInSelectedYear, dailyAttendanceData, monthlyAttendanceData, yearForCharts, toast]);
 
 
   if (!isMounted) {
@@ -224,16 +228,26 @@ export default function AdminDashboardPage() {
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-3xl font-semibold tracking-tight text-primary">Dashboard Overview</h2>
-        <div className="flex gap-2 items-center w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row gap-2 items-center w-full sm:w-auto">
             <Select value={selectedYear} onValueChange={setSelectedYear}>
-                <SelectTrigger className="w-full sm:w-[180px]" id="year-select">
+                <SelectTrigger className="w-full sm:w-[200px]" id="year-select">
                 <SelectValue placeholder="Select Year" />
                 </SelectTrigger>
                 <SelectContent>
-                <SelectItem value="all_years">All Years (Charts for Current)</SelectItem>
+                <SelectItem value="all_years">All Years (Charts for Current Year)</SelectItem>
                 {uniqueAdmissionYears.map(year => (
                     <SelectItem key={year} value={year}>{year}</SelectItem>
                 ))}
+                </SelectContent>
+            </Select>
+            <Select value={String(selectedMonth)} onValueChange={(value) => setSelectedMonth(Number(value))}>
+                <SelectTrigger className="w-full sm:w-[180px]" id="month-select">
+                    <SelectValue placeholder="Select Month" />
+                </SelectTrigger>
+                <SelectContent>
+                    {monthNames.map((month, index) => (
+                        <SelectItem key={index} value={String(index)}>{month}</SelectItem>
+                    ))}
                 </SelectContent>
             </Select>
             <Button onClick={handleExportDashboardPdf} variant="outline" size="sm"><FileDown className="mr-2 h-4 w-4" />PDF</Button>
@@ -241,9 +255,8 @@ export default function AdminDashboardPage() {
         </div>
       </div>
       
-      <DashboardMetrics /> {/* Existing generic metrics */}
+      <DashboardMetrics />
 
-      {/* Total Students for Selected Year Metric */}
       <Card className="shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
@@ -260,55 +273,67 @@ export default function AdminDashboardPage() {
       </Card>
 
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-        {/* Daily Attendance Chart */}
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
                 <CalendarDays className="h-5 w-5 text-primary" />
-                Attendance: {format(new Date(yearToFilterForCharts, CURRENT_GREGORIAN_MONTH), 'MMMM yyyy')}
+                Daily Attendance: {monthNames[selectedMonth]} {yearForCharts}
             </CardTitle>
-            <CardDescription>Daily meal attendance counts for the current month of the selected/current year.</CardDescription>
+            <CardDescription>Daily meal attendance (Line Chart) for {monthNames[selectedMonth]}, {yearForCharts}.</CardDescription>
           </CardHeader>
           <CardContent>
             {dailyAttendanceData.length > 0 ? (
               <ChartContainer config={chartConfig} className="h-[300px] w-full">
-                <BarChart data={dailyAttendanceData} accessibilityLayer>
-                  <CartesianGrid vertical={false} />
+                <LineChart data={dailyAttendanceData} accessibilityLayer margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3"/>
                   <XAxis dataKey="day" tickLine={false} tickMargin={10} axisLine={false} />
-                  <YAxis allowDecimals={false} />
+                  <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={30} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="count" fill="var(--color-count)" radius={4} />
-                </BarChart>
+                  <Line 
+                    type="monotone" 
+                    dataKey="count" 
+                    stroke="var(--color-count)" 
+                    strokeWidth={2}
+                    dot={{ r: 4, fill: "var(--color-count)" }}
+                    activeDot={{ r: 6, stroke: "var(--background)", fill: "var(--color-count)", strokeWidth: 2 }} 
+                  />
+                </LineChart>
               </ChartContainer>
             ) : (
-              <p className="text-center text-muted-foreground py-10">No attendance data for this month.</p>
+              <p className="text-center text-muted-foreground py-10">No attendance data for {monthNames[selectedMonth]}, {yearForCharts}.</p>
             )}
           </CardContent>
         </Card>
 
-        {/* Monthly Attendance Chart */}
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-                <BarChartBig className="h-5 w-5 text-primary" />
-                Attendance: Year {yearToFilterForCharts}
+                <LineChartIcon className="h-5 w-5 text-primary" />
+                Monthly Attendance: Year {yearForCharts}
             </CardTitle>
-            <CardDescription>Monthly meal attendance counts for the selected/current year.</CardDescription>
+            <CardDescription>Monthly meal attendance (Line Chart) for the year {yearForCharts}.</CardDescription>
           </CardHeader>
           <CardContent>
             {monthlyAttendanceData.length > 0 ? (
             <ChartContainer config={chartConfig} className="h-[300px] w-full">
-              <BarChart data={monthlyAttendanceData} accessibilityLayer>
-                <CartesianGrid vertical={false} />
+              <LineChart data={monthlyAttendanceData} accessibilityLayer margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                <CartesianGrid vertical={false} strokeDasharray="3 3" />
                 <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
-                <YAxis allowDecimals={false} />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={30} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <RechartsLegend content={<ChartLegendContent />} />
-                <Bar dataKey="count" fill="var(--color-count)" radius={4} />
-              </BarChart>
+                <Line 
+                  type="monotone" 
+                  dataKey="count" 
+                  stroke="var(--color-count)" 
+                  strokeWidth={2}
+                  dot={{ r: 4, fill: "var(--color-count)" }}
+                  activeDot={{ r: 6, stroke: "var(--background)", fill: "var(--color-count)", strokeWidth: 2 }}
+                />
+              </LineChart>
             </ChartContainer>
             ) : (
-              <p className="text-center text-muted-foreground py-10">No attendance data for this year.</p>
+              <p className="text-center text-muted-foreground py-10">No attendance data for the year {yearForCharts}.</p>
             )}
           </CardContent>
         </Card>
@@ -316,3 +341,6 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
+
+    
