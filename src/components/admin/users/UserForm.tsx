@@ -41,7 +41,7 @@ export type UserFormData = z.infer<typeof userFormSchema>;
 
 interface UserFormProps {
   onSubmit: (data: UserFormData) => void;
-  initialData?: User | null; // This will contain the full User object including userId
+  initialData?: User | null;
   isLoading?: boolean;
   submitButtonText?: string;
 }
@@ -65,7 +65,6 @@ export function UserForm({ onSubmit, initialData, isLoading, submitButtonText = 
   });
 
   useEffect(() => {
-    // Load departments from localStorage
     try {
       const storedDepartmentsRaw = localStorage.getItem(DEPARTMENTS_STORAGE_KEY);
       if (storedDepartmentsRaw) {
@@ -217,5 +216,3 @@ export function UserForm({ onSubmit, initialData, isLoading, submitButtonText = 
     </Card>
   );
 }
-
-    

@@ -82,7 +82,7 @@ export default function UsersPage() {
           user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
           user.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
           user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.userId.toLowerCase().includes(searchTerm.toLowerCase()) || // Added search by userId
+          user.userId.toLowerCase().includes(searchTerm.toLowerCase()) || 
           user.role.toLowerCase().includes(searchTerm.toLowerCase()) 
         ).length / ITEMS_PER_PAGE);
 
@@ -165,9 +165,9 @@ export default function UsersPage() {
   }, [filteredAndSortedUsers, currentPage]);
 
   useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) { // Added totalPages > 0 condition
+    if (currentPage > totalPages && totalPages > 0) { 
       setCurrentPage(totalPages);
-    } else if (currentPage === 0 && totalPages > 0) { // Handle case where currentPage might become 0
+    } else if (currentPage === 0 && totalPages > 0) { 
         setCurrentPage(1);
     }
   }, [currentPage, totalPages]);
@@ -262,5 +262,3 @@ export default function UsersPage() {
     </div>
   );
 }
-
-    
