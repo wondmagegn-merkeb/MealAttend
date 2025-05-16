@@ -13,13 +13,13 @@ import type { Student } from '@/types/student';
 import type { AttendanceRecord } from '@/components/admin/AttendanceTable';
 import { STUDENTS_STORAGE_KEY, ATTENDANCE_RECORDS_STORAGE_KEY } from '@/lib/constants';
 import { format } from 'date-fns';
-import jsQR from 'jsqr'; // User needs to `npm install jsqr` and `npm install --save-dev @types/jsqr`
+import jsQR from 'jsqr'; 
 
 type MealType = "Breakfast" | "Lunch" | "Dinner";
 const SCAN_COOLDOWN_MS = 5000; // Cooldown period of 5 seconds after a successful processing
 
 export function QrScannerClient() {
-  const [isProcessing, setIsProcessing] = useState(false); // Renamed from isLoading for clarity
+  const [isProcessing, setIsProcessing] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<MealType>("Lunch");
   const { toast } = useToast();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -29,10 +29,14 @@ export function QrScannerClient() {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [lastProcessTime, setLastProcessTime] = useState<number>(0);
 
-  const playSound = (type: 'success' | 'error') => {
-    console.log(`Playing ${type} sound (placeholder)`);
+  const playSound = (type: 'success' | 'error' | 'notFound' | 'alreadyRecorded') => {
+    console.log(`Playing sound: ${type} (placeholder for actual sound file)`);
     // Example for actual sound (uncomment and add sound files to /public/sounds/):
-    // const audio = new Audio(`/sounds/${type}.mp3`);
+    // let soundFile = type;
+    // if (type === 'notFound' || type === 'alreadyRecorded') {
+    //    soundFile = 'error'; // Or have specific files: 'notFound.mp3', 'alreadyRecorded.mp3'
+    // }
+    // const audio = new Audio(`/sounds/${soundFile}.mp3`);
     // audio.play().catch(e => console.error(`Error playing ${type} sound:`, e));
   };
 
@@ -51,7 +55,6 @@ export function QrScannerClient() {
           studentId: student.studentId,
           studentName: student.name,
           studentAvatar: student.profileImageURL,
-          // studentEmail removed
           date: format(new Date(), 'yyyy-MM-dd'),
           mealType: mealType,
           scannedAt: format(new Date(), 'hh:mm a'),
@@ -74,7 +77,7 @@ export function QrScannerClient() {
             description: `${student.name} has already been marked present for ${mealType} today.`,
             variant: "default",
           });
-          playSound('error');
+          playSound('alreadyRecorded');
         } else {
           attendanceRecords.unshift(newAttendanceRecord);
           localStorage.setItem(ATTENDANCE_RECORDS_STORAGE_KEY, JSON.stringify(attendanceRecords));
@@ -91,7 +94,7 @@ export function QrScannerClient() {
           description: `Student with scanned QR ID '${studentInternalId}' not found. Please ensure the QR code is valid.`,
           variant: "destructive",
         });
-        playSound('error');
+        playSound('notFound');
       }
     } catch (error) {
       console.error("Error processing attendance:", error);
@@ -109,7 +112,9 @@ export function QrScannerClient() {
 
   const attemptAutoScan = useCallback(() => {
     if (!videoRef.current || !canvasRef.current || !hasCameraPermission || videoRef.current.paused || videoRef.current.ended || isProcessing) {
-      if (hasCameraPermission) animationFrameIdRef.current = requestAnimationFrame(attemptAutoScan);
+      if (hasCameraPermission && videoRef.current && !videoRef.current.paused && !isProcessing) { // Ensure loop continues if conditions might become true soon
+        animationFrameIdRef.current = requestAnimationFrame(attemptAutoScan);
+      }
       return;
     }
 
@@ -121,13 +126,13 @@ export function QrScannerClient() {
     
     const canvas = canvasRef.current;
     const video = videoRef.current;
-    const context = canvas.getContext('2d', { willReadFrequently: true }); // willReadFrequently for performance
+    const context = canvas.getContext('2d', { willReadFrequently: true });
 
     if (context) {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       
-      if (canvas.width === 0 || canvas.height === 0) { // Video not ready
+      if (canvas.width === 0 || canvas.height === 0) { 
         animationFrameIdRef.current = requestAnimationFrame(attemptAutoScan);
         return;
       }
@@ -137,7 +142,7 @@ export function QrScannerClient() {
       
       try {
         const code = jsQR(imageData.data, imageData.width, imageData.height, {
-          inversionAttempts: "dontInvert", // Or "attemptBoth" if needed
+          inversionAttempts: "dontInvert", 
         });
 
         if (code && code.data) {
@@ -148,7 +153,6 @@ export function QrScannerClient() {
           }
         }
       } catch (e) {
-        // jsQR might throw errors on certain images, ignore them and continue scanning
         // console.error("jsQR error:", e); 
       }
     }
@@ -210,7 +214,7 @@ export function QrScannerClient() {
         cancelAnimationFrame(animationFrameIdRef.current);
       }
     };
-  }, [hasCameraPermission, attemptAutoScan, isProcessing]); // Added isProcessing
+  }, [hasCameraPermission, attemptAutoScan, isProcessing]);
 
   return (
     <Card className="w-full max-w-md shadow-2xl">
@@ -222,7 +226,7 @@ export function QrScannerClient() {
         <CardDescription>
           Select meal type. Auto-scanning will begin if camera is active.
           <br />
-          <span className="text-xs text-muted-foreground">Make sure to install `jsqr` and `@types/jsqr`.</span>
+          <span className="text-xs text-muted-foreground">Ensure `jsqr` is installed for QR detection.</span>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -265,7 +269,7 @@ export function QrScannerClient() {
           />
           <canvas ref={canvasRef} style={{ display: 'none' }} />
 
-          {hasCameraPermission === true && !videoRef.current?.srcObject && (
+          {hasCameraPermission === true && videoRef.current && !videoRef.current.srcObject && (
              <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground p-4 text-center bg-black/50">
               <CameraIcon className="h-16 w-16 mb-2" />
               <p>Initializing camera...</p>
@@ -307,4 +311,5 @@ export function QrScannerClient() {
   );
 }
 
-  
+
+    
