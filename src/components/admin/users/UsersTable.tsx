@@ -95,7 +95,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
           <TableBody>
             {users.map((user) => (
               <TableRow key={user.id}>
-                <TableCell className="font-mono text-xs">{user.userId}</TableCell>
+                <TableCell className="font-mono text-xs">{user.userId || ''}</TableCell>
                 <TableCell className="font-medium">{user.fullName}</TableCell>
                 <TableCell>{user.department}</TableCell>
                 <TableCell>{user.email}</TableCell>
@@ -158,5 +158,3 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
     </TooltipProvider>
   );
 }
-
-    
