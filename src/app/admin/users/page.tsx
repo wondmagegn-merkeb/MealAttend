@@ -15,12 +15,12 @@ import { USERS_STORAGE_KEY } from '@/lib/constants';
 
 // Initial seed data if localStorage is empty
 const initialSeedUsers: User[] = [
-  { id: 'usr_smp_001', fullName: 'Alice Admin', department: 'Administration', email: 'alice.admin@example.com', role: 'Admin', createdAt: new Date('2023-01-10T10:00:00Z').toISOString(), updatedAt: new Date('2023-01-10T10:00:00Z').toISOString() },
-  { id: 'usr_smp_002', fullName: 'Bob Operator', department: 'Kitchen Staff', email: 'bob.operator@example.com', role: 'User', createdAt: new Date('2023-02-15T11:30:00Z').toISOString(), updatedAt: new Date('2023-02-15T11:30:00Z').toISOString() },
-  { id: 'usr_smp_003', fullName: 'Carol Support', department: 'Serving Team', email: 'carol.support@example.com', role: 'User', createdAt: new Date('2023-03-20T09:15:00Z').toISOString(), updatedAt: new Date('2023-03-20T09:15:00Z').toISOString() },
+  { id: 'usr_smp_001', userId: 'ADERA/USR/2024/00001', fullName: 'Alice Admin', department: 'Administration', email: 'alice.admin@example.com', role: 'Admin', createdAt: new Date('2023-01-10T10:00:00Z').toISOString(), updatedAt: new Date('2023-01-10T10:00:00Z').toISOString() },
+  { id: 'usr_smp_002', userId: 'ADERA/USR/2024/00002', fullName: 'Bob Operator', department: 'Kitchen Staff', email: 'bob.operator@example.com', role: 'User', createdAt: new Date('2023-02-15T11:30:00Z').toISOString(), updatedAt: new Date('2023-02-15T11:30:00Z').toISOString() },
+  { id: 'usr_smp_003', userId: 'ADERA/USR/2023/00003', fullName: 'Carol Support', department: 'Serving Team', email: 'carol.support@example.com', role: 'User', createdAt: new Date('2023-03-20T09:15:00Z').toISOString(), updatedAt: new Date('2023-03-20T09:15:00Z').toISOString() },
 ];
 
-type SortableUserKeys = 'fullName' | 'department' | 'email' | 'role' | 'createdAt';
+type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'createdAt';
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -81,7 +81,9 @@ export default function UsersPage() {
         const totalPagesAfterDelete = Math.ceil(updatedUsers.filter(user =>
           user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
           user.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchTerm.toLowerCase())
+          user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.userId.toLowerCase().includes(searchTerm.toLowerCase()) || // Added search by userId
+          user.role.toLowerCase().includes(searchTerm.toLowerCase()) 
         ).length / ITEMS_PER_PAGE);
 
         if (currentPage > totalPagesAfterDelete && totalPagesAfterDelete > 0) {
@@ -123,6 +125,7 @@ export default function UsersPage() {
     if (searchTerm) {
       const lowerSearchTerm = searchTerm.toLowerCase();
       processedUsers = processedUsers.filter(user =>
+        user.userId.toLowerCase().includes(lowerSearchTerm) ||
         user.fullName.toLowerCase().includes(lowerSearchTerm) ||
         user.department.toLowerCase().includes(lowerSearchTerm) ||
         user.email.toLowerCase().includes(lowerSearchTerm) ||
@@ -162,8 +165,10 @@ export default function UsersPage() {
   }, [filteredAndSortedUsers, currentPage]);
 
   useEffect(() => {
-    if (currentPage > totalPages) {
+    if (currentPage > totalPages && totalPages > 0) { // Added totalPages > 0 condition
       setCurrentPage(totalPages);
+    } else if (currentPage === 0 && totalPages > 0) { // Handle case where currentPage might become 0
+        setCurrentPage(1);
     }
   }, [currentPage, totalPages]);
 
@@ -201,7 +206,7 @@ export default function UsersPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search by name, department, email or role..."
+              placeholder="Search by User ID, name, department, email or role..."
               value={searchTerm}
               onChange={handleSearchChange}
               className="pl-10 w-full sm:w-1/2 md:w-1/3"
@@ -257,3 +262,5 @@ export default function UsersPage() {
     </div>
   );
 }
+
+    

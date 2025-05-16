@@ -20,9 +20,14 @@ export default function NewUserPage() {
     setIsLoading(true);
     
     setTimeout(() => {
-      const newUserId = `user_${Date.now()}`;
+      const internalId = `user_${Date.now()}`;
+      const currentYear = new Date().getFullYear();
+      const serial = Date.now().toString().slice(-5);
+      const formattedUserId = `ADERA/USR/${currentYear}/${serial}`;
+
       const newUser: User = {
-        id: newUserId, 
+        id: internalId, 
+        userId: formattedUserId,
         ...data, // includes fullName, department, email, role
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -36,7 +41,7 @@ export default function NewUserPage() {
         
         toast({
           title: "User Added",
-          description: `${data.fullName} has been successfully added.`,
+          description: `${data.fullName} has been successfully added with ID ${formattedUserId}.`,
         });
         router.push('/admin/users');
       } catch (error) {
@@ -57,7 +62,7 @@ export default function NewUserPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-semibold tracking-tight text-primary">Add New User</h2>
-          <p className="text-muted-foreground">Fill in the details to add a new user record.</p>
+          <p className="text-muted-foreground">Fill in the details to add a new user record. Formatted User ID will be auto-generated.</p>
         </div>
         <Button variant="outline" asChild>
           <Link href="/admin/users">
@@ -74,3 +79,5 @@ export default function NewUserPage() {
     </div>
   );
 }
+
+    

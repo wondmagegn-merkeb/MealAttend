@@ -41,7 +41,7 @@ export type UserFormData = z.infer<typeof userFormSchema>;
 
 interface UserFormProps {
   onSubmit: (data: UserFormData) => void;
-  initialData?: User | null;
+  initialData?: User | null; // This will contain the full User object including userId
   isLoading?: boolean;
   submitButtonText?: string;
 }
@@ -51,11 +51,16 @@ export function UserForm({ onSubmit, initialData, isLoading, submitButtonText = 
 
   const form = useForm<UserFormData>({
     resolver: zodResolver(userFormSchema),
-    defaultValues: initialData || {
+    defaultValues: initialData ? {
+      fullName: initialData.fullName,
+      department: initialData.department, 
+      email: initialData.email,
+      role: initialData.role,
+    } : {
       fullName: "",
       department: "", 
       email: "",
-      role: "User", // Default role for new users
+      role: "User", 
     },
   });
 
@@ -95,6 +100,17 @@ export function UserForm({ onSubmit, initialData, isLoading, submitButtonText = 
       <CardContent className="pt-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {initialData?.userId && (
+              <FormItem>
+                <FormLabel>User ID (ADERA Format)</FormLabel>
+                <FormControl>
+                  <Input type="text" value={initialData.userId} readOnly className="bg-muted/50" />
+                </FormControl>
+                <FormDescription>
+                  This ID is system-generated and cannot be changed.
+                </FormDescription>
+              </FormItem>
+            )}
             <FormField
               control={form.control}
               name="fullName"
@@ -201,3 +217,5 @@ export function UserForm({ onSubmit, initialData, isLoading, submitButtonText = 
     </Card>
   );
 }
+
+    

@@ -17,7 +17,7 @@ import React from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 
-type SortableUserKeys = 'fullName' | 'department' | 'email' | 'role' | 'createdAt';
+type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'createdAt';
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -57,9 +57,9 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
     return sortConfig.direction === 'ascending' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
   };
 
-  const SortableTableHead = ({ columnKey, children }: { columnKey: SortableUserKeys, children: React.ReactNode }) => (
+  const SortableTableHead = ({ columnKey, children, className }: { columnKey: SortableUserKeys, children: React.ReactNode, className?: string }) => (
     <TableHead
-      className="cursor-pointer hover:bg-muted/50 transition-colors group"
+      className={`cursor-pointer hover:bg-muted/50 transition-colors group ${className}`}
       onClick={() => onSort(columnKey)}
     >
       <div className="flex items-center">
@@ -83,6 +83,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
         <Table>
           <TableHeader>
             <TableRow>
+              <SortableTableHead columnKey="userId" className="w-[200px]">User ID</SortableTableHead>
               <SortableTableHead columnKey="fullName">Full Name</SortableTableHead>
               <SortableTableHead columnKey="department">Department</SortableTableHead>
               <SortableTableHead columnKey="email">Email</SortableTableHead>
@@ -94,6 +95,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
           <TableBody>
             {users.map((user) => (
               <TableRow key={user.id}>
+                <TableCell className="font-mono text-xs">{user.userId}</TableCell>
                 <TableCell className="font-medium">{user.fullName}</TableCell>
                 <TableCell>{user.department}</TableCell>
                 <TableCell>{user.email}</TableCell>
@@ -156,3 +158,5 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
     </TooltipProvider>
   );
 }
+
+    
