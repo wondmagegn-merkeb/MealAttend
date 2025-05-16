@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { PlusCircle, Users, Loader2, Search, ChevronLeft, ChevronRight, CreditCard } from "lucide-react";
+import { PlusCircle, Users, Loader2, Search, ChevronLeft, ChevronRight, CreditCard, FileText } from "lucide-react";
 import { StudentsTable } from "@/components/admin/students/StudentsTable";
 import type { Student } from "@/types/student";
 import { useToast } from "@/hooks/use-toast";
@@ -209,6 +209,11 @@ export default function StudentsPage() {
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
            <Button asChild size="lg" variant="outline" className="shadow-md hover:shadow-lg transition-shadow">
+            <Link href="/admin/students/export">
+              <FileText className="mr-2 h-5 w-5" /> Export Student List
+            </Link>
+          </Button>
+           <Button asChild size="lg" variant="outline" className="shadow-md hover:shadow-lg transition-shadow">
             <Link href="/admin/students/view-all-ids">
               <CreditCard className="mr-2 h-5 w-5" /> View All ID Cards
             </Link>
@@ -286,5 +291,7 @@ export default function StudentsPage() {
   );
 }
 
+
+    
 
     
