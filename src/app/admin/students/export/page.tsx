@@ -119,7 +119,7 @@ export default function ExportStudentsPage() {
     }
 
     // Headers for TSV
-    const headers = ["Student ID", "Name", "Gender", "Class"];
+    const headers = ["Student ID", "Name", "Gender", "Grade"];
     const dataRows = filteredStudents.map(student => 
       [student.studentId, student.name, student.gender, student.class].join('\t')
     );
@@ -150,7 +150,7 @@ export default function ExportStudentsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-primary">Export Student List</h1>
-          <p className="text-muted-foreground">Filter students by class and/or year, then copy the data.</p>
+          <p className="text-muted-foreground">Filter students by grade and/or year, then copy the data.</p>
         </div>
         <Button variant="outline" asChild>
           <Link href="/admin/students">
@@ -163,17 +163,17 @@ export default function ExportStudentsPage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Filter Options</CardTitle>
-          <CardDescription>Select class and year to filter the student list for export.</CardDescription>
+          <CardDescription>Select grade and year to filter the student list for export.</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="class-filter">Filter by Class</Label>
+            <Label htmlFor="class-filter">Filter by Grade</Label>
             <Select value={selectedClass} onValueChange={setSelectedClass}>
               <SelectTrigger id="class-filter">
-                <SelectValue placeholder="Select Class" />
+                <SelectValue placeholder="Select Grade" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Classes</SelectItem>
+                <SelectItem value="all">All Grades</SelectItem>
                 {uniqueClasses.map(cls => (
                   <SelectItem key={cls} value={cls}>{cls}</SelectItem>
                 ))}
@@ -221,7 +221,7 @@ export default function ExportStudentsPage() {
                     <th className="px-4 py-2 text-left font-medium text-muted-foreground">Student ID</th>
                     <th className="px-4 py-2 text-left font-medium text-muted-foreground">Name</th>
                     <th className="px-4 py-2 text-left font-medium text-muted-foreground">Gender</th>
-                    <th className="px-4 py-2 text-left font-medium text-muted-foreground">Class</th>
+                    <th className="px-4 py-2 text-left font-medium text-muted-foreground">Grade</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border bg-background">
@@ -242,5 +242,4 @@ export default function ExportStudentsPage() {
     </div>
   );
 }
-
     

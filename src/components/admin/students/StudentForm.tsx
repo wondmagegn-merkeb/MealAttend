@@ -28,40 +28,45 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
-// Schema for the form data itself
 const studentFormSchema = z.object({
   name: z.string().min(1, { message: "Full Name is required." }),
   gender: z.enum(['Male', 'Female', 'Other', ''], { errorMap: () => ({ message: "Please select a gender." }) }).default(''),
-  classNumber: z.string().regex(/^(?:[1-9]|1[0-2])$/, { message: "Class number must be between 1 and 12." }),
-  classAlphabet: z.string().min(1, { message: "Grade/Alphabet is required." }),
+  classNumber: z.string().min(1, { message: "Please select a class number." }),
+  classAlphabet: z.string().min(1, { message: "Please select a grade alphabet." }),
   profileImageURL: z.string().optional().or(z.literal('')),
 });
 
 export type StudentFormData = z.infer<typeof studentFormSchema>;
 
-// Props for the form component
 interface StudentFormProps {
   onSubmit: (data: StudentFormData) => void;
-  initialData?: Partial<StudentFormData> & { studentId?: string }; // studentId is for display on edit
+  initialData?: Partial<StudentFormData> & { studentId?: string };
   isLoading?: boolean;
   submitButtonText?: string;
   isEditMode?: boolean;
 }
 
 const gradeAlphabetOptions = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+const classNumberOptions = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
 
-export function StudentForm({ 
-  onSubmit, 
-  initialData, 
-  isLoading, 
+export function StudentForm({
+  onSubmit,
+  initialData,
+  isLoading,
   submitButtonText = "Submit",
-  isEditMode = false 
+  isEditMode = false
 }: StudentFormProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  
+
   const form = useForm<StudentFormData>({
     resolver: zodResolver(studentFormSchema),
-    defaultValues: initialData || {
+    defaultValues: initialData ? {
+      name: initialData.name || "",
+      gender: initialData.gender || "",
+      classNumber: initialData.classNumber || "",
+      classAlphabet: initialData.classAlphabet || "",
+      profileImageURL: initialData.profileImageURL || "",
+    } : {
       name: "",
       gender: "",
       classNumber: "",
@@ -81,7 +86,7 @@ export function StudentForm({
       });
       setImagePreview(initialData.profileImageURL || null);
     } else {
-      form.reset({ 
+      form.reset({
         name: "",
         gender: "",
         classNumber: "",
@@ -169,10 +174,19 @@ export function StudentForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Class Number</FormLabel>
-                    <FormControl>
-                      <Input type="text" placeholder="e.g., 10" {...field} />
-                    </FormControl>
-                    <FormDescription>Numeric part of the class (1-12).</FormDescription>
+                     <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select number" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {classNumberOptions.map(option => (
+                           <SelectItem key={option} value={option}>{option}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>Numeric part of the grade (1-12).</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -182,12 +196,12 @@ export function StudentForm({
                 name="classAlphabet"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Grade/Alphabet</FormLabel>
+                    <FormLabel>Grade Alphabet</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select grade" />
-                        </SelectTrigger>
+                          <SelectValue placeholder="Select letter" />
+                        </Trigger>
                       </FormControl>
                       <SelectContent>
                         {gradeAlphabetOptions.map(option => (
@@ -195,7 +209,7 @@ export function StudentForm({
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormDescription>Alphabetical part of the class (e.g., A, B).</FormDescription>
+                    <FormDescription>Alphabetical part of the grade (e.g., A, B).</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -236,7 +250,7 @@ export function StudentForm({
                 name="profileImageURL"
                 render={({ field }) => <Input type="hidden" {...field} />}
               />
-              <FormMessage /> 
+              {form.formState.errors.profileImageURL && <FormMessage>{form.formState.errors.profileImageURL.message}</FormMessage>}
             </FormItem>
 
             <div className="flex justify-end pt-2">
@@ -257,4 +271,3 @@ export function StudentForm({
     </Card>
   );
 }
-

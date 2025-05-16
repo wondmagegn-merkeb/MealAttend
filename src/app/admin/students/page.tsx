@@ -234,7 +234,7 @@ export default function StudentsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search by ID, name, or class..."
+              placeholder="Search by ID, name, or grade..."
               value={searchTerm}
               onChange={handleSearchChange}
               className="pl-10 w-full sm:w-1/2 md:w-1/3"
@@ -290,8 +290,4 @@ export default function StudentsPage() {
     </div>
   );
 }
-
-
-    
-
     

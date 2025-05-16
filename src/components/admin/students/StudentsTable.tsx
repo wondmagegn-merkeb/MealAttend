@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Edit, Trash2, Eye, ChevronsUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Edit, Trash2, Eye, ChevronsUpDown, ArrowUp, ArrowDown, CreditCard } from "lucide-react"; // Removed Printer
 import type { Student } from "@/types/student";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import React from "react";
@@ -87,7 +87,7 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
             <TableRow>
               <SortableTableHead columnKey="studentId">Student ID</SortableTableHead>
               <SortableTableHead columnKey="name">Name</SortableTableHead>
-              <SortableTableHead columnKey="class">Class</SortableTableHead>
+              <SortableTableHead columnKey="class">Grade</SortableTableHead>
               <SortableTableHead columnKey="gender">Gender</SortableTableHead>
               <SortableTableHead columnKey="createdAt">Created At</SortableTableHead>
               <TableHead className="text-right w-[130px]">Actions</TableHead>

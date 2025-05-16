@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Loader2, Printer, AlertTriangle, Filter } from 'lucide-react';
+import { ArrowLeft, Loader2, Printer, AlertTriangle } from 'lucide-react';
 import type { Student } from '@/types/student';
 import { StudentIdCard } from '@/components/admin/students/StudentIdCard';
 import { STUDENTS_STORAGE_KEY } from '@/lib/constants';
@@ -116,7 +116,7 @@ export default function ViewAllIdCardsPage() {
       tempStudents = tempStudents.filter(student => getYearFromStudentId(student.studentId) === selectedYear);
     }
 
-    // Sort by class (number then letter)
+    // Sort by class (number then letter), then by name
     tempStudents.sort((a, b) => {
       const classA = parseClass(a.class);
       const classB = parseClass(b.class);
@@ -124,7 +124,10 @@ export default function ViewAllIdCardsPage() {
       if (classA.number !== classB.number) {
         return classA.number - classB.number;
       }
-      return classA.letter.localeCompare(classB.letter);
+      if (classA.letter !== classB.letter) {
+         return classA.letter.localeCompare(classB.letter); // Corrected typo here
+      }
+      return a.name.localeCompare(b.name); // Secondary sort by name
     });
 
     return tempStudents;
@@ -144,17 +147,17 @@ export default function ViewAllIdCardsPage() {
       <header className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 no-print">
         <div className="flex-grow">
           <h1 className="text-3xl font-semibold tracking-tight text-primary">All Student ID Cards</h1>
-          <p className="text-muted-foreground">Filter by class and year, then print the selection.</p>
+          <p className="text-muted-foreground">Filter by grade and year, then print the selection.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-end gap-2 w-full sm:w-auto">
           <div className="w-full sm:w-auto">
-            <Label htmlFor="class-filter" className="text-sm font-medium">Filter by Class</Label>
+            <Label htmlFor="class-filter" className="text-sm font-medium">Filter by Grade</Label>
             <Select value={selectedClass} onValueChange={setSelectedClass}>
               <SelectTrigger id="class-filter" className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Select Class" />
+                <SelectValue placeholder="Select Grade" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Classes</SelectItem>
+                <SelectItem value="all">All Grades</SelectItem>
                 {uniqueClasses.map(cls => (
                   <SelectItem key={cls} value={cls}>{cls}</SelectItem>
                 ))}
@@ -264,4 +267,3 @@ export default function ViewAllIdCardsPage() {
     </div>
   );
 }
-
