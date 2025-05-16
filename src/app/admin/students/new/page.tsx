@@ -19,13 +19,24 @@ export default function NewStudentPage() {
   const handleFormSubmit = (data: StudentFormData) => {
     setIsLoading(true);
     
-    // Simulate API call / localStorage update
     setTimeout(() => {
       const studentInternalId = `stud_${Date.now()}`; // Simple unique ID for internal use
+      
+      const currentYear = new Date().getFullYear();
+      // Using a timestamp-based serial for client-side uniqueness
+      const serialNumber = Date.now().toString().slice(-5).padStart(5, '0');
+      const generatedStudentId = `ADERA/STU/${currentYear}/${serialNumber}`;
+      
+      const combinedClass = `${data.classNumber}${data.classAlphabet}`;
+
       const newStudent: Student = {
         id: studentInternalId, 
-        ...data,
-        qrCodeData: studentInternalId, // Use the internal unique ID for QR code data
+        studentId: generatedStudentId,
+        name: data.name,
+        gender: data.gender,
+        class: combinedClass,
+        profileImageURL: data.profileImageURL,
+        qrCodeData: studentInternalId, 
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -33,12 +44,12 @@ export default function NewStudentPage() {
       try {
         const storedStudentsRaw = localStorage.getItem(STUDENTS_STORAGE_KEY);
         const students: Student[] = storedStudentsRaw ? JSON.parse(storedStudentsRaw) : [];
-        students.unshift(newStudent); // Add to the beginning
+        students.unshift(newStudent); 
         localStorage.setItem(STUDENTS_STORAGE_KEY, JSON.stringify(students));
         
         toast({
           title: "Student Added",
-          description: `${data.name} has been successfully added.`,
+          description: `${data.name} has been successfully added with ID ${generatedStudentId}.`,
         });
         router.push('/admin/students');
       } catch (error) {
@@ -59,7 +70,7 @@ export default function NewStudentPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-semibold tracking-tight text-primary">Add New Student</h2>
-          <p className="text-muted-foreground">Fill in the details to add a new student record.</p>
+          <p className="text-muted-foreground">Fill in the details to add a new student record. Student ID will be auto-generated.</p>
         </div>
         <Button variant="outline" asChild>
           <Link href="/admin/students">
@@ -72,6 +83,7 @@ export default function NewStudentPage() {
         onSubmit={handleFormSubmit} 
         isLoading={isLoading}
         submitButtonText="Add Student"
+        isEditMode={false}
       />
     </div>
   );

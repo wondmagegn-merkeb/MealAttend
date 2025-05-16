@@ -4,7 +4,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import type { Student } from "@/types/student";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,33 +28,44 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
+// Schema for the form data itself
 const studentFormSchema = z.object({
-  studentId: z.string().min(1, { message: "Student ID is required." }),
   name: z.string().min(1, { message: "Full Name is required." }),
   gender: z.enum(['Male', 'Female', 'Other', ''], { errorMap: () => ({ message: "Please select a gender." }) }).default(''),
-  class: z.string().min(1, { message: "Class is required." }),
-  profileImageURL: z.string().optional().or(z.literal('')), // Stores Data URL or existing http URL
+  classNumber: z.string().min(1, { message: "Class number is required." }).regex(/^\d+$/, "Class number must be a number."),
+  classAlphabet: z.string().min(1, { message: "Grade/Alphabet is required." }),
+  profileImageURL: z.string().optional().or(z.literal('')),
 });
 
 export type StudentFormData = z.infer<typeof studentFormSchema>;
 
+// Props for the form component
 interface StudentFormProps {
   onSubmit: (data: StudentFormData) => void;
-  initialData?: Student | null;
+  initialData?: Partial<StudentFormData> & { studentId?: string }; // studentId is for display on edit
   isLoading?: boolean;
   submitButtonText?: string;
+  isEditMode?: boolean;
 }
 
-export function StudentForm({ onSubmit, initialData, isLoading, submitButtonText = "Submit" }: StudentFormProps) {
+const gradeAlphabetOptions = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+
+export function StudentForm({ 
+  onSubmit, 
+  initialData, 
+  isLoading, 
+  submitButtonText = "Submit",
+  isEditMode = false 
+}: StudentFormProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   
   const form = useForm<StudentFormData>({
     resolver: zodResolver(studentFormSchema),
     defaultValues: initialData || {
-      studentId: "",
       name: "",
       gender: "",
-      class: "",
+      classNumber: "",
+      classAlphabet: "",
       profileImageURL: "",
     },
   });
@@ -63,19 +73,19 @@ export function StudentForm({ onSubmit, initialData, isLoading, submitButtonText
   useEffect(() => {
     if (initialData) {
       form.reset({
-        studentId: initialData.studentId,
-        name: initialData.name,
+        name: initialData.name || "",
         gender: initialData.gender || "",
-        class: initialData.class,
+        classNumber: initialData.classNumber || "",
+        classAlphabet: initialData.classAlphabet || "",
         profileImageURL: initialData.profileImageURL || "",
       });
       setImagePreview(initialData.profileImageURL || null);
     } else {
       form.reset({ 
-        studentId: "",
         name: "",
         gender: "",
-        class: "",
+        classNumber: "",
+        classAlphabet: "",
         profileImageURL: "",
       });
       setImagePreview(null);
@@ -104,22 +114,17 @@ export function StudentForm({ onSubmit, initialData, isLoading, submitButtonText
       <CardContent className="pt-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="studentId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Student ID</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., S1001" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    The unique identifier for the student.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {isEditMode && initialData?.studentId && (
+              <FormItem>
+                <FormLabel>Student ID</FormLabel>
+                <FormControl>
+                  <Input value={initialData.studentId} readOnly className="bg-muted/50" />
+                </FormControl>
+                <FormDescription>
+                  The unique identifier for the student (auto-generated).
+                </FormDescription>
+              </FormItem>
+            )}
             <FormField
               control={form.control}
               name="name"
@@ -156,19 +161,47 @@ export function StudentForm({ onSubmit, initialData, isLoading, submitButtonText
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="class"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Class/Grade</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Grade 10" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="classNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Class Number</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="e.g., 10" {...field} />
+                    </FormControl>
+                    <FormDescription>Numeric part of the class (e.g., 1, 2, 10).</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="classAlphabet"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Grade/Alphabet</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select grade" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {gradeAlphabetOptions.map(option => (
+                           <SelectItem key={option} value={option}>{option}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>Alphabetical part of the class (e.g., A, B).</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
             <FormItem>
               <FormLabel>Profile Image</FormLabel>
               <div className="flex items-center gap-4">
@@ -224,3 +257,4 @@ export function StudentForm({ onSubmit, initialData, isLoading, submitButtonText
     </Card>
   );
 }
+

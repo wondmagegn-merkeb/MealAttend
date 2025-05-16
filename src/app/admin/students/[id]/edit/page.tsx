@@ -12,33 +12,59 @@ import Link from 'next/link';
 import { STUDENTS_STORAGE_KEY } from '@/lib/constants';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
+// Helper to parse class string "10A" into { classNumber: "10", classAlphabet: "A" }
+const parseClassString = (classStr: string | undefined): { classNumber: string, classAlphabet: string } => {
+  if (!classStr) return { classNumber: "", classAlphabet: "" };
+  const match = classStr.match(/^(\d+)([A-Za-z]*)$/);
+  if (match) {
+    return { classNumber: match[1], classAlphabet: match[2] };
+  }
+  // Fallback for only numbers or non-standard formats
+  const numericMatch = classStr.match(/^(\d+)$/);
+  if (numericMatch) {
+    return { classNumber: numericMatch[1], classAlphabet: "" };
+  }
+  return { classNumber: "", classAlphabet: classStr }; // Or handle error/default
+};
+
+
 export default function EditStudentPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
   
-  const studentId = typeof params.id === 'string' ? params.id : undefined;
+  const studentInternalId = typeof params.id === 'string' ? params.id : undefined;
 
   const [student, setStudent] = useState<Student | null>(null);
+  const [initialFormValues, setInitialFormValues] = useState<Partial<StudentFormData> & { studentId?: string } | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (studentId) {
+    if (studentInternalId) {
       setIsFetching(true);
       try {
         const storedStudentsRaw = localStorage.getItem(STUDENTS_STORAGE_KEY);
         if (storedStudentsRaw) {
           const students: Student[] = JSON.parse(storedStudentsRaw);
-          const foundStudent = students.find(s => s.id === studentId);
+          const foundStudent = students.find(s => s.id === studentInternalId);
           if (foundStudent) {
             setStudent(foundStudent);
+            const { classNumber, classAlphabet } = parseClassString(foundStudent.class);
+            setInitialFormValues({
+              studentId: foundStudent.studentId, // for display
+              name: foundStudent.name,
+              gender: foundStudent.gender,
+              classNumber: classNumber,
+              classAlphabet: classAlphabet,
+              profileImageURL: foundStudent.profileImageURL,
+            });
           } else {
             setNotFound(true);
           }
         } else {
-          setNotFound(true); // No students in storage
+          setNotFound(true); 
         }
       } catch (error) {
         console.error("Failed to load student from localStorage", error);
@@ -52,20 +78,23 @@ export default function EditStudentPage() {
         setIsFetching(false);
       }
     } else {
-      setNotFound(true); // No ID in params
+      setNotFound(true); 
       setIsFetching(false);
     }
-  }, [studentId, toast]);
+  }, [studentInternalId, toast]);
 
   const handleFormSubmit = (data: StudentFormData) => {
     if (!student) return;
     setIsLoading(true);
 
-    // Simulate API call / localStorage update
     setTimeout(() => {
+      const combinedClass = `${data.classNumber}${data.classAlphabet}`;
       const updatedStudent: Student = {
-        ...student,
-        ...data,
+        ...student, // Retains id, studentId, qrCodeData, createdAt
+        name: data.name,
+        gender: data.gender,
+        class: combinedClass,
+        profileImageURL: data.profileImageURL,
         updatedAt: new Date().toISOString(),
       };
       
@@ -137,12 +166,13 @@ export default function EditStudentPage() {
           </Link>
         </Button>
       </div>
-      {student && (
+      {initialFormValues && (
         <StudentForm 
           onSubmit={handleFormSubmit} 
-          initialData={student}
+          initialData={initialFormValues}
           isLoading={isLoading}
           submitButtonText="Save Changes"
+          isEditMode={true}
         />
       )}
     </div>
