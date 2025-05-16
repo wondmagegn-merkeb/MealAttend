@@ -6,21 +6,24 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Loader2, Copy, Check } from 'lucide-react';
+import { ArrowLeft, Loader2, FileText, FileSpreadsheet, Download } from 'lucide-react';
 import type { Student } from '@/types/student';
 import { STUDENTS_STORAGE_KEY } from '@/lib/constants';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 const getYearFromStudentId = (studentId: string): string | null => {
-  const parts = studentId.split('/'); // "ADERA/STU/2024/00001"
+  const parts = studentId.split('/'); 
   if (parts.length === 4 && /^\d{4}$/.test(parts[2])) {
     return parts[2];
   }
   return null;
 };
 
-const parseClass = (classStr: string): { number: number; letter: string } => {
+const parseClass = (classStr: string | undefined): { number: number; letter: string } => {
   if (!classStr) return { number: Infinity, letter: '' };
   const match = classStr.match(/^(\d+)([A-Za-z]*)$/);
   if (match) {
@@ -38,8 +41,7 @@ export default function ExportStudentsPage() {
   const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
-  const [hasCopied, setHasCopied] = useState(false);
-
+  
   const [selectedClass, setSelectedClass] = useState<string>('all');
   const [selectedYear, setSelectedYear] = useState<string>('all');
 
@@ -100,7 +102,6 @@ export default function ExportStudentsPage() {
       tempStudents = tempStudents.filter(student => getYearFromStudentId(student.studentId) === selectedYear);
     }
 
-    // Sort by class (number then letter), then by name
     tempStudents.sort((a, b) => {
       const classA = parseClass(a.class);
       const classB = parseClass(b.class);
@@ -118,42 +119,71 @@ export default function ExportStudentsPage() {
     return `Student List - ${gradeText} - ${yearText}`;
   }, [selectedClass, selectedYear]);
 
-  const handleCopyToClipboard = useCallback(() => {
+  const handleExportPDF = useCallback(() => {
     if (filteredStudents.length === 0) {
-      toast({ title: "No Data", description: "There is no data to copy.", variant: "default" });
+      toast({ title: "No Data", description: "There is no data to export to PDF.", variant: "default" });
+      return;
+    }
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text(generatedHeaderTitle, 14, 15);
+    
+    autoTable(doc, {
+      startY: 25,
+      head: [['Student ID', 'Name', 'Gender', 'Grade']],
+      body: filteredStudents.map(student => [
+        student.studentId,
+        student.name,
+        student.gender,
+        student.class,
+      ]),
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [22, 160, 133] }, // Example header color
+      margin: { top: 20 },
+    });
+
+    const fileName = `student_list${selectedClass !== 'all' ? `_grade_${selectedClass}` : ''}${selectedYear !== 'all' ? `_year_${selectedYear}` : ''}.pdf`;
+    doc.save(fileName);
+    toast({ title: "PDF Exported", description: `Successfully exported ${filteredStudents.length} records to ${fileName}.` });
+  }, [filteredStudents, generatedHeaderTitle, selectedClass, selectedYear, toast]);
+
+  const handleExportExcel = useCallback(() => {
+    if (filteredStudents.length === 0) {
+      toast({ title: "No Data", description: "There is no data to export to Excel.", variant: "default" });
       return;
     }
 
-    // Header for the page/export context
-    const titleLine = generatedHeaderTitle;
-    
-    // Column headers for TSV
-    const columnHeaders = ["Student ID", "Name", "Gender", "Grade"];
-    const dataRows = filteredStudents.map(student => 
-      [student.studentId, student.name, student.gender, student.class].join('\t')
-    );
-    
-    // Construct TSV data with title, blank line, then headers and data
-    const tsvData = [
-      titleLine, 
-      '', // Blank line for spacing
-      columnHeaders.join('\t'), 
-      ...dataRows
-    ].join('\n');
+    const dataToExport = [
+      [generatedHeaderTitle], // Main header
+      [], // Blank row
+      ['Student ID', 'Name', 'Gender', 'Grade'], // Table headers
+      ...filteredStudents.map(student => [
+        student.studentId,
+        student.name,
+        student.gender,
+        student.class,
+      ]),
+    ];
 
-    navigator.clipboard.writeText(tsvData).then(() => {
-      toast({ 
-        title: "Copied to Clipboard", 
-        description: `Student list (${filteredStudents.length} records) with header copied. You can paste this into Excel or other spreadsheet software.`,
-        duration: 5000 
-      });
-      setHasCopied(true);
-      setTimeout(() => setHasCopied(false), 2000);
-    }).catch(err => {
-      console.error("Failed to copy to clipboard:", err);
-      toast({ title: "Copy Failed", description: "Could not copy data to clipboard. See console for details.", variant: "destructive" });
-    });
-  }, [filteredStudents, toast, generatedHeaderTitle]);
+    const worksheet = XLSX.utils.aoa_to_sheet(dataToExport);
+    
+    // Attempt to merge the main header cell
+     if (worksheet['!merges']) {
+        worksheet['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }); // Merge A1 to D1
+    } else {
+        worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+    }
+    // Basic column width (optional, might need fine-tuning)
+    worksheet['!cols'] = [{wch:20},{wch:30},{wch:10},{wch:10}];
+
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Students');
+    
+    const fileName = `student_list${selectedClass !== 'all' ? `_grade_${selectedClass}` : ''}${selectedYear !== 'all' ? `_year_${selectedYear}` : ''}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    toast({ title: "Excel Exported", description: `Successfully exported ${filteredStudents.length} records to ${fileName}.` });
+  }, [filteredStudents, generatedHeaderTitle, selectedClass, selectedYear, toast]);
 
 
   if (!isMounted || isLoading) {
@@ -170,7 +200,7 @@ export default function ExportStudentsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-primary">Export Student List</h1>
-          <p className="text-muted-foreground">Filter students by grade and/or year, then copy the data with a contextual header.</p>
+          <p className="text-muted-foreground">Filter students by grade and/or year, then export the data as PDF or Excel.</p>
         </div>
         <Button variant="outline" asChild>
           <Link href="/admin/students">
@@ -201,7 +231,7 @@ export default function ExportStudentsPage() {
             </Select>
           </div>
           <div>
-            <Label htmlFor="year-filter">Filter by Year</Label>
+            <Label htmlFor="year-filter">Filter by Admission Year</Label>
             <Select value={selectedYear} onValueChange={setSelectedYear}>
               <SelectTrigger id="year-filter">
                 <SelectValue placeholder="Select Year" />
@@ -221,16 +251,21 @@ export default function ExportStudentsPage() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div>
-              <CardTitle>Student Export Preview</CardTitle>
+              <CardTitle>Filtered Student Data</CardTitle>
               <CardDescription>
-                Review the filtered student list. {filteredStudents.length} record(s) found.
-                The copied data will include the dynamic header shown below. For direct PDF/Excel file generation, specialized libraries would be needed.
+                Review the filtered student list. {filteredStudents.length} record(s) found. Export options below.
               </CardDescription>
             </div>
-            <Button onClick={handleCopyToClipboard} disabled={filteredStudents.length === 0} className="w-full sm:w-auto">
-              {hasCopied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
-              {hasCopied ? 'Copied!' : 'Copy Data with Header'}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <Button onClick={handleExportPDF} disabled={filteredStudents.length === 0} className="w-full sm:w-auto">
+                    <FileText className="mr-2 h-4 w-4" />
+                    Export to PDF
+                </Button>
+                <Button onClick={handleExportExcel} disabled={filteredStudents.length === 0} className="w-full sm:w-auto">
+                    <FileSpreadsheet className="mr-2 h-4 w-4" />
+                    Export to Excel
+                </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -268,4 +303,3 @@ export default function ExportStudentsPage() {
     </div>
   );
 }
-    
