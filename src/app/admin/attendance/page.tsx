@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,11 +12,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AttendanceTable, type AttendanceRecord, type SortConfig, type SortableAttendanceKeys } from "@/components/admin/AttendanceTable";
 import type { Student } from "@/types/student";
 import { STUDENTS_STORAGE_KEY, ATTENDANCE_RECORDS_STORAGE_KEY } from '@/lib/constants';
-import { Search, BookCopy, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FilterX } from "lucide-react";
+import { Search, BookCopy, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FilterX, FileText, FileSpreadsheet } from "lucide-react";
 import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 const seedAttendanceRecords: AttendanceRecord[] = [
   // Student S1001 - Alice Johnson (internal id: clxkxk001)
@@ -153,6 +156,7 @@ export default function AttendancePage() {
     setReportStudentId(undefined);
     setReportDateRange(undefined);
     setIsReportView(false);
+    setSearchTerm(""); // Also clear search term when clearing report filters for consistency
     setCurrentPage(1);
   };
 
@@ -171,7 +175,7 @@ export default function AttendancePage() {
           return isWithinInterval(recordDate, { start: fromDate, end: toDate });
         });
       }
-    } else {
+    } else { // Not in report view, apply general search term
       if (searchTerm) {
         const lowerSearchTerm = searchTerm.toLowerCase();
         recordsToProcess = recordsToProcess.filter(record =>
@@ -202,6 +206,118 @@ export default function AttendancePage() {
     }
     return recordsToProcess;
   }, [allAttendanceRecords, searchTerm, sortConfig, isReportView, reportStudentId, reportDateRange]);
+  
+  const reportContext = useMemo(() => {
+    let studentNameForTitle = "All Students";
+    if (reportStudentId && reportStudentId !== 'all_students') {
+        studentNameForTitle = students.find(s => s.studentId === reportStudentId)?.name || reportStudentId;
+    }
+
+    let dateInfoForTitle = "All Dates";
+    let dateInfoForFile = "All_Dates";
+    if (reportDateRange?.from) {
+        dateInfoForTitle = `From ${format(reportDateRange.from, "LLL dd, y")}`;
+        dateInfoForFile = `From_${format(reportDateRange.from, "yyyy-MM-dd")}`;
+        if (reportDateRange.to) {
+            dateInfoForTitle += ` To ${format(reportDateRange.to, "LLL dd, y")}`;
+            dateInfoForFile += `_To_${format(reportDateRange.to, "yyyy-MM-dd")}`;
+        } else {
+             // If only 'from' is selected, treat it as a single day for file name
+            dateInfoForFile = `On_${format(reportDateRange.from, "yyyy-MM-dd")}`;
+        }
+    }
+    
+    if (isReportView) {
+        const base = "Attendance_Report";
+        const studentPart = (reportStudentId && reportStudentId !== 'all_students') ? studentNameForTitle.replace(/\s+/g, '_') : "All_Students";
+        const datePart = reportDateRange?.from ? dateInfoForFile.replace(/\s+/g, '_').replace(/-/g,'') : "All_Dates";
+        const docTitle = `Attendance Report: ${studentNameForTitle} (${dateInfoForTitle})`;
+        return { fileNameBase: `${base}_${studentPart}_${datePart}`, docTitle };
+    } else if (searchTerm) {
+         const docTitle = `Attendance Records (Search: ${searchTerm})`;
+         return { fileNameBase: `Attendance_Search_${searchTerm.replace(/\s+/g, '_')}`, docTitle };
+    } else {
+        const docTitle = "All Attendance Records";
+        return { fileNameBase: "All_Attendance_Records", docTitle };
+    }
+  }, [isReportView, reportStudentId, students, reportDateRange, searchTerm]);
+
+  const handleExportPDF = useCallback(() => {
+    if (processedRecords.length === 0) {
+      toast({ title: "No Data", description: "There is no data to export to PDF.", variant: "default" });
+      return;
+    }
+    const doc = new jsPDF();
+    const { fileNameBase, docTitle } = reportContext;
+
+    doc.setFontSize(16);
+    doc.text(docTitle, 14, 15);
+    
+    autoTable(doc, {
+      startY: 25,
+      head: [['Student ID', 'Name', 'Date', 'Meal Type', 'Scanned At', 'Status']],
+      body: processedRecords.map(record => [
+        record.studentId,
+        record.studentName,
+        record.date,
+        record.mealType,
+        record.scannedAt,
+        record.status,
+      ]),
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [22, 160, 133] }, // Example: Teal color for header
+      margin: { top: 20 },
+    });
+
+    doc.save(`${fileNameBase}.pdf`);
+    toast({ title: "PDF Exported", description: `Successfully exported ${processedRecords.length} records to ${fileNameBase}.pdf.` });
+  }, [processedRecords, reportContext, toast]);
+
+  const handleExportExcel = useCallback(() => {
+    if (processedRecords.length === 0) {
+      toast({ title: "No Data", description: "There is no data to export to Excel.", variant: "default" });
+      return;
+    }
+    const { fileNameBase, docTitle } = reportContext;
+
+    const dataToExport = [
+      [docTitle], // Title row
+      [], // Blank row for spacing
+      ['Student ID', 'Name', 'Date', 'Meal Type', 'Scanned At', 'Status'], // Header row
+      ...processedRecords.map(record => [
+        record.studentId,
+        record.studentName,
+        record.date,
+        record.mealType,
+        record.scannedAt,
+        record.status,
+      ]),
+    ];
+
+    const worksheet = XLSX.utils.aoa_to_sheet(dataToExport);
+    
+    // Merge the title row and set column widths
+    if (worksheet['!merges']) {
+        worksheet['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }); // Assuming 6 columns
+    } else {
+        worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
+    }
+    worksheet['!cols'] = [
+        { wch: 15 }, // Student ID
+        { wch: 25 }, // Name
+        { wch: 12 }, // Date
+        { wch: 12 }, // Meal Type
+        { wch: 15 }, // Scanned At
+        { wch: 10 }, // Status
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance');
+    
+    XLSX.writeFile(workbook, `${fileNameBase}.xlsx`);
+    toast({ title: "Excel Exported", description: `Successfully exported ${processedRecords.length} records to ${fileNameBase}.xlsx.` });
+  }, [processedRecords, reportContext, toast]);
+
 
   const totalPages = Math.max(1, Math.ceil(processedRecords.length / ITEMS_PER_PAGE));
   
@@ -306,24 +422,36 @@ export default function AttendancePage() {
       
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>{isReportView ? "Report Results" : "All Records"}</CardTitle>
-          <CardDescription>
-            {isReportView 
-              ? `Showing records for ${reportStudentId && reportStudentId !== 'all_students' ? (students.find(s => s.studentId === reportStudentId)?.name || 'selected student') : 'all students'}${reportDateRange?.from ? ` from ${format(reportDateRange.from, "LLL dd, y")}` : ''}${reportDateRange?.to ? ` to ${format(reportDateRange.to, "LLL dd, y")}` : reportDateRange?.from ? '' : ''}.`
-              : "Detailed list of all attendance entries. Use search below or report filters above."}
-          </CardDescription>
-          {!isReportView && (
-            <div className="mt-4 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                type="search"
-                placeholder="Search records by ID, name, meal type, date..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-                className="pl-10 w-full sm:w-1/2 md:w-2/3"
-                />
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div>
+                    <CardTitle>{isReportView ? "Report Results" : "All Records"}</CardTitle>
+                    <CardDescription>
+                        {isReportView 
+                        ? `Showing records for ${reportStudentId && reportStudentId !== 'all_students' ? (students.find(s => s.studentId === reportStudentId)?.name || 'selected student') : 'all students'}${reportDateRange?.from ? ` from ${format(reportDateRange.from, "LLL dd, y")}` : ''}${reportDateRange?.to ? ` to ${format(reportDateRange.to, "LLL dd, y")}` : reportDateRange?.from ? '' : ''}. Found ${processedRecords.length} record(s).`
+                        : `Detailed list of all attendance entries. ${processedRecords.length} record(s) found. Use search below or report filters above.`}
+                    </CardDescription>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:ml-auto">
+                    <Button onClick={handleExportPDF} disabled={processedRecords.length === 0} variant="outline" size="sm">
+                        <FileText className="mr-2 h-4 w-4" /> Export PDF
+                    </Button>
+                    <Button onClick={handleExportExcel} disabled={processedRecords.length === 0} variant="outline" size="sm">
+                        <FileSpreadsheet className="mr-2 h-4 w-4" /> Export Excel
+                    </Button>
+                </div>
             </div>
-          )}
+            {!isReportView && (
+                <div className="mt-4 relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                    type="search"
+                    placeholder="Search records by ID, name, meal type, date..."
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    className="pl-10 w-full sm:w-1/2 md:w-2/3"
+                    />
+                </div>
+            )}
         </CardHeader>
         <CardContent>
           <AttendanceTable 
@@ -370,4 +498,4 @@ export default function AttendancePage() {
   );
 }
 
-  
+    
