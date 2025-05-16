@@ -5,9 +5,8 @@ export interface User {
   fullName: string;
   department: string;
   email: string;
-  role: 'Admin' | 'User'; 
+  role: 'Admin' | 'User';
+  profileImageURL?: string; // Optional Data URL or http URL for profile picture
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
 }
-
-    

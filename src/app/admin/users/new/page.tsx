@@ -28,7 +28,11 @@ export default function NewUserPage() {
       const newUser: User = {
         id: internalId, 
         userId: formattedUserId,
-        ...data, // includes fullName, department, email, role
+        fullName: data.fullName,
+        department: data.department,
+        email: data.email,
+        role: data.role,
+        profileImageURL: data.profileImageURL,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -79,5 +83,3 @@ export default function NewUserPage() {
     </div>
   );
 }
-
-    

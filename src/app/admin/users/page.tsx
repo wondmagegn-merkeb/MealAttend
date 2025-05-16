@@ -15,9 +15,9 @@ import { USERS_STORAGE_KEY } from '@/lib/constants';
 
 // Initial seed data if localStorage is empty
 const initialSeedUsers: User[] = [
-  { id: 'usr_smp_001', userId: 'ADERA/USR/2024/00001', fullName: 'Alice Admin', department: 'Administration', email: 'alice.admin@example.com', role: 'Admin', createdAt: new Date('2023-01-10T10:00:00Z').toISOString(), updatedAt: new Date('2023-01-10T10:00:00Z').toISOString() },
-  { id: 'usr_smp_002', userId: 'ADERA/USR/2024/00002', fullName: 'Bob Operator', department: 'Kitchen Staff', email: 'bob.operator@example.com', role: 'User', createdAt: new Date('2023-02-15T11:30:00Z').toISOString(), updatedAt: new Date('2023-02-15T11:30:00Z').toISOString() },
-  { id: 'usr_smp_003', userId: 'ADERA/USR/2023/00003', fullName: 'Carol Support', department: 'Serving Team', email: 'carol.support@example.com', role: 'User', createdAt: new Date('2023-03-20T09:15:00Z').toISOString(), updatedAt: new Date('2023-03-20T09:15:00Z').toISOString() },
+  { id: 'usr_smp_001', userId: 'ADERA/USR/2024/00001', fullName: 'Alice Admin', department: 'Administration', email: 'alice.admin@example.com', role: 'Admin', profileImageURL: 'https://placehold.co/100x100.png?text=AA', createdAt: new Date('2023-01-10T10:00:00Z').toISOString(), updatedAt: new Date('2023-01-10T10:00:00Z').toISOString() },
+  { id: 'usr_smp_002', userId: 'ADERA/USR/2024/00002', fullName: 'Bob Operator', department: 'Kitchen Staff', email: 'bob.operator@example.com', role: 'User', profileImageURL: 'https://placehold.co/100x100.png?text=BO', createdAt: new Date('2023-02-15T11:30:00Z').toISOString(), updatedAt: new Date('2023-02-15T11:30:00Z').toISOString() },
+  { id: 'usr_smp_003', userId: 'ADERA/USR/2023/00003', fullName: 'Carol Support', department: 'Serving Team', email: 'carol.support@example.com', role: 'User', profileImageURL: 'https://placehold.co/100x100.png?text=CS', createdAt: new Date('2023-03-20T09:15:00Z').toISOString(), updatedAt: new Date('2023-03-20T09:15:00Z').toISOString() },
 ];
 
 type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'createdAt';
@@ -80,9 +80,9 @@ export default function UsersPage() {
         
         const totalPagesAfterDelete = Math.ceil(updatedUsers.filter(user =>
           user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (user.department && user.department.toLowerCase().includes(searchTerm.toLowerCase())) ||
           user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.userId.toLowerCase().includes(searchTerm.toLowerCase()) || 
+          (user.userId && user.userId.toLowerCase().includes(searchTerm.toLowerCase())) || 
           user.role.toLowerCase().includes(searchTerm.toLowerCase()) 
         ).length / ITEMS_PER_PAGE);
 
@@ -125,9 +125,9 @@ export default function UsersPage() {
     if (searchTerm) {
       const lowerSearchTerm = searchTerm.toLowerCase();
       processedUsers = processedUsers.filter(user =>
-        user.userId.toLowerCase().includes(lowerSearchTerm) ||
+        (user.userId && user.userId.toLowerCase().includes(lowerSearchTerm)) ||
         user.fullName.toLowerCase().includes(lowerSearchTerm) ||
-        user.department.toLowerCase().includes(lowerSearchTerm) ||
+        (user.department && user.department.toLowerCase().includes(lowerSearchTerm)) ||
         user.email.toLowerCase().includes(lowerSearchTerm) ||
         user.role.toLowerCase().includes(lowerSearchTerm) 
       );

@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -35,6 +36,7 @@ const userFormSchema = z.object({
   department: z.string().min(1, { message: "Department is required." }),
   email: z.string().email({ message: "Invalid email address." }).min(1, { message: "Email is required." }),
   role: z.enum(['Admin', 'User'], { errorMap: () => ({ message: "Please select a role." }) }),
+  profileImageURL: z.string().optional().or(z.literal("")),
 });
 
 export type UserFormData = z.infer<typeof userFormSchema>;
@@ -48,6 +50,7 @@ interface UserFormProps {
 
 export function UserForm({ onSubmit, initialData, isLoading, submitButtonText = "Submit" }: UserFormProps) {
   const [availableDepartments, setAvailableDepartments] = useState<Department[]>([]);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const form = useForm<UserFormData>({
     resolver: zodResolver(userFormSchema),
@@ -56,11 +59,13 @@ export function UserForm({ onSubmit, initialData, isLoading, submitButtonText = 
       department: initialData.department, 
       email: initialData.email,
       role: initialData.role,
+      profileImageURL: initialData.profileImageURL || "",
     } : {
       fullName: "",
       department: "", 
       email: "",
       role: "User", 
+      profileImageURL: "",
     },
   });
 
@@ -83,16 +88,37 @@ export function UserForm({ onSubmit, initialData, isLoading, submitButtonText = 
         department: initialData.department, 
         email: initialData.email,
         role: initialData.role,
+        profileImageURL: initialData.profileImageURL || "",
       });
+      setImagePreview(initialData.profileImageURL || null);
     } else {
       form.reset({
         fullName: "",
         department: "",
         email: "",
         role: "User",
+        profileImageURL: "",
       });
+      setImagePreview(null);
     }
   }, [initialData, form]);
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
+        setImagePreview(dataUrl);
+        form.setValue("profileImageURL", dataUrl, { shouldValidate: true });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      const originalImageUrl = initialData?.profileImageURL || "";
+      setImagePreview(originalImageUrl);
+      form.setValue("profileImageURL", originalImageUrl, { shouldValidate: true });
+    }
+  };
 
   return (
     <Card className="shadow-md border-border">
@@ -197,6 +223,44 @@ export function UserForm({ onSubmit, initialData, isLoading, submitButtonText = 
                 </FormItem>
               )}
             />
+             <FormItem>
+              <FormLabel>Profile Image</FormLabel>
+              <div className="flex items-center gap-4">
+                <Avatar className="h-20 w-20 rounded-md">
+                  <AvatarImage
+                    src={imagePreview || `https://placehold.co/80x80.png?text=No+Img`}
+                    alt="Profile preview"
+                    className="object-cover"
+                    data-ai-hint="user avatar"
+                  />
+                  <AvatarFallback>IMG</AvatarFallback>
+                </Avatar>
+                <FormControl>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="block w-full text-sm text-slate-500
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-full file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-primary/10 file:text-primary
+                      hover:file:bg-primary/20"
+                  />
+                </FormControl>
+              </div>
+              <FormDescription>
+                Upload a profile picture for the user. Use a square image for best results.
+              </FormDescription>
+              <FormField
+                control={form.control}
+                name="profileImageURL"
+                render={({ field }) => <Input type="hidden" {...field} />}
+              />
+               {form.formState.errors.profileImageURL && (
+                  <FormMessage>{form.formState.errors.profileImageURL.message}</FormMessage>
+              )}
+            </FormItem>
             
             <div className="flex justify-end pt-2">
               <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>

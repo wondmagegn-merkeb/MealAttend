@@ -31,9 +31,9 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
       </CardHeader>
       
       <CardContent className="p-4 md:p-6">
-        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:items-stretch"> {/* Changed items-start to sm:items-stretch */}
           {/* Left part: Image, Name, and Details */}
-          <div className="flex-shrink-0 flex flex-col items-center sm:items-start w-full sm:w-auto">
+          <div className="flex-shrink-0 flex flex-col items-center sm:items-start w-full sm:w-[60%]">
             <div className="flex flex-row items-center gap-3 mb-4 w-full">
               <Avatar className="h-24 w-24 sm:h-28 sm:w-28 rounded-lg border-2 border-muted shadow-md flex-shrink-0">
                 <AvatarImage 
@@ -66,15 +66,17 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
           </div>
 
           {/* Right part: QR Code */}
-          <div className="flex-grow flex items-center justify-center sm:justify-end w-full sm:w-auto mt-4 sm:mt-0">
-            <Image
-                src={qrCodeImageUrl}
-                alt={`QR Code for ${student.name}`}
-                width={180} 
-                height={180} 
-                data-ai-hint="QR code"
-                className="rounded-md border border-muted"
-            />
+          <div className="flex-grow flex flex-col items-center justify-center w-full sm:w-[40%] mt-4 sm:mt-0 h-full">
+            <div className="relative w-full h-full min-h-[150px] aspect-square max-w-[180px] mx-auto"> {/* Adjusted min-h and max-w */}
+                <Image
+                    src={qrCodeImageUrl}
+                    alt={`QR Code for ${student.name}`}
+                    layout="fill"
+                    objectFit="contain"
+                    data-ai-hint="QR code"
+                    className="rounded-md border border-muted"
+                />
+            </div>
           </div>
         </div>
       </CardContent>

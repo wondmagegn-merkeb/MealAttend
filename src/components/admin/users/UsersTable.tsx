@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Edit, Trash2, ChevronsUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import type { User } from "@/types/user";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -96,7 +97,19 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
             {users.map((user) => (
               <TableRow key={user.id}>
                 <TableCell className="font-mono text-xs">{user.userId || ''}</TableCell>
-                <TableCell className="font-medium">{user.fullName}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage 
+                        src={user.profileImageURL || `https://placehold.co/40x40.png?text=${user.fullName.split(' ').map(n => n[0]).join('')}`} 
+                        alt={user.fullName} 
+                        data-ai-hint="user avatar"
+                      />
+                      <AvatarFallback>{user.fullName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium">{user.fullName}</span>
+                  </div>
+                </TableCell>
                 <TableCell>{user.department}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>

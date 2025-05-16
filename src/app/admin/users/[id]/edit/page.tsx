@@ -17,7 +17,7 @@ export default function EditUserPage() {
   const params = useParams();
   const { toast } = useToast();
   
-  const userId = typeof params.id === 'string' ? params.id : undefined;
+  const userIdParam = typeof params.id === 'string' ? params.id : undefined; // internal id from URL
 
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,13 +25,13 @@ export default function EditUserPage() {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (userId) {
+    if (userIdParam) {
       setIsFetching(true);
       try {
         const storedUsersRaw = localStorage.getItem(USERS_STORAGE_KEY);
         if (storedUsersRaw) {
           const users: User[] = JSON.parse(storedUsersRaw);
-          const foundUser = users.find(u => u.id === userId);
+          const foundUser = users.find(u => u.id === userIdParam);
           if (foundUser) {
             setUser(foundUser);
           } else {
@@ -55,7 +55,7 @@ export default function EditUserPage() {
       setNotFound(true); 
       setIsFetching(false);
     }
-  }, [userId, toast]);
+  }, [userIdParam, toast]);
 
   const handleFormSubmit = (data: UserFormData) => {
     if (!user) return;
@@ -63,8 +63,12 @@ export default function EditUserPage() {
 
     setTimeout(() => {
       const updatedUser: User = {
-        ...user,
-        ...data, // includes fullName, department, email, role
+        ...user, // Retains id, userId, createdAt
+        fullName: data.fullName,
+        department: data.department,
+        email: data.email,
+        role: data.role,
+        profileImageURL: data.profileImageURL,
         updatedAt: new Date().toISOString(),
       };
       
@@ -136,10 +140,10 @@ export default function EditUserPage() {
           </Link>
         </Button>
       </div>
-      {user && (
+      {user && ( // Pass the full user object which includes userId for display in the form
         <UserForm 
           onSubmit={handleFormSubmit} 
-          initialData={user}
+          initialData={user} 
           isLoading={isLoading}
           submitButtonText="Save Changes"
         />
