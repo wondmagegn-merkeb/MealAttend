@@ -15,8 +15,9 @@ import type { User } from "@/types/user";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import React from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
-type SortableUserKeys = 'fullName' | 'department' | 'email' | 'createdAt';
+type SortableUserKeys = 'fullName' | 'department' | 'email' | 'role' | 'createdAt';
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -85,6 +86,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
               <SortableTableHead columnKey="fullName">Full Name</SortableTableHead>
               <SortableTableHead columnKey="department">Department</SortableTableHead>
               <SortableTableHead columnKey="email">Email</SortableTableHead>
+              <SortableTableHead columnKey="role">Role</SortableTableHead>
               <SortableTableHead columnKey="createdAt">Created At</SortableTableHead>
               <TableHead className="text-right w-[100px]">Actions</TableHead>
             </TableRow>
@@ -95,6 +97,11 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
                 <TableCell className="font-medium">{user.fullName}</TableCell>
                 <TableCell>{user.department}</TableCell>
                 <TableCell>{user.email}</TableCell>
+                <TableCell>
+                  <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>
+                    {user.role}
+                  </Badge>
+                </TableCell>
                 <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end items-center gap-1">

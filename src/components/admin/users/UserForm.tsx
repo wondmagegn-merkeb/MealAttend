@@ -34,6 +34,7 @@ const userFormSchema = z.object({
   fullName: z.string().min(1, { message: "Full Name is required." }),
   department: z.string().min(1, { message: "Department is required." }),
   email: z.string().email({ message: "Invalid email address." }).min(1, { message: "Email is required." }),
+  role: z.enum(['Admin', 'User'], { errorMap: () => ({ message: "Please select a role." }) }),
 });
 
 export type UserFormData = z.infer<typeof userFormSchema>;
@@ -52,8 +53,9 @@ export function UserForm({ onSubmit, initialData, isLoading, submitButtonText = 
     resolver: zodResolver(userFormSchema),
     defaultValues: initialData || {
       fullName: "",
-      department: "", // This will be the department name
+      department: "", 
       email: "",
+      role: "User", // Default role for new users
     },
   });
 
@@ -67,7 +69,6 @@ export function UserForm({ onSubmit, initialData, isLoading, submitButtonText = 
       }
     } catch (error) {
       console.error("Failed to load departments from localStorage for UserForm", error);
-      // Handle error or set empty array
     }
   }, []);
 
@@ -75,14 +76,16 @@ export function UserForm({ onSubmit, initialData, isLoading, submitButtonText = 
     if (initialData) {
       form.reset({
         fullName: initialData.fullName,
-        department: initialData.department, // department name
+        department: initialData.department, 
         email: initialData.email,
+        role: initialData.role,
       });
     } else {
       form.reset({
         fullName: "",
         department: "",
         email: "",
+        role: "User",
       });
     }
   }, [initialData, form]);
@@ -150,6 +153,30 @@ export function UserForm({ onSubmit, initialData, isLoading, submitButtonText = 
                   </FormControl>
                   <FormDescription>
                     The user's email address.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Role</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a role" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Admin">Admin</SelectItem>
+                      <SelectItem value="User">User</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    The user's role in the system.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

@@ -23,7 +23,7 @@ export default function NewUserPage() {
       const newUserId = `user_${Date.now()}`;
       const newUser: User = {
         id: newUserId, 
-        ...data,
+        ...data, // includes fullName, department, email, role
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

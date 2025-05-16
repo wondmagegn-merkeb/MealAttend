@@ -64,7 +64,7 @@ export default function EditUserPage() {
     setTimeout(() => {
       const updatedUser: User = {
         ...user,
-        ...data,
+        ...data, // includes fullName, department, email, role
         updatedAt: new Date().toISOString(),
       };
       

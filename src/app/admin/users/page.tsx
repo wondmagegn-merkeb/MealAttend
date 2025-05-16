@@ -14,14 +14,13 @@ import { useToast } from "@/hooks/use-toast";
 import { USERS_STORAGE_KEY } from '@/lib/constants';
 
 // Initial seed data if localStorage is empty
-// Ensure department names match those in initialSeedDepartments from departments/page.tsx
 const initialSeedUsers: User[] = [
-  { id: 'usr_smp_001', fullName: 'Alice Admin', department: 'Administration', email: 'alice.admin@example.com', createdAt: new Date('2023-01-10T10:00:00Z').toISOString(), updatedAt: new Date('2023-01-10T10:00:00Z').toISOString() },
-  { id: 'usr_smp_002', fullName: 'Bob Operator', department: 'Kitchen Staff', email: 'bob.operator@example.com', createdAt: new Date('2023-02-15T11:30:00Z').toISOString(), updatedAt: new Date('2023-02-15T11:30:00Z').toISOString() },
-  { id: 'usr_smp_003', fullName: 'Carol Support', department: 'Serving Team', email: 'carol.support@example.com', createdAt: new Date('2023-03-20T09:15:00Z').toISOString(), updatedAt: new Date('2023-03-20T09:15:00Z').toISOString() },
+  { id: 'usr_smp_001', fullName: 'Alice Admin', department: 'Administration', email: 'alice.admin@example.com', role: 'Admin', createdAt: new Date('2023-01-10T10:00:00Z').toISOString(), updatedAt: new Date('2023-01-10T10:00:00Z').toISOString() },
+  { id: 'usr_smp_002', fullName: 'Bob Operator', department: 'Kitchen Staff', email: 'bob.operator@example.com', role: 'User', createdAt: new Date('2023-02-15T11:30:00Z').toISOString(), updatedAt: new Date('2023-02-15T11:30:00Z').toISOString() },
+  { id: 'usr_smp_003', fullName: 'Carol Support', department: 'Serving Team', email: 'carol.support@example.com', role: 'User', createdAt: new Date('2023-03-20T09:15:00Z').toISOString(), updatedAt: new Date('2023-03-20T09:15:00Z').toISOString() },
 ];
 
-type SortableUserKeys = 'fullName' | 'department' | 'email' | 'createdAt';
+type SortableUserKeys = 'fullName' | 'department' | 'email' | 'role' | 'createdAt';
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -122,10 +121,12 @@ export default function UsersPage() {
     let processedUsers = [...users];
 
     if (searchTerm) {
+      const lowerSearchTerm = searchTerm.toLowerCase();
       processedUsers = processedUsers.filter(user =>
-        user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+        user.fullName.toLowerCase().includes(lowerSearchTerm) ||
+        user.department.toLowerCase().includes(lowerSearchTerm) ||
+        user.email.toLowerCase().includes(lowerSearchTerm) ||
+        user.role.toLowerCase().includes(lowerSearchTerm) 
       );
     }
 
@@ -200,7 +201,7 @@ export default function UsersPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search by name, department, or email..."
+              placeholder="Search by name, department, email or role..."
               value={searchTerm}
               onChange={handleSearchChange}
               className="pl-10 w-full sm:w-1/2 md:w-1/3"
