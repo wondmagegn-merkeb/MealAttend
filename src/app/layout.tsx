@@ -1,11 +1,13 @@
+
 import type {Metadata} from 'next';
-import { Inter } from 'next/font/google'; // Using Inter as a common, clean font. Geist is fine too if preferred.
+import { Inter } from 'next/font/google';
 import './globals.css';
-import { Toaster } from "@/components/ui/toaster"; // Added Toaster
+import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from '@/components/shared/ThemeProvider'; // Added ThemeProvider
 
 const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-inter', // Changed from Geist to Inter for variety, can be reverted.
+  variable: '--font-inter',
 });
 
 
@@ -22,8 +24,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
-        {children}
-        <Toaster />
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+        >
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );
