@@ -30,14 +30,17 @@ export function QrScannerClient() {
   const [lastProcessTime, setLastProcessTime] = useState<number>(0);
 
   const playSound = (type: 'success' | 'error' | 'notFound' | 'alreadyRecorded') => {
-    console.log(`Playing sound: ${type} (placeholder for actual sound file)`);
-    // Example for actual sound (uncomment and add sound files to /public/sounds/):
-    // let soundFile = type;
+    let soundFile = type; 
     // if (type === 'notFound' || type === 'alreadyRecorded') {
-    //    soundFile = 'error'; // Or have specific files: 'notFound.mp3', 'alreadyRecorded.mp3'
+    //    soundFile = 'error'; // Use a generic error sound if specific ones aren't needed/available
     // }
-    // const audio = new Audio(`/sounds/${soundFile}.mp3`);
-    // audio.play().catch(e => console.error(`Error playing ${type} sound:`, e));
+
+    const audio = new Audio(`/sounds/${soundFile}.mp3`);
+    audio.play().catch(e => {
+      console.error(`Error playing ${type} sound (${soundFile}.mp3):`, e);
+      // You might want to toast a generic "Sound playback error" if this is critical
+      // or if the user has explicitly enabled sound feedback in settings.
+    });
   };
 
   const processAttendance = useCallback(async (studentInternalId: string, mealType: MealType) => {
@@ -81,6 +84,13 @@ export function QrScannerClient() {
         } else {
           attendanceRecords.unshift(newAttendanceRecord);
           localStorage.setItem(ATTENDANCE_RECORDS_STORAGE_KEY, JSON.stringify(attendanceRecords));
+          // Trigger storage event manually for the current window (optional, for immediate feedback on other components in same tab)
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: ATTENDANCE_RECORDS_STORAGE_KEY,
+            newValue: JSON.stringify(attendanceRecords),
+            oldValue: storedAttendanceRaw,
+            storageArea: localStorage,
+          }));
           toast({
             title: "Attendance Recorded!",
             description: `${student.name} marked present for ${mealType}.`,
@@ -112,7 +122,7 @@ export function QrScannerClient() {
 
   const attemptAutoScan = useCallback(() => {
     if (!videoRef.current || !canvasRef.current || !hasCameraPermission || videoRef.current.paused || videoRef.current.ended || isProcessing) {
-      if (hasCameraPermission && videoRef.current && !videoRef.current.paused && !isProcessing) { // Ensure loop continues if conditions might become true soon
+      if (hasCameraPermission && videoRef.current && !videoRef.current.paused && !isProcessing) { 
         animationFrameIdRef.current = requestAnimationFrame(attemptAutoScan);
       }
       return;
@@ -153,7 +163,7 @@ export function QrScannerClient() {
           }
         }
       } catch (e) {
-        // console.error("jsQR error:", e); 
+        // console.warn("jsQR error during scan attempt (often benign if no QR in frame):", e); 
       }
     }
     
@@ -226,7 +236,7 @@ export function QrScannerClient() {
         <CardDescription>
           Select meal type. Auto-scanning will begin if camera is active.
           <br />
-          <span className="text-xs text-muted-foreground">Ensure `jsqr` is installed for QR detection.</span>
+          <span className="text-xs text-muted-foreground">Ensure QR code is clear and well-lit.</span>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -310,6 +320,5 @@ export function QrScannerClient() {
     </Card>
   );
 }
-
 
     
