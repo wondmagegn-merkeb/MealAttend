@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Loader2, FileText, FileSpreadsheet, Download } from 'lucide-react';
+import { ArrowLeft, Loader2, FileText, FileSpreadsheet, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Student } from '@/types/student';
 import { STUDENTS_STORAGE_KEY } from '@/lib/constants';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,6 +36,8 @@ const parseClass = (classStr: string | undefined): { number: number; letter: str
   return { number: Infinity, letter: classStr.toUpperCase() };
 };
 
+const ITEMS_PER_PAGE_DISPLAY = 10;
+
 export default function ExportStudentsPage() {
   const { toast } = useToast();
   const [allStudents, setAllStudents] = useState<Student[]>([]);
@@ -44,6 +46,7 @@ export default function ExportStudentsPage() {
   
   const [selectedClass, setSelectedClass] = useState<string>('all');
   const [selectedYear, setSelectedYear] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     setIsMounted(true);
@@ -112,7 +115,28 @@ export default function ExportStudentsPage() {
 
     return tempStudents;
   }, [allStudents, selectedClass, selectedYear]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredStudents.length / ITEMS_PER_PAGE_DISPLAY));
+
+  const currentTableData = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE_DISPLAY;
+    const endIndex = startIndex + ITEMS_PER_PAGE_DISPLAY;
+    return filteredStudents.slice(startIndex, endIndex);
+  }, [filteredStudents, currentPage]);
+
+  useEffect(() => {
+    // Reset to first page if filters change
+    setCurrentPage(1);
+  }, [selectedClass, selectedYear]);
   
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    } else if (currentPage < 1 && totalPages > 0) {
+        setCurrentPage(1);
+    }
+  }, [currentPage, totalPages]);
+
   const generatedHeaderTitle = useMemo(() => {
     const gradeText = selectedClass === 'all' ? 'All Grades' : `Grade ${selectedClass}`;
     const yearText = selectedYear === 'all' ? 'All Years' : `Year ${selectedYear}`;
@@ -131,14 +155,14 @@ export default function ExportStudentsPage() {
     autoTable(doc, {
       startY: 25,
       head: [['Student ID', 'Name', 'Gender', 'Grade']],
-      body: filteredStudents.map(student => [
+      body: filteredStudents.map(student => [ // Use all filtered students for export
         student.studentId,
         student.name,
         student.gender,
         student.class,
       ]),
       styles: { fontSize: 10 },
-      headStyles: { fillColor: [22, 160, 133] }, // Example header color
+      headStyles: { fillColor: [22, 160, 133] },
       margin: { top: 20 },
     });
 
@@ -154,10 +178,10 @@ export default function ExportStudentsPage() {
     }
 
     const dataToExport = [
-      [generatedHeaderTitle], // Main header
-      [], // Blank row
-      ['Student ID', 'Name', 'Gender', 'Grade'], // Table headers
-      ...filteredStudents.map(student => [
+      [generatedHeaderTitle], 
+      [], 
+      ['Student ID', 'Name', 'Gender', 'Grade'], 
+      ...filteredStudents.map(student => [ // Use all filtered students for export
         student.studentId,
         student.name,
         student.gender,
@@ -167,15 +191,12 @@ export default function ExportStudentsPage() {
 
     const worksheet = XLSX.utils.aoa_to_sheet(dataToExport);
     
-    // Attempt to merge the main header cell
      if (worksheet['!merges']) {
-        worksheet['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }); // Merge A1 to D1
+        worksheet['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }); 
     } else {
         worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
     }
-    // Basic column width (optional, might need fine-tuning)
     worksheet['!cols'] = [{wch:20},{wch:30},{wch:10},{wch:10}];
-
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Students');
@@ -275,6 +296,7 @@ export default function ExportStudentsPage() {
           {filteredStudents.length === 0 ? (
             <p className="text-center text-muted-foreground py-4">No students match your filter criteria.</p>
           ) : (
+            <>
             <div className="overflow-x-auto rounded-md border">
               <table className="min-w-full divide-y divide-border text-sm">
                 <thead className="bg-muted/50">
@@ -286,7 +308,7 @@ export default function ExportStudentsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border bg-background">
-                  {filteredStudents.map(student => (
+                  {currentTableData.map(student => ( // Use currentTableData for display
                     <tr key={student.id}>
                       <td className="px-4 py-2 whitespace-nowrap">{student.studentId}</td>
                       <td className="px-4 py-2 whitespace-nowrap">{student.name}</td>
@@ -297,9 +319,39 @@ export default function ExportStudentsPage() {
                 </tbody>
               </table>
             </div>
+            {filteredStudents.length > ITEMS_PER_PAGE_DISPLAY && (
+              <div className="flex items-center justify-between pt-4 mt-4 border-t">
+                <p className="text-sm text-muted-foreground">
+                  Page {currentPage} of {totalPages} ({filteredStudents.length} records)
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="mr-1 h-4 w-4" />
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                    <ChevronRight className="ml-1 h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+            </>
           )}
         </CardContent>
       </Card>
     </div>
   );
 }
+
+    
