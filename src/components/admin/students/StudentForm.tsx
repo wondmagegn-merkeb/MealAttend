@@ -30,8 +30,8 @@ import { Card, CardContent } from "@/components/ui/card";
 
 const studentFormSchema = z.object({
   name: z.string().min(1, { message: "Full Name is required." }),
-  gender: z.enum(['Male', 'Female', 'Other', ''], { errorMap: () => ({ message: "Please select a gender." }) }).default(''),
-  classNumber: z.string().min(1, { message: "Please select a class number." }),
+  gender: z.string().min(1, { message: "Please select a gender." }),
+  classNumber: z.string().min(1, { message: "Please select a class number (1-12)." }),
   classAlphabet: z.string().min(1, { message: "Please select a grade alphabet." }),
   profileImageURL: z.string().optional().or(z.literal('')),
 });
@@ -60,13 +60,7 @@ export function StudentForm({
 
   const form = useForm<StudentFormData>({
     resolver: zodResolver(studentFormSchema),
-    defaultValues: initialData ? {
-      name: initialData.name || "",
-      gender: initialData.gender || "",
-      classNumber: initialData.classNumber || "",
-      classAlphabet: initialData.classAlphabet || "",
-      profileImageURL: initialData.profileImageURL || "",
-    } : {
+    defaultValues: {
       name: "",
       gender: "",
       classNumber: "",
@@ -248,7 +242,7 @@ export function StudentForm({
               <FormField
                 control={form.control}
                 name="profileImageURL"
-                render={({ field }) => <Input type="hidden" {...field} />}
+                render={({ field }) => <Input type="hidden" {...field} />} 
               />
               {form.formState.errors.profileImageURL && <FormMessage>{form.formState.errors.profileImageURL.message}</FormMessage>}
             </FormItem>
