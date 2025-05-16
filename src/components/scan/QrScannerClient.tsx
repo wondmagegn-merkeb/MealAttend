@@ -13,7 +13,7 @@ import type { Student } from '@/types/student';
 import type { AttendanceRecord } from '@/components/admin/AttendanceTable';
 import { STUDENTS_STORAGE_KEY, ATTENDANCE_RECORDS_STORAGE_KEY } from '@/lib/constants';
 import { format } from 'date-fns';
-import jsQR from 'jsqr'; 
+import jsQR from 'jsqr';
 
 type MealType = "Breakfast" | "Lunch" | "Dinner";
 const SCAN_COOLDOWN_MS = 5000; // Cooldown period of 5 seconds after a successful processing
@@ -30,16 +30,19 @@ export function QrScannerClient() {
   const [lastProcessTime, setLastProcessTime] = useState<number>(0);
 
   const playSound = (type: 'success' | 'error' | 'notFound' | 'alreadyRecorded') => {
-    let soundFile = type; 
-    // if (type === 'notFound' || type === 'alreadyRecorded') {
-    //    soundFile = 'error'; // Use a generic error sound if specific ones aren't needed/available
-    // }
-
-    const audio = new Audio(`/sounds/${soundFile}.mp3`);
+    const soundFile = `/sounds/${type}.mp3`;
+    console.log(`Attempting to play sound: ${soundFile}`);
+    const audio = new Audio(soundFile);
     audio.play().catch(e => {
-      console.error(`Error playing ${type} sound (${soundFile}.mp3):`, e);
-      // You might want to toast a generic "Sound playback error" if this is critical
-      // or if the user has explicitly enabled sound feedback in settings.
+      console.error(`Error playing sound '${type}' (${soundFile}):`, e);
+      // Log the type as a fallback if actual sound fails
+      console.log(`Fallback sound log: ${type}`);
+      toast({
+        title: "Audio Playback Issue",
+        description: `Could not play sound for '${type}'. Check console and ensure '${type}.mp3' exists in public/sounds/.`,
+        variant: "default",
+        duration: 3000,
+      });
     });
   };
 
@@ -84,7 +87,6 @@ export function QrScannerClient() {
         } else {
           attendanceRecords.unshift(newAttendanceRecord);
           localStorage.setItem(ATTENDANCE_RECORDS_STORAGE_KEY, JSON.stringify(attendanceRecords));
-          // Trigger storage event manually for the current window (optional, for immediate feedback on other components in same tab)
           window.dispatchEvent(new StorageEvent('storage', {
             key: ATTENDANCE_RECORDS_STORAGE_KEY,
             newValue: JSON.stringify(attendanceRecords),
@@ -320,5 +322,3 @@ export function QrScannerClient() {
     </Card>
   );
 }
-
-    
