@@ -94,7 +94,7 @@ export default function LoginPage() {
             </a>
           </Link>
            <p className="text-xs text-muted-foreground mt-4">
-            Hint: Any User ID from seed data / password123
+            Hint: User ID e.g., <code className="bg-muted px-1 py-0.5 rounded-sm">ADERA/USR/2024/00001</code> / Password: <code className="bg-muted px-1 py-0.5 rounded-sm">password123</code>
           </p>
         </CardFooter>
       </Card>
