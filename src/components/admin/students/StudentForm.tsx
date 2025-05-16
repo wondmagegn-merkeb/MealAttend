@@ -32,9 +32,9 @@ import { Card, CardContent } from "@/components/ui/card";
 const studentFormSchema = z.object({
   name: z.string().min(1, { message: "Full Name is required." }),
   gender: z.string().min(1, { message: "Please select a gender." }),
-  classNumber: z.string().min(1, { message: "Please select a class number." }),
-  classAlphabet: z.string().min(1, { message: "Please select a grade alphabet." }),
-  profileImageURL: z.string().optional().or(z.literal('')),
+  classNumber: z.string().min(1, { message: "Please select a class number." }), // Values 1-12
+  classAlphabet: z.string().min(1, { message: "Please select a grade alphabet." }), // Values A-Z
+  profileImageURL: z.string().optional().or(z.literal('')), // Optional or empty string
 });
 
 export type StudentFormData = z.infer<typeof studentFormSchema>;
@@ -53,7 +53,7 @@ const classNumberOptions = Array.from({ length: 12 }, (_, i) => (i + 1).toString
 export function StudentForm({
   onSubmit,
   initialData,
-  isLoading,
+  isLoading = false,
   submitButtonText = "Submit",
   isEditMode = false,
 }: StudentFormProps) {
@@ -67,6 +67,7 @@ export function StudentForm({
       classNumber: "",
       classAlphabet: "",
       profileImageURL: "",
+      ...(initialData || {}), // Spread initialData if provided
     },
   });
 
@@ -81,7 +82,7 @@ export function StudentForm({
       });
       setImagePreview(initialData.profileImageURL || null);
     } else {
-      form.reset({ // Explicitly reset for new form as well
+      form.reset({ // Explicitly reset to empty if no initialData
         name: "",
         gender: "",
         classNumber: "",
@@ -90,7 +91,7 @@ export function StudentForm({
       });
       setImagePreview(null);
     }
-  }, [initialData, form]);
+  }, [initialData, form.reset]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -138,7 +139,7 @@ export function StudentForm({
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="gender"
@@ -173,7 +174,7 @@ export function StudentForm({
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select number" />
-                        </Trigger>
+                        </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {classNumberOptions.map(option => (
@@ -210,13 +211,13 @@ export function StudentForm({
                 )}
               />
             </div>
-            
+
             <FormItem>
               <FormLabel>Profile Image</FormLabel>
               <div className="flex items-center gap-4">
                 <Avatar className="h-20 w-20 rounded-md">
-                  <AvatarImage 
-                    src={imagePreview || `https://placehold.co/80x80.png?text=No+Image`} 
+                  <AvatarImage
+                    src={imagePreview || `https://placehold.co/80x80.png?text=No+Image`}
                     alt="Profile preview"
                     className="object-cover"
                     data-ai-hint="student profile"
@@ -224,10 +225,10 @@ export function StudentForm({
                   <AvatarFallback>IMG</AvatarFallback>
                 </Avatar>
                 <FormControl>
-                    <Input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handleImageChange} 
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
                       className="block w-full text-sm text-slate-500
                         file:mr-4 file:py-2 file:px-4
                         file:rounded-full file:border-0
@@ -245,8 +246,9 @@ export function StudentForm({
                 name="profileImageURL"
                 render={({ field }) => <Input type="hidden" {...field} />} 
               />
-              {/* Ensure form.formState.errors.profileImageURL is accessed correctly */}
-              <FormMessage>{form.formState.errors.profileImageURL?.message}</FormMessage>
+              {form.formState.errors.profileImageURL && (
+                <FormMessage>{form.formState.errors.profileImageURL.message}</FormMessage>
+              )}
             </FormItem>
 
             <div className="flex justify-end pt-2">
