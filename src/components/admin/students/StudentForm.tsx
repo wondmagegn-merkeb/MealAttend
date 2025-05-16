@@ -1,4 +1,3 @@
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,22 +31,22 @@ import { Card, CardContent } from "@/components/ui/card";
 const studentFormSchema = z.object({
   name: z.string().min(1, { message: "Full Name is required." }),
   gender: z.string().min(1, { message: "Please select a gender." }),
-  classNumber: z.string().min(1, { message: "Please select a class number." }), // Simplified validation for Select
-  classAlphabet: z.string().min(1, { message: "Please select a grade alphabet." }), // Simplified validation for Select
-  profileImageURL: z.string().optional().or(z.literal('')),
+  classNumber: z.string().min(1, { message: "Please select a class number." }),
+  classAlphabet: z.string().min(1, { message: "Please select a grade alphabet." }),
+  profileImageURL: z.string().optional().or(z.literal("")),
 });
 
 export type StudentFormData = z.infer<typeof studentFormSchema>;
 
 interface StudentFormProps {
   onSubmit: (data: StudentFormData) => void;
-  initialData?: Partial<StudentFormData> & { studentId?: string }; // studentId is only for display in edit mode
+  initialData?: Partial<StudentFormData> & { studentId?: string };
   isLoading?: boolean;
   submitButtonText?: string;
   isEditMode?: boolean;
 }
 
-const gradeAlphabetOptions = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+const gradeAlphabetOptions = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const classNumberOptions = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
 
 export function StudentForm({
@@ -125,6 +124,7 @@ export function StudentForm({
                 </FormDescription>
               </FormItem>
             )}
+
             <FormField
               control={form.control}
               name="name"
@@ -145,7 +145,7 @@ export function StudentForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Gender</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select gender" />
@@ -169,15 +169,17 @@ export function StudentForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Class Number</FormLabel>
-                     <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select number" />
-                        </Trigger>
+                        </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {classNumberOptions.map(option => (
-                           <SelectItem key={option} value={option}>{option}</SelectItem>
+                        {classNumberOptions.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -186,21 +188,24 @@ export function StudentForm({
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="classAlphabet"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Grade Alphabet</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select letter" />
-                        </Trigger>
+                        </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {gradeAlphabetOptions.map(option => (
-                           <SelectItem key={option} value={option}>{option}</SelectItem>
+                        {gradeAlphabetOptions.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -219,27 +224,26 @@ export function StudentForm({
                     src={imagePreview || `https://placehold.co/80x80.png?text=No+Image`}
                     alt="Profile preview"
                     className="object-cover"
-                    data-ai-hint="student profile"
                   />
                   <AvatarFallback>IMG</AvatarFallback>
                 </Avatar>
                 <FormControl>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="block w-full text-sm text-slate-500
-                        file:mr-4 file:py-2 file:px-4
-                        file:rounded-full file:border-0
-                        file:text-sm file:font-semibold
-                        file:bg-primary/10 file:text-primary
-                        hover:file:bg-primary/20"
-                    />
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="block w-full text-sm text-slate-500
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-full file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-primary/10 file:text-primary
+                      hover:file:bg-primary/20"
+                  />
                 </FormControl>
               </div>
               <FormDescription>
-                    Upload a profile picture for the student.
-                </FormDescription>
+                Upload a profile picture for the student.
+              </FormDescription>
               <FormField
                 control={form.control}
                 name="profileImageURL"

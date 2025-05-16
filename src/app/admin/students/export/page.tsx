@@ -124,22 +124,36 @@ export default function ExportStudentsPage() {
       return;
     }
 
-    // Headers for TSV
-    const headers = ["Student ID", "Name", "Gender", "Grade"];
+    // Header for the page/export context
+    const titleLine = generatedHeaderTitle;
+    
+    // Column headers for TSV
+    const columnHeaders = ["Student ID", "Name", "Gender", "Grade"];
     const dataRows = filteredStudents.map(student => 
       [student.studentId, student.name, student.gender, student.class].join('\t')
     );
-    const tsvData = [headers.join('\t'), ...dataRows].join('\n');
+    
+    // Construct TSV data with title, blank line, then headers and data
+    const tsvData = [
+      titleLine, 
+      '', // Blank line for spacing
+      columnHeaders.join('\t'), 
+      ...dataRows
+    ].join('\n');
 
     navigator.clipboard.writeText(tsvData).then(() => {
-      toast({ title: "Copied to Clipboard", description: `${filteredStudents.length} student records copied.` });
+      toast({ 
+        title: "Copied to Clipboard", 
+        description: `Student list (${filteredStudents.length} records) with header copied. You can paste this into Excel or other spreadsheet software.`,
+        duration: 5000 
+      });
       setHasCopied(true);
       setTimeout(() => setHasCopied(false), 2000);
     }).catch(err => {
       console.error("Failed to copy to clipboard:", err);
       toast({ title: "Copy Failed", description: "Could not copy data to clipboard. See console for details.", variant: "destructive" });
     });
-  }, [filteredStudents, toast]);
+  }, [filteredStudents, toast, generatedHeaderTitle]);
 
 
   if (!isMounted || isLoading) {
@@ -156,7 +170,7 @@ export default function ExportStudentsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-primary">Export Student List</h1>
-          <p className="text-muted-foreground">Filter students by grade and/or year, then copy the data.</p>
+          <p className="text-muted-foreground">Filter students by grade and/or year, then copy the data with a contextual header.</p>
         </div>
         <Button variant="outline" asChild>
           <Link href="/admin/students">
@@ -210,11 +224,12 @@ export default function ExportStudentsPage() {
               <CardTitle>Student Export Preview</CardTitle>
               <CardDescription>
                 Review the filtered student list. {filteredStudents.length} record(s) found.
+                The copied data will include the dynamic header shown below. For direct PDF/Excel file generation, specialized libraries would be needed.
               </CardDescription>
             </div>
             <Button onClick={handleCopyToClipboard} disabled={filteredStudents.length === 0} className="w-full sm:w-auto">
               {hasCopied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
-              {hasCopied ? 'Copied!' : 'Copy Table Data'}
+              {hasCopied ? 'Copied!' : 'Copy Data with Header'}
             </Button>
           </div>
         </CardHeader>
