@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -56,6 +57,17 @@ export function DepartmentForm({ onSubmit, initialData, isLoading, submitButtonT
       <CardContent className="pt-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {initialData?.id && (
+              <FormItem>
+                <FormLabel>Department ID</FormLabel>
+                <FormControl>
+                  <Input value={initialData.id} readOnly className="bg-muted/50" />
+                </FormControl>
+                <FormDescription>
+                  The unique identifier for the department (auto-generated).
+                </FormDescription>
+              </FormItem>
+            )}
             <FormField
               control={form.control}
               name="name"
