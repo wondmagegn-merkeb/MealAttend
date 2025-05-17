@@ -15,14 +15,14 @@ import { DEPARTMENTS_STORAGE_KEY } from '@/lib/constants';
 
 // Initial seed data if localStorage is empty
 const initialSeedDepartments: Department[] = [
-  { id: 'dept_kitchen', name: 'Kitchen Staff' },
-  { id: 'dept_serving', name: 'Serving Team' },
-  { id: 'dept_logistics', name: 'Logistics & Supply' },
-  { id: 'dept_admin', name: 'Administration' },
-  { id: 'dept_cleaning', name: 'Cleaning Crew' },
+  { id: 'dept_kitchen_staff_001', name: 'Kitchen Staff' },
+  { id: 'dept_serving_team_002', name: 'Serving Team' },
+  { id: 'dept_logistics_supply_003', name: 'Logistics & Supply' },
+  { id: 'dept_admin_004', name: 'Administration' },
+  { id: 'dept_cleaning_crew_005', name: 'Cleaning Crew' },
 ];
 
-type SortableDepartmentKeys = 'name';
+type SortableDepartmentKeys = 'id' | 'name';
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -81,7 +81,8 @@ export default function DepartmentsPage() {
         });
         
         const totalPagesAfterDelete = Math.ceil(updatedDepartments.filter(dept =>
-          dept.name.toLowerCase().includes(searchTerm.toLowerCase())
+          dept.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          dept.id.toLowerCase().includes(searchTerm.toLowerCase())
         ).length / ITEMS_PER_PAGE);
 
         if (currentPage > totalPagesAfterDelete && totalPagesAfterDelete > 0) {
@@ -121,8 +122,10 @@ export default function DepartmentsPage() {
     let processedDepartments = [...departments];
 
     if (searchTerm) {
+      const lowerSearchTerm = searchTerm.toLowerCase();
       processedDepartments = processedDepartments.filter(dept =>
-        dept.name.toLowerCase().includes(searchTerm.toLowerCase())
+        dept.name.toLowerCase().includes(lowerSearchTerm) ||
+        dept.id.toLowerCase().includes(lowerSearchTerm)
       );
     }
 
@@ -131,7 +134,12 @@ export default function DepartmentsPage() {
         const aValue = a[sortConfig.key!];
         const bValue = b[sortConfig.key!];
         
-        let comparison = aValue.localeCompare(bValue);
+        let comparison = 0;
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          comparison = aValue.localeCompare(bValue);
+        } else {
+          comparison = String(aValue).localeCompare(String(bValue));
+        }
         return sortConfig.direction === 'ascending' ? comparison : -comparison;
       });
     }
@@ -186,7 +194,7 @@ export default function DepartmentsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search by name..."
+              placeholder="Search by ID or name..."
               value={searchTerm}
               onChange={handleSearchChange}
               className="pl-10 w-full sm:w-1/2 md:w-1/3"
@@ -242,3 +250,4 @@ export default function DepartmentsPage() {
     </div>
   );
 }
+

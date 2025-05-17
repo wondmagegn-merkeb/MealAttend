@@ -15,8 +15,9 @@ import type { Department } from "@/types/department";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import React from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
-type SortableDepartmentKeys = 'name'; // Only 'name' is sortable now
+type SortableDepartmentKeys = 'id' | 'name'; 
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -56,9 +57,9 @@ export function DepartmentsTable({ departments, onEdit, onDelete, sortConfig, on
     return sortConfig.direction === 'ascending' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
   };
 
-  const SortableTableHead = ({ columnKey, children }: { columnKey: SortableDepartmentKeys, children: React.ReactNode }) => (
+  const SortableTableHead = ({ columnKey, children, className }: { columnKey: SortableDepartmentKeys, children: React.ReactNode, className?: string }) => (
     <TableHead
-      className="cursor-pointer hover:bg-muted/50 transition-colors group"
+      className={cn("cursor-pointer hover:bg-muted/50 transition-colors group", className)}
       onClick={() => onSort(columnKey)}
     >
       <div className="flex items-center">
@@ -82,6 +83,7 @@ export function DepartmentsTable({ departments, onEdit, onDelete, sortConfig, on
         <Table>
           <TableHeader>
             <TableRow>
+              <SortableTableHead columnKey="id" className="w-[250px]">Department ID</SortableTableHead>
               <SortableTableHead columnKey="name">Name</SortableTableHead>
               <TableHead className="text-right w-[100px]">Actions</TableHead>
             </TableRow>
@@ -89,6 +91,7 @@ export function DepartmentsTable({ departments, onEdit, onDelete, sortConfig, on
           <TableBody>
             {departments.map((department) => (
               <TableRow key={department.id}>
+                <TableCell className="font-mono text-xs">{department.id}</TableCell>
                 <TableCell className="font-medium">{department.name}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end items-center gap-1">
@@ -143,3 +146,4 @@ export function DepartmentsTable({ departments, onEdit, onDelete, sortConfig, on
     </TooltipProvider>
   );
 }
+
