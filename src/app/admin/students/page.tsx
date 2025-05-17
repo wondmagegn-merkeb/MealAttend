@@ -13,20 +13,20 @@ import type { Student } from "@/types/student";
 import { useToast } from "@/hooks/use-toast";
 import { STUDENTS_STORAGE_KEY } from '@/lib/constants';
 
-// Initial seed data if localStorage is empty - Class format updated
+// Initial seed data if localStorage is empty - Class format and Student ID format updated
 const initialSeedStudents: Student[] = [
-  { id: 'clxkxk001', studentId: 'ADERA/STU/2024/00001', name: 'Alice Johnson', gender: 'Female', class: '10A', profileImageURL: 'https://placehold.co/100x100.png?text=AJ', qrCodeData: 'clxkxk001', createdAt: new Date('2023-01-15T10:00:00Z').toISOString(), updatedAt: new Date('2023-01-15T10:00:00Z').toISOString() },
-  { id: 'clxkxk002', studentId: 'ADERA/STU/2024/00002', name: 'Bob Williams', gender: 'Male', class: '9B', profileImageURL: 'https://placehold.co/100x100.png?text=BW', qrCodeData: 'clxkxk002', createdAt: new Date('2023-02-20T11:00:00Z').toISOString(), updatedAt: new Date('2023-02-20T11:00:00Z').toISOString() },
-  { id: 'clxkxk003', studentId: 'ADERA/STU/2023/00003', name: 'Carol Davis', gender: 'Female', class: '11A', profileImageURL: 'https://placehold.co/100x100.png?text=CD', qrCodeData: 'clxkxk003', createdAt: new Date('2023-03-10T09:00:00Z').toISOString(), updatedAt: new Date('2023-03-10T09:00:00Z').toISOString() },
-  { id: 'clxkxk004', studentId: 'ADERA/STU/2023/00004', name: 'David Brown', gender: 'Male', class: '10B', profileImageURL: 'https://placehold.co/100x100.png?text=DB', qrCodeData: 'clxkxk004', createdAt: new Date('2022-12-01T14:00:00Z').toISOString(), updatedAt: new Date('2022-12-01T14:00:00Z').toISOString() },
-  { id: 'clxkxk005', studentId: 'ADERA/STU/2023/00005', name: 'Eva Green', gender: 'Female', class: '9A', profileImageURL: 'https://placehold.co/100x100.png?text=EG', qrCodeData: 'clxkxk005', createdAt: new Date('2023-04-05T16:00:00Z').toISOString(), updatedAt: new Date('2023-04-05T16:00:00Z').toISOString() },
-  { id: 'clxkxk006', studentId: 'ADERA/STU/2024/00006', name: 'Frank Harris', gender: 'Male', class: '12A', profileImageURL: 'https://placehold.co/100x100.png?text=FH', qrCodeData: 'clxkxk006', createdAt: new Date('2023-05-01T08:00:00Z').toISOString(), updatedAt: new Date('2023-05-01T08:00:00Z').toISOString() },
-  { id: 'clxkxk007', studentId: 'ADERA/STU/2024/00007', name: 'Grace Lee', gender: 'Female', class: '11B', profileImageURL: 'https://placehold.co/100x100.png?text=GL', qrCodeData: 'clxkxk007', createdAt: new Date('2023-06-12T13:00:00Z').toISOString(), updatedAt: new Date('2023-06-12T13:00:00Z').toISOString() },
-  { id: 'clxkxk008', studentId: 'ADERA/STU/2023/00008', name: 'Henry Wilson', gender: 'Male', class: '10A', profileImageURL: 'https://placehold.co/100x100.png?text=HW', qrCodeData: 'clxkxk008', createdAt: new Date('2022-11-25T15:30:00Z').toISOString(), updatedAt: new Date('2022-11-25T15:30:00Z').toISOString() },
-  { id: 'clxkxk009', studentId: 'ADERA/STU/2023/00009', name: 'Ivy Clark', gender: 'Female', class: '9C', profileImageURL: 'https://placehold.co/100x100.png?text=IC', qrCodeData: 'clxkxk009', createdAt: new Date('2023-07-02T10:30:00Z').toISOString(), updatedAt: new Date('2023-07-02T10:30:00Z').toISOString() },
-  { id: 'clxkxk010', studentId: 'ADERA/STU/2024/00010', name: 'Jack Martinez', gender: 'Male', class: '12B', profileImageURL: 'https://placehold.co/100x100.png?text=JM', qrCodeData: 'clxkxk010', createdAt: new Date('2023-08-19T11:45:00Z').toISOString(), updatedAt: new Date('2023-08-19T11:45:00Z').toISOString() },
-  { id: 'clxkxk011', studentId: 'ADERA/STU/2024/00011', name: 'Kate Adams', gender: 'Female', class: '10A', profileImageURL: 'https://placehold.co/100x100.png?text=KA', qrCodeData: 'clxkxk011', createdAt: new Date('2023-09-01T09:00:00Z').toISOString(), updatedAt: new Date('2023-09-01T09:00:00Z').toISOString() },
-  { id: 'clxkxk012', studentId: 'ADERA/STU/2022/00012', name: 'Leo Garcia', gender: 'Male', class: '8A', profileImageURL: 'https://placehold.co/100x100.png?text=LG', qrCodeData: 'clxkxk012', createdAt: new Date('2022-08-15T14:30:00Z').toISOString(), updatedAt: new Date('2022-08-15T14:30:00Z').toISOString() },
+  { id: 'clxkxk001', studentId: 'ADERA/STU/2024/00001', name: 'Alice Wonderland Johnson', gender: 'Female', class: '10A', profileImageURL: 'https://placehold.co/100x100.png?text=AJ', qrCodeData: 'clxkxk001', createdAt: new Date('2024-01-15T10:00:00Z').toISOString(), updatedAt: new Date('2024-01-15T10:00:00Z').toISOString() },
+  { id: 'clxkxk002', studentId: 'ADERA/STU/2024/00002', name: 'Bob The Builder Williams', gender: 'Male', class: '9B', profileImageURL: 'https://placehold.co/100x100.png?text=BW', qrCodeData: 'clxkxk002', createdAt: new Date('2024-02-20T11:00:00Z').toISOString(), updatedAt: new Date('2024-02-20T11:00:00Z').toISOString() },
+  { id: 'clxkxk003', studentId: 'ADERA/STU/2023/00001', name: 'Carol Danvers Davis', gender: 'Female', class: '11A', profileImageURL: 'https://placehold.co/100x100.png?text=CD', qrCodeData: 'clxkxk003', createdAt: new Date('2023-03-10T09:00:00Z').toISOString(), updatedAt: new Date('2023-03-10T09:00:00Z').toISOString() },
+  { id: 'clxkxk004', studentId: 'ADERA/STU/2023/00002', name: 'David Copperfield Brown', gender: 'Male', class: '10B', profileImageURL: 'https://placehold.co/100x100.png?text=DB', qrCodeData: 'clxkxk004', createdAt: new Date('2023-01-01T14:00:00Z').toISOString(), updatedAt: new Date('2023-01-01T14:00:00Z').toISOString() },
+  { id: 'clxkxk005', studentId: 'ADERA/STU/2022/00001', name: 'Eva Green Gardenia', gender: 'Female', class: '9A', profileImageURL: 'https://placehold.co/100x100.png?text=EG', qrCodeData: 'clxkxk005', createdAt: new Date('2022-09-05T16:00:00Z').toISOString(), updatedAt: new Date('2022-09-05T16:00:00Z').toISOString() },
+  { id: 'clxkxk006', studentId: 'ADERA/STU/2024/00003', name: 'Frank N. Stein Harris', gender: 'Male', class: '12A', profileImageURL: 'https://placehold.co/100x100.png?text=FH', qrCodeData: 'clxkxk006', createdAt: new Date('2024-05-01T08:00:00Z').toISOString(), updatedAt: new Date('2024-05-01T08:00:00Z').toISOString() },
+  { id: 'clxkxk007', studentId: 'ADERA/STU/2023/00003', name: 'Grace Hopper Lee', gender: 'Female', class: '11B', profileImageURL: 'https://placehold.co/100x100.png?text=GL', qrCodeData: 'clxkxk007', createdAt: new Date('2023-06-12T13:00:00Z').toISOString(), updatedAt: new Date('2023-06-12T13:00:00Z').toISOString() },
+  { id: 'clxkxk008', studentId: 'ADERA/STU/2022/00002', name: 'Henry Ford Wilson', gender: 'Male', class: '10A', profileImageURL: 'https://placehold.co/100x100.png?text=HW', qrCodeData: 'clxkxk008', createdAt: new Date('2022-11-25T15:30:00Z').toISOString(), updatedAt: new Date('2022-11-25T15:30:00Z').toISOString() },
+  { id: 'clxkxk009', studentId: 'ADERA/STU/2023/00004', name: 'Ivy League Clark', gender: 'Female', class: '9C', profileImageURL: 'https://placehold.co/100x100.png?text=IC', qrCodeData: 'clxkxk009', createdAt: new Date('2023-07-02T10:30:00Z').toISOString(), updatedAt: new Date('2023-07-02T10:30:00Z').toISOString() },
+  { id: 'clxkxk010', studentId: 'ADERA/STU/2024/00004', name: 'Jack Sparrow Martinez', gender: 'Male', class: '12B', profileImageURL: 'https://placehold.co/100x100.png?text=JM', qrCodeData: 'clxkxk010', createdAt: new Date('2024-08-19T11:45:00Z').toISOString(), updatedAt: new Date('2024-08-19T11:45:00Z').toISOString() },
+  { id: 'clxkxk011', studentId: 'ADERA/STU/2024/00005', name: 'Kate Winslet Adams', gender: 'Female', class: '10A', profileImageURL: 'https://placehold.co/100x100.png?text=KA', qrCodeData: 'clxkxk011', createdAt: new Date('2024-09-01T09:00:00Z').toISOString(), updatedAt: new Date('2024-09-01T09:00:00Z').toISOString() },
+  { id: 'clxkxk012', studentId: 'ADERA/STU/2022/00003', name: 'Leonardo DiCaprio Garcia', gender: 'Male', class: '8A', profileImageURL: 'https://placehold.co/100x100.png?text=LG', qrCodeData: 'clxkxk012', createdAt: new Date('2022-08-15T14:30:00Z').toISOString(), updatedAt: new Date('2022-08-15T14:30:00Z').toISOString() },
 ];
 
 type SortableStudentKeys = 'studentId' | 'name' | 'class' | 'gender' | 'createdAt';
@@ -98,7 +98,7 @@ export default function StudentsPage() {
           title: "Student Deleted",
           description: "The student record has been successfully deleted.",
         });
-        // If on last page and it becomes empty, go to previous page
+        
         const totalPagesAfterDelete = Math.ceil(updatedStudents.filter(student =>
           student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           student.studentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -129,12 +129,12 @@ export default function StudentsPage() {
       direction = 'descending';
     }
     setSortConfig({ key, direction });
-    setCurrentPage(1); // Reset to first page on sort
+    setCurrentPage(1); 
   };
   
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1); // Reset to first page on search
+    setCurrentPage(1); 
   };
 
   const filteredAndSortedStudents = useMemo(() => {
@@ -180,10 +180,9 @@ export default function StudentsPage() {
   }, [filteredAndSortedStudents, currentPage]);
 
   useEffect(() => {
-    // Adjust current page if it's out of bounds after filtering/sorting
-    if (currentPage > totalPages && totalPages > 0) { // Added totalPages > 0 condition
+    if (currentPage > totalPages && totalPages > 0) { 
       setCurrentPage(totalPages);
-    } else if (currentPage === 0 && totalPages > 0) { // Handle case where currentPage might become 0
+    } else if (currentPage === 0 && totalPages > 0) { 
         setCurrentPage(1);
     }
   }, [currentPage, totalPages]);

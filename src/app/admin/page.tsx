@@ -7,8 +7,8 @@ import { DashboardMetrics } from "@/components/admin/DashboardMetrics";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Loader2, Users, CalendarDays, LineChart as LineChartIcon, FileDown } from "lucide-react"; // Changed BarChartBig to LineChartIcon
-import { LineChart, Line, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip as RechartsTooltip, Legend as RechartsLegend } from "recharts"; // Changed BarChart, Bar
+import { Loader2, Users, CalendarDays, LineChart as LineChartIcon, FileDown } from "lucide-react";
+import { LineChart, Line, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip as RechartsTooltip, Legend as RechartsLegend } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, type ChartConfig } from "@/components/ui/chart";
 import type { Student } from '@/types/student';
 import type { AttendanceRecord } from '@/components/admin/AttendanceTable';
@@ -27,6 +27,8 @@ const shortMonthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
 
 
 const getYearFromStudentId = (studentId: string): string | null => {
+  // Expects ID in format ADERA/STU/YYYY/NNNNN
+  if (typeof studentId !== 'string') return null;
   const parts = studentId.split('/');
   if (parts.length === 4 && /^\d{4}$/.test(parts[2])) {
     return parts[2];
@@ -38,7 +40,7 @@ export default function AdminDashboardPage() {
   const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [allAttendanceRecords, setAllAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [selectedYear, setSelectedYear] = useState<string>(String(CURRENT_GREGORIAN_YEAR));
-  const [selectedMonth, setSelectedMonth] = useState<number>(CURRENT_GREGORIAN_MONTH); // New state for selected month
+  const [selectedMonth, setSelectedMonth] = useState<number>(CURRENT_GREGORIAN_MONTH); 
   const [isMounted, setIsMounted] = useState(false);
   const { toast } = useToast();
 
@@ -68,21 +70,23 @@ export default function AdminDashboardPage() {
         sortedYears.push(String(CURRENT_GREGORIAN_YEAR));
         sortedYears.sort((a, b) => parseInt(b) - parseInt(a));
     }
-    return sortedYears;
+    return sortedYears.length > 0 ? sortedYears : [String(CURRENT_GREGORIAN_YEAR)];
   }, [allStudents]);
 
   const totalStudentsInSelectedYear = useMemo(() => {
-    if (selectedYear === 'all_years' || !allStudents.length) {
-      return allStudents.length;
+    if (selectedYear === 'all_years') { // if "All Years" is selected for the metric.
+        return allStudents.length;
     }
+    if (!allStudents.length) return 0;
     return allStudents.filter(student => getYearFromStudentId(student.studentId) === selectedYear).length;
   }, [allStudents, selectedYear]);
 
   const yearForCharts = useMemo(() => {
+    // For charts, if "all_years" is chosen in the main filter, default charts to current Gregorian year.
     return selectedYear === 'all_years' ? CURRENT_GREGORIAN_YEAR : parseInt(selectedYear);
   }, [selectedYear]);
 
-  // Data for "Daily Attendance by Day" for the selectedMonth and yearForCharts
+
   const dailyAttendanceData = useMemo(() => {
     const recordsInSelectedMonthAndYear = allAttendanceRecords.filter(record => {
       const recordDate = parseISO(record.date);
@@ -94,13 +98,13 @@ export default function AdminDashboardPage() {
 
     for (let i = 1; i <= daysInSelectedMonth; i++) {
       const dayStr = i.toString().padStart(2, '0');
-      const count = recordsInSelectedMonthAndYear.filter(r => format(parseISO(r.date), 'dd') === dayStr).length;
+      const count = recordsInSelectedMonthAndYear.filter(r => format(parseISO(r.date), 'dd') === dayStr && r.status === 'Present').length;
       dailyCounts.push({ day: dayStr, count });
     }
     return dailyCounts;
   }, [allAttendanceRecords, yearForCharts, selectedMonth]);
 
-  // Data for "[Selected Year]'s Attendance by Month"
+
   const monthlyAttendanceData = useMemo(() => {
     const recordsInSelectedYear = allAttendanceRecords.filter(record => {
       const recordDate = parseISO(record.date);
@@ -110,7 +114,7 @@ export default function AdminDashboardPage() {
     const monthlyCounts: { month: string; count: number }[] = [];
     
     for (let i = 0; i < 12; i++) {
-      const count = recordsInSelectedYear.filter(r => getMonth(parseISO(r.date)) === i).length;
+      const count = recordsInSelectedYear.filter(r => getMonth(parseISO(r.date)) === i && r.status === 'Present').length;
       monthlyCounts.push({ month: shortMonthNames[i], count });
     }
     return monthlyCounts;
@@ -133,7 +137,7 @@ export default function AdminDashboardPage() {
     doc.setFontSize(10);
     doc.text(`Exported on: ${currentTimestamp}`, 14, 26);
     doc.setFontSize(12);
-    doc.text(`Total Students (${selectedYear === 'all_years' ? 'All Time' : 'Year ' + selectedYear}): ${totalStudentsInSelectedYear}`, 14, 36);
+    doc.text(`Total Students (${selectedYear === 'all_years' ? 'All Time' : 'Admission Year ' + selectedYear}): ${totalStudentsInSelectedYear}`, 14, 36);
 
     if (dailyAttendanceData.length > 0) {
         doc.addPage();
@@ -178,7 +182,7 @@ export default function AdminDashboardPage() {
         [`Month Selected for Daily Chart: ${monthDisplay}`],
         [`Exported on: ${format(new Date(), "yyyy-MM-dd HH:mm")}`],
         [],
-        [`Total Students (${selectedYear === 'all_years' ? 'All Time' : 'Year ' + selectedYear})`, totalStudentsInSelectedYear],
+        [`Total Students (${selectedYear === 'all_years' ? 'All Time' : 'Admission Year ' + selectedYear})`, totalStudentsInSelectedYear],
     ];
     const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
     summaryWs['!cols'] = [{wch:40}, {wch:20}];
@@ -255,7 +259,7 @@ export default function AdminDashboardPage() {
         </div>
       </div>
       
-      <DashboardMetrics />
+      <DashboardMetrics /> {/* This component shows generic, static metrics */}
 
       <Card className="shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -282,7 +286,7 @@ export default function AdminDashboardPage() {
             <CardDescription>Daily meal attendance (Line Chart) for {monthNames[selectedMonth]}, {yearForCharts}.</CardDescription>
           </CardHeader>
           <CardContent>
-            {dailyAttendanceData.length > 0 ? (
+            {dailyAttendanceData.length > 0 && dailyAttendanceData.some(d => d.count > 0) ? (
               <ChartContainer config={chartConfig} className="h-[300px] w-full">
                 <LineChart data={dailyAttendanceData} accessibilityLayer margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
                   <CartesianGrid vertical={false} strokeDasharray="3 3"/>
@@ -314,7 +318,7 @@ export default function AdminDashboardPage() {
             <CardDescription>Monthly meal attendance (Line Chart) for the year {yearForCharts}.</CardDescription>
           </CardHeader>
           <CardContent>
-            {monthlyAttendanceData.length > 0 ? (
+            {monthlyAttendanceData.length > 0 && monthlyAttendanceData.some(m => m.count > 0) ? (
             <ChartContainer config={chartConfig} className="h-[300px] w-full">
               <LineChart data={monthlyAttendanceData} accessibilityLayer margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
                 <CartesianGrid vertical={false} strokeDasharray="3 3" />
@@ -341,6 +345,4 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
-
     

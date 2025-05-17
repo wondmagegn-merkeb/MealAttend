@@ -31,7 +31,7 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
       </CardHeader>
       
       <CardContent className="p-4 md:p-6">
-        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:items-stretch"> {/* Changed items-start to sm:items-stretch */}
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:items-stretch">
           {/* Left part: Image, Name, and Details */}
           <div className="flex-shrink-0 flex flex-col items-center sm:items-start w-full sm:w-[60%]">
             <div className="flex flex-row items-center gap-3 mb-4 w-full">
@@ -44,7 +44,8 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
                 />
                 <AvatarFallback className="text-3xl">{student.name.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
               </Avatar>
-              <h3 className="text-xl font-semibold text-primary truncate flex-grow min-w-0" title={student.name}>{student.name}</h3>
+              {/* Removed truncate class, added min-w-0 to allow wrapping with flex */}
+              <h3 className="text-xl font-semibold text-primary flex-grow min-w-0" title={student.name}>{student.name}</h3>
             </div>
             
             <div className="space-y-1.5 text-sm text-left w-full">
@@ -54,7 +55,7 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
               </div>
               
               <div className="flex">
-                <p className="w-16 font-medium text-muted-foreground">Class:</p>
+                <p className="w-16 font-medium text-muted-foreground">Grade:</p> {/* Changed Class to Grade */}
                 <p className="font-medium">{student.class}</p>
               </div>
               
@@ -65,9 +66,10 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
             </div>
           </div>
 
-          {/* Right part: QR Code */}
+          {/* Right part: QR Code - Adjusted for full height */}
           <div className="flex-grow flex flex-col items-center justify-center w-full sm:w-[40%] mt-4 sm:mt-0 h-full">
-            <div className="relative w-full h-full min-h-[150px] aspect-square max-w-[180px] mx-auto"> {/* Adjusted min-h and max-w */}
+            {/* Wrapper for QR code to control its size and aspect ratio, taking full available height */}
+            <div className="relative w-full h-full aspect-square"> 
                 <Image
                     src={qrCodeImageUrl}
                     alt={`QR Code for ${student.name}`}
