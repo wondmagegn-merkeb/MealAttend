@@ -39,13 +39,12 @@ const userFormSchema = z.object({
   profileImageURL: z.string().optional().or(z.literal("")),
 });
 
-// Schema for profile edit, omitting role
+// Schema for profile edit, omitting role and department as they are not directly editable by user on their profile
 const profileEditFormSchema = z.object({
   fullName: z.string().min(1, { message: "Full Name is required." }),
-  department: z.string().min(1, { message: "Department is required." }),
   email: z.string().email({ message: "Invalid email address." }).min(1, { message: "Email is required." }),
   profileImageURL: z.string().optional().or(z.literal("")),
-  // Role is implicitly part of initialData but not part of the submitted form data for profile edit
+  // Department and Role are implicitly part of initialData but not part of the submitted form data for profile edit
 });
 
 
@@ -73,19 +72,16 @@ export function UserForm({
 
   const currentSchema = isProfileEditMode ? profileEditFormSchema : userFormSchema;
 
-  const form = useForm<UserFormData | ProfileEditFormData>({ // Use union type for form
+  const form = useForm<UserFormData | ProfileEditFormData>({ 
     resolver: zodResolver(currentSchema),
     defaultValues: initialData ? {
-      fullName: initialData.fullName,
-      department: initialData.department, 
-      email: initialData.email,
-      role: initialData.role, // Role always comes from initialData
+      ...initialData, // Spread initialData which includes department and role
       profileImageURL: initialData.profileImageURL || "",
     } : {
       fullName: "",
       department: "", 
       email: "",
-      role: "User", // Default for new user
+      role: "User", 
       profileImageURL: "",
     },
   });
@@ -105,10 +101,7 @@ export function UserForm({
   useEffect(() => {
     if (initialData) {
       form.reset({
-        fullName: initialData.fullName,
-        department: initialData.department, 
-        email: initialData.email,
-        role: initialData.role, // Ensure role is part of reset if initialData exists
+        ...initialData,
         profileImageURL: initialData.profileImageURL || "",
       });
       setImagePreview(initialData.profileImageURL || null);
@@ -117,7 +110,7 @@ export function UserForm({
         fullName: "",
         department: "",
         email: "",
-        role: "User", // Default for new user creation scenario
+        role: "User", 
         profileImageURL: "",
       });
       setImagePreview(null);
@@ -143,10 +136,12 @@ export function UserForm({
 
   const onFormSubmit = (data: UserFormData | ProfileEditFormData) => {
     if (isProfileEditMode && initialData) {
-      // For profile edit, merge submitted data with existing non-editable fields like role and userId
-      const finalData = {
-        ...initialData, // includes id, userId, role, createdAt
-        ...data, // includes fullName, department, email, profileImageURL from form
+      const finalData: Partial<User> = { // Ensure type safety, department & role come from initialData
+        fullName: (data as ProfileEditFormData).fullName,
+        email: (data as ProfileEditFormData).email,
+        profileImageURL: (data as ProfileEditFormData).profileImageURL,
+        // department and role are not submitted from the form in profile edit mode
+        // they will be retained from the original currentUser object in useAuth's updateCurrentUserDetails
       };
       onSubmit(finalData);
     } else {
@@ -160,7 +155,7 @@ export function UserForm({
       <CardContent className="pt-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6">
-            {initialData?.userId && !isProfileEditMode && ( // Show UserID only for admin edit, not self-profile edit
+            {initialData?.userId && !isProfileEditMode && ( 
               <FormItem>
                 <FormLabel>User ID (ADERA Format)</FormLabel>
                 <FormControl>
@@ -184,40 +179,54 @@ export function UserForm({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="department"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Department</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    value={field.value} 
-                    defaultValue={field.value}
-                    disabled={availableDepartments.length === 0}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={availableDepartments.length > 0 ? "Select a department" : "No departments available"} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {availableDepartments.map((dept) => (
-                        <SelectItem key={dept.id} value={dept.name}>
-                          {dept.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {availableDepartments.length === 0 && (
-                    <FormDescription>
-                        No departments found. Please add departments first.
-                    </FormDescription>
-                  )}
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            
+            {isProfileEditMode ? (
+              <FormItem>
+                <FormLabel>Department</FormLabel>
+                <FormControl>
+                  <Input value={initialData?.department || 'N/A'} readOnly className="bg-muted/50" />
+                </FormControl>
+                <FormDescription>
+                  Your department (cannot be changed here).
+                </FormDescription>
+              </FormItem>
+            ) : (
+              <FormField
+                control={form.control}
+                name="department"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Department</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      value={field.value} 
+                      defaultValue={field.value}
+                      disabled={availableDepartments.length === 0}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={availableDepartments.length > 0 ? "Select a department" : "No departments available"} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {availableDepartments.map((dept) => (
+                          <SelectItem key={dept.id} value={dept.name}>
+                            {dept.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {availableDepartments.length === 0 && (
+                      <FormDescription>
+                          No departments found. Please add departments first.
+                      </FormDescription>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
             <FormField
               control={form.control}
               name="email"
@@ -234,7 +243,7 @@ export function UserForm({
                 </FormItem>
               )}
             />
-            {!isProfileEditMode && ( // Show Role only for admin edit/new, not self-profile edit
+            {!isProfileEditMode && ( 
               <FormField
                 control={form.control}
                 name="role"
@@ -295,7 +304,7 @@ export function UserForm({
                 render={({ field }) => <Input type="hidden" {...field} />}
               />
                {form.formState.errors.profileImageURL && (
-                  <FormMessage>{form.formState.errors.profileImageURL.message}</FormMessage>
+                  <FormMessage>{(form.formState.errors.profileImageURL as any).message}</FormMessage>
               )}
             </FormItem>
             
