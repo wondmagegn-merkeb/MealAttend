@@ -9,7 +9,8 @@ import {
   USERS_STORAGE_KEY,
   CURRENT_USER_ROLE_KEY,
   CURRENT_USER_ID_KEY,
-  PASSWORD_CHANGE_REQUIRED_KEY_PREFIX
+  PASSWORD_CHANGE_REQUIRED_KEY_PREFIX,
+  CURRENT_USER_DETAILS_KEY, // New key for full user details
 } from '@/lib/constants';
 import { useToast } from './use-toast';
 import type { User } from '@/types/user';
@@ -31,22 +32,27 @@ const MOCK_DEFAULT_ADMIN_USER: User = {
 
 interface AuthContextType {
   isAuthenticated: boolean | null;
-  currentUserRole: User['role'] | null;
-  currentUserId: string | null;
+  currentUser: User | null; // Changed to store full user object
+  currentUserRole: User['role'] | null; // Kept for direct access if needed
+  currentUserId: string | null; // Kept for direct access if needed
   isPasswordChangeRequired: boolean;
-  login: (userId?: string, password?: string) => Promise<boolean>;
+  login: (userIdInput?: string, password?: string) => Promise<boolean>;
   logout: () => void;
   clearPasswordChangeRequirement: () => void;
   setIsAuthenticated: Dispatch<SetStateAction<boolean | null>>;
+  updateCurrentUserDetails: (updatedDetails: Partial<User>) => void;
 }
 
 export function useAuth(): AuthContextType {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [currentUserRole, setCurrentUserRole] = useState<User['role'] | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isPasswordChangeRequired, setIsPasswordChangeRequired] = useState<boolean>(false);
   const router = useRouter();
   const { toast } = useToast();
+
+  const currentUserRole = currentUser?.role || null;
+  const currentUserId = currentUser?.userId || null;
+
 
   const checkPasswordChangeStatus = useCallback((userIdToCheck: string | null) => {
     if (!userIdToCheck) {
@@ -65,26 +71,28 @@ export function useAuth(): AuthContextType {
   useEffect(() => {
     try {
       const token = localStorage.getItem(AUTH_TOKEN_KEY);
-      const storedRole = localStorage.getItem(CURRENT_USER_ROLE_KEY) as User['role'] | null;
-      const storedUserId = localStorage.getItem(CURRENT_USER_ID_KEY);
-
-      setIsAuthenticated(!!token);
-      setCurrentUserRole(storedRole);
-      setCurrentUserId(storedUserId);
-      if (token && storedUserId) {
-        checkPasswordChangeStatus(storedUserId);
+      const storedUserDetailsRaw = localStorage.getItem(CURRENT_USER_DETAILS_KEY);
+      
+      if (token && storedUserDetailsRaw) {
+        const storedUser: User = JSON.parse(storedUserDetailsRaw);
+        setIsAuthenticated(true);
+        setCurrentUser(storedUser);
+        checkPasswordChangeStatus(storedUser.userId);
+      } else {
+        setIsAuthenticated(false);
+        setCurrentUser(null);
+        setIsPasswordChangeRequired(false);
       }
 
     } catch (e) {
       console.error("localStorage access error:", e);
       setIsAuthenticated(false);
-      setCurrentUserRole(null);
-      setCurrentUserId(null);
+      setCurrentUser(null);
       setIsPasswordChangeRequired(false);
     }
   }, [checkPasswordChangeStatus]);
 
-  const login = useCallback(async (userId?: string, password?: string): Promise<boolean> => {
+  const login = useCallback(async (userIdInput?: string, password?: string): Promise<boolean> => {
     return new Promise((resolve) => {
       setTimeout(() => {
         try {
@@ -96,28 +104,30 @@ export function useAuth(): AuthContextType {
               usersToSearch = JSON.parse(storedUsersRaw);
             } catch (parseError) {
               console.error("Failed to parse users from localStorage", parseError);
-              usersToSearch = []; // Fallback to empty if parsing fails
+              usersToSearch = []; 
             }
           }
-
-          // Ensure the default admin is available for login, especially if localStorage is empty or corrupted
+          
           const adminExistsInStorage = usersToSearch.some(u => u.userId === MOCK_DEFAULT_ADMIN_USER.userId);
           if (!adminExistsInStorage) {
-            // Add the fallback admin if not found. This ensures the demo login always works.
-            // For a real app, this fallback logic would not exist; users would come from a DB.
             usersToSearch.push(MOCK_DEFAULT_ADMIN_USER);
+            // Optionally save the updated list back to localStorage if it was missing the default admin
+            // localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(usersToSearch));
           }
           
-          const user = usersToSearch.find(u => u.userId === userId);
+          const user = usersToSearch.find(u => u.userId === userIdInput);
 
           if (user && password === MOCK_DEFAULT_PASSWORD) {
             localStorage.setItem(AUTH_TOKEN_KEY, `mock-jwt-token-for-${user.userId}`);
+            localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(user)); // Store full user object
+
+            // Keep these for potential direct use or quicker checks if needed, though currentUser is primary
             localStorage.setItem(CURRENT_USER_ROLE_KEY, user.role);
             localStorage.setItem(CURRENT_USER_ID_KEY, user.userId);
 
+
             setIsAuthenticated(true);
-            setCurrentUserRole(user.role);
-            setCurrentUserId(user.userId);
+            setCurrentUser(user);
 
             const passwordChangeDismissedKey = PASSWORD_CHANGE_REQUIRED_KEY_PREFIX + user.userId + "_dismissed";
             const passwordChangeRequiredKey = PASSWORD_CHANGE_REQUIRED_KEY_PREFIX + user.userId;
@@ -145,22 +155,19 @@ export function useAuth(): AuthContextType {
         }
       }, 500);
     });
-  }, [toast]); // Removed checkPasswordChangeStatus from here as it's called from useEffect
+  }, [toast]); 
 
   const logout = useCallback(() => {
     try {
       localStorage.removeItem(AUTH_TOKEN_KEY);
       localStorage.removeItem(CURRENT_USER_ROLE_KEY);
-      // The password change flag (PASSWORD_CHANGE_REQUIRED_KEY_PREFIX + uid) and its "_dismissed" counterpart
-      // are specific to a user and should ideally remain unless explicitly handled by password change logic.
-      // For this simulation, we'll leave them as they are, as they are tied to the user's ID.
       localStorage.removeItem(CURRENT_USER_ID_KEY);
+      localStorage.removeItem(CURRENT_USER_DETAILS_KEY); // Clear full user details
 
 
       setIsAuthenticated(false);
-      setCurrentUserRole(null);
-      setCurrentUserId(null);
-      setIsPasswordChangeRequired(false); // Reset this on logout for safety
+      setCurrentUser(null);
+      setIsPasswordChangeRequired(false); 
       toast({ title: "Logged Out", description: "You have been successfully logged out." });
       router.push('/auth/login');
     } catch (e) {
@@ -169,7 +176,7 @@ export function useAuth(): AuthContextType {
   }, [router, toast]);
 
   const clearPasswordChangeRequirement = useCallback(() => {
-    const uid = currentUserId;
+    const uid = currentUser?.userId; // Use userId from currentUser
     if (uid) {
       try {
         localStorage.setItem(PASSWORD_CHANGE_REQUIRED_KEY_PREFIX + uid + "_dismissed", 'true');
@@ -179,7 +186,56 @@ export function useAuth(): AuthContextType {
         console.error("Error clearing password change requirement flag:", e);
       }
     }
-  }, [currentUserId]);
+  }, [currentUser]);
 
-  return { isAuthenticated, currentUserRole, currentUserId, isPasswordChangeRequired, login, logout, clearPasswordChangeRequirement, setIsAuthenticated };
+  const updateCurrentUserDetails = useCallback((updatedDetails: Partial<User>) => {
+    if (!currentUser) return;
+
+    const updatedUser: User = { ...currentUser, ...updatedDetails, updatedAt: new Date().toISOString() };
+    
+    // Update state
+    setCurrentUser(updatedUser);
+    
+    // Update localStorage for the CURRENT_USER_DETAILS_KEY
+    localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(updatedUser));
+
+    // Also update this user in the general USERS_STORAGE_KEY list
+    try {
+      const storedUsersRaw = localStorage.getItem(USERS_STORAGE_KEY);
+      let users: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
+      const userIndex = users.findIndex(u => u.id === updatedUser.id);
+      if (userIndex > -1) {
+        users[userIndex] = updatedUser;
+      } else {
+        // This case should ideally not happen if the user was loaded correctly
+        users.push(updatedUser); 
+      }
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+      
+      // Optionally, dispatch a storage event if other tabs need to react
+      window.dispatchEvent(new StorageEvent('storage', { key: USERS_STORAGE_KEY, newValue: JSON.stringify(users) }));
+      window.dispatchEvent(new StorageEvent('storage', { key: CURRENT_USER_DETAILS_KEY, newValue: JSON.stringify(updatedUser) }));
+
+
+    } catch (error) {
+      console.error("Failed to update user details in USERS_STORAGE_KEY:", error);
+      toast({ title: "Storage Error", description: "Could not update user in main list.", variant: "destructive" });
+    }
+
+    toast({ title: "Profile Updated", description: "Your profile details have been saved." });
+  }, [currentUser, toast]);
+
+
+  return { 
+    isAuthenticated, 
+    currentUser,
+    currentUserRole, 
+    currentUserId, 
+    isPasswordChangeRequired, 
+    login, 
+    logout, 
+    clearPasswordChangeRequirement, 
+    setIsAuthenticated,
+    updateCurrentUserDetails
+  };
 }

@@ -39,32 +39,53 @@ const userFormSchema = z.object({
   profileImageURL: z.string().optional().or(z.literal("")),
 });
 
+// Schema for profile edit, omitting role
+const profileEditFormSchema = z.object({
+  fullName: z.string().min(1, { message: "Full Name is required." }),
+  department: z.string().min(1, { message: "Department is required." }),
+  email: z.string().email({ message: "Invalid email address." }).min(1, { message: "Email is required." }),
+  profileImageURL: z.string().optional().or(z.literal("")),
+  // Role is implicitly part of initialData but not part of the submitted form data for profile edit
+});
+
+
 export type UserFormData = z.infer<typeof userFormSchema>;
+export type ProfileEditFormData = z.infer<typeof profileEditFormSchema>;
+
 
 interface UserFormProps {
-  onSubmit: (data: UserFormData) => void;
+  onSubmit: (data: UserFormData | ProfileEditFormData) => void;
   initialData?: User | null;
   isLoading?: boolean;
   submitButtonText?: string;
+  isProfileEditMode?: boolean;
 }
 
-export function UserForm({ onSubmit, initialData, isLoading, submitButtonText = "Submit" }: UserFormProps) {
+export function UserForm({ 
+  onSubmit, 
+  initialData, 
+  isLoading = false, 
+  submitButtonText = "Submit",
+  isProfileEditMode = false,
+}: UserFormProps) {
   const [availableDepartments, setAvailableDepartments] = useState<Department[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const form = useForm<UserFormData>({
-    resolver: zodResolver(userFormSchema),
+  const currentSchema = isProfileEditMode ? profileEditFormSchema : userFormSchema;
+
+  const form = useForm<UserFormData | ProfileEditFormData>({ // Use union type for form
+    resolver: zodResolver(currentSchema),
     defaultValues: initialData ? {
       fullName: initialData.fullName,
       department: initialData.department, 
       email: initialData.email,
-      role: initialData.role,
+      role: initialData.role, // Role always comes from initialData
       profileImageURL: initialData.profileImageURL || "",
     } : {
       fullName: "",
       department: "", 
       email: "",
-      role: "User", 
+      role: "User", // Default for new user
       profileImageURL: "",
     },
   });
@@ -87,21 +108,21 @@ export function UserForm({ onSubmit, initialData, isLoading, submitButtonText = 
         fullName: initialData.fullName,
         department: initialData.department, 
         email: initialData.email,
-        role: initialData.role,
+        role: initialData.role, // Ensure role is part of reset if initialData exists
         profileImageURL: initialData.profileImageURL || "",
       });
       setImagePreview(initialData.profileImageURL || null);
     } else {
-      form.reset({
+       form.reset({
         fullName: "",
         department: "",
         email: "",
-        role: "User",
+        role: "User", // Default for new user creation scenario
         profileImageURL: "",
       });
       setImagePreview(null);
     }
-  }, [initialData, form]);
+  }, [initialData, form.reset]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -120,12 +141,26 @@ export function UserForm({ onSubmit, initialData, isLoading, submitButtonText = 
     }
   };
 
+  const onFormSubmit = (data: UserFormData | ProfileEditFormData) => {
+    if (isProfileEditMode && initialData) {
+      // For profile edit, merge submitted data with existing non-editable fields like role and userId
+      const finalData = {
+        ...initialData, // includes id, userId, role, createdAt
+        ...data, // includes fullName, department, email, profileImageURL from form
+      };
+      onSubmit(finalData);
+    } else {
+      onSubmit(data as UserFormData); // For new user or full admin edit
+    }
+  };
+
+
   return (
     <Card className="shadow-md border-border">
       <CardContent className="pt-6">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {initialData?.userId && (
+          <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6">
+            {initialData?.userId && !isProfileEditMode && ( // Show UserID only for admin edit, not self-profile edit
               <FormItem>
                 <FormLabel>User ID (ADERA Format)</FormLabel>
                 <FormControl>
@@ -199,30 +234,32 @@ export function UserForm({ onSubmit, initialData, isLoading, submitButtonText = 
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Role</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Admin">Admin</SelectItem>
-                      <SelectItem value="User">User</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    The user's role in the system.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {!isProfileEditMode && ( // Show Role only for admin edit/new, not self-profile edit
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Role</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a role" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Admin">Admin</SelectItem>
+                        <SelectItem value="User">User</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      The user's role in the system.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
              <FormItem>
               <FormLabel>Profile Image</FormLabel>
               <div className="flex items-center gap-4">
