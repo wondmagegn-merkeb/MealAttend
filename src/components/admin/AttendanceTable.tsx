@@ -15,14 +15,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CheckCircle, XCircle, ChevronsUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from '@/lib/utils';
 
+export type MealType = "Breakfast" | "Lunch" | "Dinner";
+
 export interface AttendanceRecord {
   id: string; 
   studentId: string; 
   studentName: string;
   studentAvatar?: string; 
-  // studentEmail removed
   date: string; 
-  mealType: "Breakfast" | "Lunch" | "Dinner";
+  mealType: MealType;
   scannedAt: string; 
   status: "Present" | "Absent";
 }
@@ -104,7 +105,6 @@ export function AttendanceTable({
                     </Avatar>
                     <div>
                       <div className="font-medium">{record.studentName}</div>
-                      {/* Removed student email display */}
                     </div>
                   </div>
                 </TableCell>
@@ -128,5 +128,4 @@ export function AttendanceTable({
     </div>
   );
 }
-
   
