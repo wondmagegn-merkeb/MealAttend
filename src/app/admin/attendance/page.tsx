@@ -73,7 +73,15 @@ const transformAttendanceForExport = (records: AttendanceRecord[]): ExportAttend
       };
     }
 
-    const mealStatus = record.status === "Present" ? record.scannedAt : "Absent";
+    let mealStatus;
+    if (record.status === "Present") {
+      mealStatus = `Present (${record.scannedAt})`;
+    } else if (record.status === "Absent") {
+      mealStatus = `Absent (N/A)`;
+    } else {
+      mealStatus = "N/A"; // Should not happen with current data model, but good fallback
+    }
+    
     if (record.mealType === "Breakfast") {
       groupedRecords[key].breakfast = mealStatus;
     } else if (record.mealType === "Lunch") {
@@ -198,6 +206,10 @@ export default function AttendancePage() {
       }
       return newSet;
     });
+    // Reset to page 1 when meal type filter changes if not in report view
+    if (!isReportView) {
+      setCurrentPage(1);
+    }
   };
   
   const handleGenerateReport = () => {
@@ -216,9 +228,9 @@ export default function AttendancePage() {
   const clearReportFilters = () => {
     setReportStudentId(undefined);
     setReportDateRange(undefined);
-    setSelectedMealTypes(new Set(ALL_MEAL_TYPES));
+    // setSelectedMealTypes(new Set(ALL_MEAL_TYPES)); // Keep selected meal types unless explicitly cleared by user from checkbox
     setIsReportView(false);
-    setSearchTerm("");
+    // setSearchTerm(""); // Keep search term unless report view is also cleared for general searching
     setCurrentPage(1);
   };
 
@@ -237,10 +249,11 @@ export default function AttendancePage() {
           return isWithinInterval(recordDate, { start: fromDate, end: toDate });
         });
       }
+       // Apply meal type filter if it's report view and specific meal types are selected
       if (selectedMealTypes.size > 0 && selectedMealTypes.size < ALL_MEAL_TYPES.length) {
         recordsToProcess = recordsToProcess.filter(record => selectedMealTypes.has(record.mealType));
       }
-    } else { 
+    } else { // Not in report view, apply search term and global meal type filters
       if (searchTerm) {
         const lowerSearchTerm = searchTerm.toLowerCase();
         recordsToProcess = recordsToProcess.filter(record =>
@@ -249,6 +262,10 @@ export default function AttendancePage() {
           record.mealType.toLowerCase().includes(lowerSearchTerm) ||
           record.date.includes(searchTerm) 
         );
+      }
+      // Apply meal type filter globally if not all types are selected
+      if (selectedMealTypes.size > 0 && selectedMealTypes.size < ALL_MEAL_TYPES.length) {
+        recordsToProcess = recordsToProcess.filter(record => selectedMealTypes.has(record.mealType));
       }
     }
     
@@ -287,7 +304,7 @@ export default function AttendancePage() {
             dateInfoForTitle += ` To ${format(reportDateRange.to, "LLL dd, y")}`;
             dateInfoForFile += `_To_${format(reportDateRange.to, "yyyy-MM-dd")}`;
         } else {
-             dateInfoForTitle = `On ${format(reportDateRange.from, "LLL dd, y")}`; // Corrected for single day selection
+             dateInfoForTitle = `On ${format(reportDateRange.from, "LLL dd, y")}`; 
              dateInfoForFile = `On_${format(reportDateRange.from, "yyyy-MM-dd")}`;
         }
     }
@@ -299,21 +316,27 @@ export default function AttendancePage() {
       mealTypeInfoForFile = Array.from(selectedMealTypes).join('_').replace(/\s+/g, '');
     }
     
+    const baseFileName = "Attendance_Report";
+    let dynamicFileName = baseFileName;
+    let dynamicDocTitle = "Attendance Report";
+
     if (isReportView) {
-        const base = "Attendance_Report";
         const studentPart = (reportStudentId && reportStudentId !== 'all_students') ? studentNameForTitle.replace(/\s+/g, '_') : "All_Students";
         const datePart = reportDateRange?.from ? dateInfoForFile.replace(/\s+/g, '_').replace(/-/g,'') : "All_Dates";
-        const mealPart = (selectedMealTypes.size > 0 && selectedMealTypes.size < ALL_MEAL_TYPES.length) ? mealTypeInfoForFile : "All_Meals";
-
-        const docTitle = `Attendance Report: ${studentNameForTitle} (${dateInfoForTitle}) - Meals: ${mealTypeInfoForTitle}`;
-        return { fileNameBase: `${base}_${studentPart}_${datePart}_${mealPart}`, docTitle };
+        const mealPart = mealTypeInfoForFile;
+        dynamicFileName = `${baseFileName}_${studentPart}_${datePart}_${mealPart}`;
+        dynamicDocTitle = `Attendance Report: ${studentNameForTitle} (${dateInfoForTitle}) - Meals: ${mealTypeInfoForTitle}`;
     } else if (searchTerm) {
-         const docTitle = `Attendance Records (Search: ${searchTerm})`;
-         return { fileNameBase: `Attendance_Search_${searchTerm.replace(/\s+/g, '_')}`, docTitle };
-    } else {
-        const docTitle = "All Attendance Records";
-        return { fileNameBase: "All_Attendance_Records", docTitle };
+        const mealPart = (selectedMealTypes.size > 0 && selectedMealTypes.size < ALL_MEAL_TYPES.length) ? mealTypeInfoForFile : "All_Meals";
+        dynamicFileName = `Attendance_Search_${searchTerm.replace(/\s+/g, '_')}_${mealPart}`;
+        dynamicDocTitle = `Attendance Records (Search: ${searchTerm}, Meals: ${mealTypeInfoForTitle})`;
+    } else { // Default view, only meal types might be filtered
+        const mealPart = (selectedMealTypes.size > 0 && selectedMealTypes.size < ALL_MEAL_TYPES.length) ? mealTypeInfoForFile : "All_Meals";
+        dynamicFileName = `All_Attendance_Records_${mealPart}`;
+        dynamicDocTitle = `All Attendance Records (Meals: ${mealTypeInfoForTitle})`;
     }
+    return { fileNameBase: dynamicFileName, docTitle: dynamicDocTitle };
+
   }, [isReportView, reportStudentId, students, reportDateRange, searchTerm, selectedMealTypes]);
 
   const handleExportPDF = useCallback(() => {
@@ -339,7 +362,7 @@ export default function AttendancePage() {
         record.lunch,
         record.dinner,
       ]),
-      styles: { fontSize: 8 }, // Reduced font size for more columns
+      styles: { fontSize: 8 }, 
       headStyles: { fillColor: [22, 160, 133] }, 
       margin: { top: 20 },
     });
@@ -381,9 +404,9 @@ export default function AttendancePage() {
         { wch: 20 }, // Student ID
         { wch: 25 }, // Name
         { wch: 12 }, // Date
-        { wch: 15 }, // Breakfast
-        { wch: 15 }, // Lunch
-        { wch: 15 }, // Dinner
+        { wch: 20 }, // Breakfast (to accommodate "Present (HH:MM AM/PM)")
+        { wch: 20 }, // Lunch
+        { wch: 20 }, // Dinner
     ];
 
     const workbook = XLSX.utils.book_new();
@@ -424,8 +447,8 @@ export default function AttendancePage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><BookCopy className="h-5 w-5" /> Attendance Report</CardTitle>
-          <CardDescription>Filter attendance records by student, date range, and/or meal type.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><BookCopy className="h-5 w-5" /> Attendance Report Filters</CardTitle>
+          <CardDescription>Filter attendance records by student, date range. Meal type filters below are always active.</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-end">
           <div>
@@ -484,32 +507,12 @@ export default function AttendancePage() {
               </PopoverContent>
             </Popover>
           </div>
-
-          <div className="space-y-2">
-            <Label className="mb-1 block text-sm font-medium flex items-center gap-1"><Utensils className="h-4 w-4" />Meal Types</Label>
-            <div className="flex flex-wrap gap-x-4 gap-y-2 items-center">
-              {ALL_MEAL_TYPES.map(mealType => (
-                <div key={mealType} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`meal-${mealType}`}
-                    checked={selectedMealTypes.has(mealType)}
-                    onCheckedChange={(checked) => handleMealTypeChange(mealType, !!checked)}
-                  />
-                  <Label htmlFor={`meal-${mealType}`} className="text-sm font-normal cursor-pointer">
-                    {mealType}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </div>
-
+          
           <div className="md:col-span-2 lg:col-span-3 flex flex-col sm:flex-row gap-2 pt-2">
-            <Button onClick={handleGenerateReport} className="w-full sm:w-auto">Generate Report</Button>
-            {(isReportView || reportStudentId || reportDateRange?.from || selectedMealTypes.size < ALL_MEAL_TYPES.length) && ( 
-                 <Button onClick={clearReportFilters} variant="outline" className="w-full sm:w-auto">
-                    <FilterX className="mr-2 h-4 w-4" /> Clear Filters
-                </Button>
-            )}
+            <Button onClick={handleGenerateReport} className="w-full sm:w-auto">Generate Report View</Button>
+             <Button onClick={clearReportFilters} variant="outline" className="w-full sm:w-auto" disabled={!isReportView && !reportStudentId && !reportDateRange?.from}>
+                <FilterX className="mr-2 h-4 w-4" /> Clear Report Filters
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -518,11 +521,11 @@ export default function AttendancePage() {
         <CardHeader>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <div>
-                    <CardTitle>{isReportView ? "Report Results" : "All Records"}</CardTitle>
+                    <CardTitle>{isReportView ? "Report Results" : "Filtered Records"}</CardTitle>
                     <CardDescription>
                         {isReportView 
-                        ? `Showing records for ${reportStudentId && reportStudentId !== 'all_students' ? (students.find(s => s.studentId === reportStudentId)?.name || 'selected student') : 'all students'}${reportDateRange?.from ? ` from ${format(reportDateRange.from, "LLL dd, y")}` : ''}${reportDateRange?.to ? ` to ${format(reportDateRange.to, "LLL dd, y")}` : reportDateRange?.from ? '' : ''}${selectedMealTypes.size < ALL_MEAL_TYPES.length ? `. Meals: ${Array.from(selectedMealTypes).join(', ')}` : '. All meal types'}. Found ${processedRecords.length} record(s).`
-                        : `Detailed list of all attendance entries. ${processedRecords.length} record(s) found. Use search below or report filters above.`}
+                        ? `Report for ${reportStudentId && reportStudentId !== 'all_students' ? (students.find(s => s.studentId === reportStudentId)?.name || 'selected student') : 'all students'}${reportDateRange?.from ? ` from ${format(reportDateRange.from, "LLL dd, y")}` : ''}${reportDateRange?.to ? ` to ${format(reportDateRange.to, "LLL dd, y")}` : reportDateRange?.from ? '' : ''}. Meals: ${selectedMealTypes.size === ALL_MEAL_TYPES.length ? 'All' : Array.from(selectedMealTypes).join(', ') || 'None'}. Found ${processedRecords.length} record(s).`
+                        : `Displaying records. Meals: ${selectedMealTypes.size === ALL_MEAL_TYPES.length ? 'All' : Array.from(selectedMealTypes).join(', ') || 'None'}. ${searchTerm ? `Search: "${searchTerm}".` : ''} Found ${processedRecords.length} record(s).`}
                     </CardDescription>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:ml-auto">
@@ -534,18 +537,37 @@ export default function AttendancePage() {
                     </Button>
                 </div>
             </div>
-            {!isReportView && (
-                <div className="mt-4 relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                    type="search"
-                    placeholder="Search records by ID, name, meal type, date..."
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                    className="pl-10 w-full sm:w-1/2 md:w-2/3"
-                    />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                {!isReportView && (
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                        type="search"
+                        placeholder="Search records by ID, name, meal, date..."
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        className="pl-10 w-full"
+                        />
+                    </div>
+                )}
+                <div className="space-y-2 md:col-start-2 md:row-start-1">
+                    <Label className="mb-1 block text-sm font-medium flex items-center gap-1"><Utensils className="h-4 w-4" />Global Meal Type Filters</Label>
+                    <div className="flex flex-wrap gap-x-4 gap-y-2 items-center">
+                    {ALL_MEAL_TYPES.map(mealType => (
+                        <div key={mealType} className="flex items-center space-x-2">
+                        <Checkbox
+                            id={`meal-${mealType}`}
+                            checked={selectedMealTypes.has(mealType)}
+                            onCheckedChange={(checked) => handleMealTypeChange(mealType, !!checked)}
+                        />
+                        <Label htmlFor={`meal-${mealType}`} className="text-sm font-normal cursor-pointer">
+                            {mealType}
+                        </Label>
+                        </div>
+                    ))}
+                    </div>
                 </div>
-            )}
+            </div>
         </CardHeader>
         <CardContent>
           <AttendanceTable 
@@ -556,7 +578,7 @@ export default function AttendancePage() {
           />
           {processedRecords.length === 0 && (
             <p className="text-center py-4 text-muted-foreground">
-              {isReportView ? "No records match your report criteria." : "No attendance records found."}
+              {isReportView ? "No records match your report criteria." : "No attendance records found for the current filters."}
             </p>
           )}
           {processedRecords.length > ITEMS_PER_PAGE && (
