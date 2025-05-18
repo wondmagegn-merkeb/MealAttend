@@ -8,12 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Checkbox } from "@/components/ui/checkbox"; // Added Checkbox import
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AttendanceTable, type AttendanceRecord, type SortConfig, type SortableAttendanceKeys, type MealType } from "@/components/admin/AttendanceTable"; // Added MealType
+import { AttendanceTable, type AttendanceRecord, type SortConfig, type SortableAttendanceKeys, type MealType } from "@/components/admin/AttendanceTable";
 import type { Student } from "@/types/student";
 import { STUDENTS_STORAGE_KEY, ATTENDANCE_RECORDS_STORAGE_KEY } from '@/lib/constants';
-import { Search, BookCopy, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FilterX, FileText, FileSpreadsheet, Utensils } from "lucide-react"; // Added Utensils
+import { Search, BookCopy, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FilterX, FileText, FileSpreadsheet, Utensils } from "lucide-react";
 import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
@@ -47,6 +47,52 @@ const seedAttendanceRecords: AttendanceRecord[] = [
 
 const ITEMS_PER_PAGE = 5;
 const ALL_MEAL_TYPES: MealType[] = ["Breakfast", "Lunch", "Dinner"];
+
+interface ExportAttendanceRecord {
+  studentId: string;
+  studentName: string;
+  date: string;
+  breakfast: string;
+  lunch: string;
+  dinner: string;
+}
+
+const transformAttendanceForExport = (records: AttendanceRecord[]): ExportAttendanceRecord[] => {
+  const groupedRecords: Record<string, Partial<ExportAttendanceRecord> & { studentName?: string }> = {};
+
+  records.forEach(record => {
+    const key = `${record.studentId}-${record.date}`;
+    if (!groupedRecords[key]) {
+      groupedRecords[key] = {
+        studentId: record.studentId,
+        studentName: record.studentName,
+        date: record.date,
+        breakfast: "N/A",
+        lunch: "N/A",
+        dinner: "N/A",
+      };
+    }
+
+    const mealStatus = record.status === "Present" ? record.scannedAt : "Absent";
+    if (record.mealType === "Breakfast") {
+      groupedRecords[key].breakfast = mealStatus;
+    } else if (record.mealType === "Lunch") {
+      groupedRecords[key].lunch = mealStatus;
+    } else if (record.mealType === "Dinner") {
+      groupedRecords[key].dinner = mealStatus;
+    }
+  });
+
+  return Object.values(groupedRecords).map(item => item as ExportAttendanceRecord)
+    .sort((a, b) => { // Sort by date, then by student name
+        if (a.date < b.date) return -1;
+        if (a.date > b.date) return 1;
+        if (a.studentName < b.studentName) return -1;
+        if (a.studentName > b.studentName) return 1;
+        return 0;
+    });
+};
+
 
 export default function AttendancePage() {
   const [allAttendanceRecords, setAllAttendanceRecords] = useState<AttendanceRecord[]>([]);
@@ -191,10 +237,10 @@ export default function AttendancePage() {
           return isWithinInterval(recordDate, { start: fromDate, end: toDate });
         });
       }
-      if (selectedMealTypes.size > 0 && selectedMealTypes.size < ALL_MEAL_TYPES.length) { // Apply meal type filter only if not all are selected
+      if (selectedMealTypes.size > 0 && selectedMealTypes.size < ALL_MEAL_TYPES.length) {
         recordsToProcess = recordsToProcess.filter(record => selectedMealTypes.has(record.mealType));
       }
-    } else { // Not in report view, apply general search term
+    } else { 
       if (searchTerm) {
         const lowerSearchTerm = searchTerm.toLowerCase();
         recordsToProcess = recordsToProcess.filter(record =>
@@ -241,7 +287,8 @@ export default function AttendancePage() {
             dateInfoForTitle += ` To ${format(reportDateRange.to, "LLL dd, y")}`;
             dateInfoForFile += `_To_${format(reportDateRange.to, "yyyy-MM-dd")}`;
         } else {
-            dateInfoForFile = `On_${format(reportDateRange.from, "yyyy-MM-dd")}`;
+             dateInfoForTitle = `On ${format(reportDateRange.from, "LLL dd, y")}`; // Corrected for single day selection
+             dateInfoForFile = `On_${format(reportDateRange.from, "yyyy-MM-dd")}`;
         }
     }
 
@@ -270,7 +317,8 @@ export default function AttendancePage() {
   }, [isReportView, reportStudentId, students, reportDateRange, searchTerm, selectedMealTypes]);
 
   const handleExportPDF = useCallback(() => {
-    if (processedRecords.length === 0) {
+    const recordsForExport = transformAttendanceForExport(processedRecords);
+    if (recordsForExport.length === 0) {
       toast({ title: "No Data", description: "There is no data to export to PDF.", variant: "default" });
       return;
     }
@@ -282,26 +330,27 @@ export default function AttendancePage() {
     
     autoTable(doc, {
       startY: 25,
-      head: [['Student ID', 'Name', 'Date', 'Meal Type', 'Scanned At', 'Status']],
-      body: processedRecords.map(record => [
+      head: [['Student ID', 'Name', 'Date', 'Breakfast', 'Lunch', 'Dinner']],
+      body: recordsForExport.map(record => [
         record.studentId,
         record.studentName,
         record.date,
-        record.mealType,
-        record.scannedAt,
-        record.status,
+        record.breakfast,
+        record.lunch,
+        record.dinner,
       ]),
-      styles: { fontSize: 10 },
+      styles: { fontSize: 8 }, // Reduced font size for more columns
       headStyles: { fillColor: [22, 160, 133] }, 
       margin: { top: 20 },
     });
 
     doc.save(`${fileNameBase}.pdf`);
-    toast({ title: "PDF Exported", description: `Successfully exported ${processedRecords.length} records to ${fileNameBase}.pdf.` });
+    toast({ title: "PDF Exported", description: `Successfully exported ${recordsForExport.length} daily records to ${fileNameBase}.pdf.` });
   }, [processedRecords, reportContext, toast]);
 
   const handleExportExcel = useCallback(() => {
-    if (processedRecords.length === 0) {
+    const recordsForExport = transformAttendanceForExport(processedRecords);
+    if (recordsForExport.length === 0) {
       toast({ title: "No Data", description: "There is no data to export to Excel.", variant: "default" });
       return;
     }
@@ -310,14 +359,14 @@ export default function AttendancePage() {
     const dataToExport = [
       [docTitle], 
       [], 
-      ['Student ID', 'Name', 'Date', 'Meal Type', 'Scanned At', 'Status'], 
-      ...processedRecords.map(record => [
+      ['Student ID', 'Name', 'Date', 'Breakfast', 'Lunch', 'Dinner'], 
+      ...recordsForExport.map(record => [
         record.studentId,
         record.studentName,
         record.date,
-        record.mealType,
-        record.scannedAt,
-        record.status,
+        record.breakfast,
+        record.lunch,
+        record.dinner,
       ]),
     ];
 
@@ -329,19 +378,19 @@ export default function AttendancePage() {
         worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
     }
     worksheet['!cols'] = [
-        { wch: 15 }, // Student ID
+        { wch: 20 }, // Student ID
         { wch: 25 }, // Name
         { wch: 12 }, // Date
-        { wch: 12 }, // Meal Type
-        { wch: 15 }, // Scanned At
-        { wch: 10 }, // Status
+        { wch: 15 }, // Breakfast
+        { wch: 15 }, // Lunch
+        { wch: 15 }, // Dinner
     ];
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance');
     
     XLSX.writeFile(workbook, `${fileNameBase}.xlsx`);
-    toast({ title: "Excel Exported", description: `Successfully exported ${processedRecords.length} records to ${fileNameBase}.xlsx.` });
+    toast({ title: "Excel Exported", description: `Successfully exported ${recordsForExport.length} daily records to ${fileNameBase}.xlsx.` });
   }, [processedRecords, reportContext, toast]);
 
 
@@ -356,7 +405,7 @@ export default function AttendancePage() {
    useEffect(() => {
     if (currentPage > totalPages && totalPages > 0) { 
       setCurrentPage(totalPages);
-    } else if (currentPage === 0 && totalPages > 0) {
+    } else if (currentPage < 1 && totalPages > 0) {
         setCurrentPage(1);
     } else if (processedRecords.length === 0){
         setCurrentPage(1);
