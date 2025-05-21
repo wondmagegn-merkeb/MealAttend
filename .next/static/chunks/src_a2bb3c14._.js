@@ -1617,7 +1617,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/constants.ts [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/hooks/use-toast.ts [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/activityLogger.ts [app-client] (ecmascript)"); // Import the logger
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/activityLogger.ts [app-client] (ecmascript)");
 var _s = __turbopack_context__.k.signature();
 "use client";
 ;
@@ -1645,7 +1645,7 @@ function useAuth() {
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
     const { toast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"])();
     const currentUserRole = currentUser?.role || null;
-    const currentUserId = currentUser?.userId || null; // This is the ADERA User ID
+    const currentUserId = currentUser?.userId || null;
     const checkPasswordChangeStatus = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
         "useAuth.useCallback[checkPasswordChangeStatus]": (userIdToCheck)=>{
             if (!userIdToCheck) {
@@ -1670,7 +1670,7 @@ function useAuth() {
                     const storedUser = JSON.parse(storedUserDetailsRaw);
                     setIsAuthenticated(true);
                     setCurrentUser(storedUser);
-                    checkPasswordChangeStatus(storedUser.userId); // Use ADERA User ID here
+                    checkPasswordChangeStatus(storedUser.userId);
                 } else {
                     setIsAuthenticated(false);
                     setCurrentUser(null);
@@ -1706,7 +1706,7 @@ function useAuth() {
                                 const adminExistsInStorage = usersToSearch.some({
                                     "useAuth.useCallback[login].adminExistsInStorage": (u)=>u.userId === MOCK_DEFAULT_ADMIN_USER.userId
                                 }["useAuth.useCallback[login].adminExistsInStorage"]);
-                                if (!adminExistsInStorage) {
+                                if (!adminExistsInStorage && MOCK_DEFAULT_ADMIN_USER.userId === userIdInput) {
                                     usersToSearch.push(MOCK_DEFAULT_ADMIN_USER);
                                 }
                                 const user = usersToSearch.find({
@@ -1716,7 +1716,7 @@ function useAuth() {
                                     localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AUTH_TOKEN_KEY"], `mock-jwt-token-for-${user.userId}`);
                                     localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CURRENT_USER_DETAILS_KEY"], JSON.stringify(user));
                                     localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CURRENT_USER_ROLE_KEY"], user.role);
-                                    localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CURRENT_USER_ID_KEY"], user.userId); // ADERA User ID
+                                    localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CURRENT_USER_ID_KEY"], user.userId);
                                     setIsAuthenticated(true);
                                     setCurrentUser(user);
                                     const passwordChangeDismissedKey = __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PASSWORD_CHANGE_REQUIRED_KEY_PREFIX"] + user.userId + "_dismissed";
@@ -1729,14 +1729,14 @@ function useAuth() {
                                         localStorage.removeItem(passwordChangeRequiredKey);
                                         setIsPasswordChangeRequired(false);
                                     }
-                                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(user.userId, "LOGIN_SUCCESS"); // Log successful login
+                                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(user.userId, "LOGIN_SUCCESS");
                                     toast({
                                         title: "Login Successful",
                                         description: `Welcome back, ${user.fullName}!`
                                     });
                                     resolve(true);
                                 } else {
-                                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(userIdInput || 'unknown_user', "LOGIN_FAILURE", "Invalid User ID or password."); // Log failed login
+                                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(userIdInput || 'unknown_user', "LOGIN_FAILURE", "Invalid User ID or password.");
                                     toast({
                                         title: "Login Failed",
                                         description: "Invalid User ID or password.",
@@ -1746,7 +1746,7 @@ function useAuth() {
                                 }
                             } catch (e) {
                                 console.error("Login error:", e);
-                                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(userIdInput || 'unknown_user', "LOGIN_ERROR", "An unexpected error occurred during login."); // Log login error
+                                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(userIdInput || 'unknown_user', "LOGIN_ERROR", "An unexpected error occurred during login.");
                                 toast({
                                     title: "Login Error",
                                     description: "An unexpected error occurred.",
@@ -1764,7 +1764,7 @@ function useAuth() {
     ]);
     const logout = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
         "useAuth.useCallback[logout]": ()=>{
-            const loggingOutUserId = currentUser?.userId || null; // Get user ID before clearing currentUser
+            const loggingOutUserId = currentUser?.userId || null;
             try {
                 localStorage.removeItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AUTH_TOKEN_KEY"]);
                 localStorage.removeItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CURRENT_USER_ROLE_KEY"]);
@@ -1774,7 +1774,7 @@ function useAuth() {
                 setCurrentUser(null);
                 setIsPasswordChangeRequired(false);
                 if (loggingOutUserId) {
-                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(loggingOutUserId, "LOGOUT_SUCCESS"); // Log successful logout
+                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(loggingOutUserId, "LOGOUT_SUCCESS");
                 }
                 toast({
                     title: "Logged Out",
@@ -1852,8 +1852,6 @@ function useAuth() {
                     variant: "destructive"
                 });
             }
-            // Log profile update success in the profile edit page component itself, as it has more context.
-            // logUserActivity(currentUser.userId, "PROFILE_UPDATE_SUCCESS"); 
             toast({
                 title: "Profile Updated",
                 description: "Your profile details have been saved."
@@ -2206,18 +2204,19 @@ __turbopack_context__.s({
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/client/app-dir/link.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$layout$2d$dashboard$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__LayoutDashboard$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/layout-dashboard.js [app-client] (ecmascript) <export default as LayoutDashboard>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$layout$2d$dashboard$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__LayoutDashboard$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/layout-dashboard.js [app-client] (ecmascript) <export default as LayoutDashboard>"); // Added History
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$book$2d$user$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__BookUser$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/book-user.js [app-client] (ecmascript) <export default as BookUser>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$settings$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Settings$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/settings.js [app-client] (ecmascript) <export default as Settings>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$qr$2d$code$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__QrCode$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/qr-code.js [app-client] (ecmascript) <export default as QrCode>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$users$2d$round$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__UsersRound$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/users-round.js [app-client] (ecmascript) <export default as UsersRound>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$users$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Users$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/users.js [app-client] (ecmascript) <export default as Users>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$building$2d$2$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Building2$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/building-2.js [app-client] (ecmascript) <export default as Building2>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$history$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__History$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/history.js [app-client] (ecmascript) <export default as History>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/utils.ts [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$sidebar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/sidebar.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$shared$2f$Logo$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/shared/Logo.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/button.tsx [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/hooks/useAuth.ts [app-client] (ecmascript)"); // Import useAuth
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/hooks/useAuth.ts [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
@@ -2261,6 +2260,12 @@ const adminOnlyNavItems = [
         label: 'Departments',
         icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$building$2d$2$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Building2$3e$__["Building2"],
         tooltip: 'Manage Departments (Admin)'
+    },
+    {
+        href: '/admin/activity-log',
+        label: 'Activity Log',
+        icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$history$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__History$3e$__["History"],
+        tooltip: 'View User Activity (Admin)'
     }
 ];
 const navItemsSettings = [
@@ -2274,7 +2279,7 @@ const navItemsSettings = [
 function AdminSidebar() {
     _s();
     const pathname = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["usePathname"])();
-    const { currentUserRole } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"])(); // Get current user's role
+    const { currentUserRole } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"])();
     let navItems = [
         ...navItemsBase
     ];
@@ -2298,12 +2303,12 @@ function AdminSidebar() {
                     textColorClass: "text-sidebar-foreground"
                 }, void 0, false, {
                     fileName: "[project]/src/components/layout/AdminSidebar.tsx",
-                    lineNumber: 50,
+                    lineNumber: 51,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/layout/AdminSidebar.tsx",
-                lineNumber: 49,
+                lineNumber: 50,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$sidebar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SidebarContent"], {
@@ -2327,7 +2332,7 @@ function AdminSidebar() {
                                             className: "h-5 w-5 mr-3 shrink-0"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/layout/AdminSidebar.tsx",
-                                            lineNumber: 67,
+                                            lineNumber: 68,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2335,38 +2340,38 @@ function AdminSidebar() {
                                             children: item.label
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/layout/AdminSidebar.tsx",
-                                            lineNumber: 68,
+                                            lineNumber: 69,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/layout/AdminSidebar.tsx",
-                                    lineNumber: 57,
+                                    lineNumber: 58,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/layout/AdminSidebar.tsx",
-                                lineNumber: 56,
+                                lineNumber: 57,
                                 columnNumber: 15
                             }, this)
                         }, item.label, false, {
                             fileName: "[project]/src/components/layout/AdminSidebar.tsx",
-                            lineNumber: 55,
+                            lineNumber: 56,
                             columnNumber: 13
                         }, this))
                 }, void 0, false, {
                     fileName: "[project]/src/components/layout/AdminSidebar.tsx",
-                    lineNumber: 53,
+                    lineNumber: 54,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/layout/AdminSidebar.tsx",
-                lineNumber: 52,
+                lineNumber: 53,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$sidebar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SidebarSeparator"], {}, void 0, false, {
                 fileName: "[project]/src/components/layout/AdminSidebar.tsx",
-                lineNumber: 75,
+                lineNumber: 76,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$sidebar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SidebarFooter"], {
@@ -2383,7 +2388,7 @@ function AdminSidebar() {
                                 className: "h-5 w-5 mr-0 md:mr-2 group-data-[collapsible=icon]:mr-0 shrink-0"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/layout/AdminSidebar.tsx",
-                                lineNumber: 79,
+                                lineNumber: 80,
                                 columnNumber: 17
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2391,23 +2396,23 @@ function AdminSidebar() {
                                 children: "Go to Scanner"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/layout/AdminSidebar.tsx",
-                                lineNumber: 80,
+                                lineNumber: 81,
                                 columnNumber: 17
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/layout/AdminSidebar.tsx",
-                        lineNumber: 78,
+                        lineNumber: 79,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/components/layout/AdminSidebar.tsx",
-                    lineNumber: 77,
+                    lineNumber: 78,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/layout/AdminSidebar.tsx",
-                lineNumber: 76,
+                lineNumber: 77,
                 columnNumber: 7
             }, this)
         ]

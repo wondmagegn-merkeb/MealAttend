@@ -931,6 +931,8 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$admin$2f$students$2f$StudentsTable$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/admin/students/StudentsTable.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/hooks/use-toast.ts [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/constants.ts [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/activityLogger.ts [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/hooks/useAuth.ts [app-ssr] (ecmascript)");
 "use client";
 ;
 ;
@@ -943,7 +945,8 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$t
 ;
 ;
 ;
-// Initial seed data if localStorage is empty - Class format and Student ID format updated
+;
+;
 const initialSeedStudents = [
     {
         id: 'clxkxk001',
@@ -951,7 +954,7 @@ const initialSeedStudents = [
         name: 'Alice Wonderland Johnson',
         gender: 'Female',
         class: '10A',
-        profileImageURL: 'https://placehold.co/100x100.png?text=AJ',
+        profileImageURL: 'https://placehold.co/100x100.png?text=AWJ',
         qrCodeData: 'clxkxk001',
         createdAt: new Date('2024-01-15T10:00:00Z').toISOString(),
         updatedAt: new Date('2024-01-15T10:00:00Z').toISOString()
@@ -962,7 +965,7 @@ const initialSeedStudents = [
         name: 'Bob The Builder Williams',
         gender: 'Male',
         class: '9B',
-        profileImageURL: 'https://placehold.co/100x100.png?text=BW',
+        profileImageURL: 'https://placehold.co/100x100.png?text=BBW',
         qrCodeData: 'clxkxk002',
         createdAt: new Date('2024-02-20T11:00:00Z').toISOString(),
         updatedAt: new Date('2024-02-20T11:00:00Z').toISOString()
@@ -973,7 +976,7 @@ const initialSeedStudents = [
         name: 'Carol Danvers Davis',
         gender: 'Female',
         class: '11A',
-        profileImageURL: 'https://placehold.co/100x100.png?text=CD',
+        profileImageURL: 'https://placehold.co/100x100.png?text=CDD',
         qrCodeData: 'clxkxk003',
         createdAt: new Date('2023-03-10T09:00:00Z').toISOString(),
         updatedAt: new Date('2023-03-10T09:00:00Z').toISOString()
@@ -984,7 +987,7 @@ const initialSeedStudents = [
         name: 'David Copperfield Brown',
         gender: 'Male',
         class: '10B',
-        profileImageURL: 'https://placehold.co/100x100.png?text=DB',
+        profileImageURL: 'https://placehold.co/100x100.png?text=DCB',
         qrCodeData: 'clxkxk004',
         createdAt: new Date('2023-01-01T14:00:00Z').toISOString(),
         updatedAt: new Date('2023-01-01T14:00:00Z').toISOString()
@@ -995,7 +998,7 @@ const initialSeedStudents = [
         name: 'Eva Green Gardenia',
         gender: 'Female',
         class: '9A',
-        profileImageURL: 'https://placehold.co/100x100.png?text=EG',
+        profileImageURL: 'https://placehold.co/100x100.png?text=EGG',
         qrCodeData: 'clxkxk005',
         createdAt: new Date('2022-09-05T16:00:00Z').toISOString(),
         updatedAt: new Date('2022-09-05T16:00:00Z').toISOString()
@@ -1006,7 +1009,7 @@ const initialSeedStudents = [
         name: 'Frank N. Stein Harris',
         gender: 'Male',
         class: '12A',
-        profileImageURL: 'https://placehold.co/100x100.png?text=FH',
+        profileImageURL: 'https://placehold.co/100x100.png?text=FSH',
         qrCodeData: 'clxkxk006',
         createdAt: new Date('2024-05-01T08:00:00Z').toISOString(),
         updatedAt: new Date('2024-05-01T08:00:00Z').toISOString()
@@ -1017,7 +1020,7 @@ const initialSeedStudents = [
         name: 'Grace Hopper Lee',
         gender: 'Female',
         class: '11B',
-        profileImageURL: 'https://placehold.co/100x100.png?text=GL',
+        profileImageURL: 'https://placehold.co/100x100.png?text=GHL',
         qrCodeData: 'clxkxk007',
         createdAt: new Date('2023-06-12T13:00:00Z').toISOString(),
         updatedAt: new Date('2023-06-12T13:00:00Z').toISOString()
@@ -1028,7 +1031,7 @@ const initialSeedStudents = [
         name: 'Henry Ford Wilson',
         gender: 'Male',
         class: '10A',
-        profileImageURL: 'https://placehold.co/100x100.png?text=HW',
+        profileImageURL: 'https://placehold.co/100x100.png?text=HFW',
         qrCodeData: 'clxkxk008',
         createdAt: new Date('2022-11-25T15:30:00Z').toISOString(),
         updatedAt: new Date('2022-11-25T15:30:00Z').toISOString()
@@ -1039,7 +1042,7 @@ const initialSeedStudents = [
         name: 'Ivy League Clark',
         gender: 'Female',
         class: '9C',
-        profileImageURL: 'https://placehold.co/100x100.png?text=IC',
+        profileImageURL: 'https://placehold.co/100x100.png?text=ILC',
         qrCodeData: 'clxkxk009',
         createdAt: new Date('2023-07-02T10:30:00Z').toISOString(),
         updatedAt: new Date('2023-07-02T10:30:00Z').toISOString()
@@ -1050,7 +1053,7 @@ const initialSeedStudents = [
         name: 'Jack Sparrow Martinez',
         gender: 'Male',
         class: '12B',
-        profileImageURL: 'https://placehold.co/100x100.png?text=JM',
+        profileImageURL: 'https://placehold.co/100x100.png?text=JSM',
         qrCodeData: 'clxkxk010',
         createdAt: new Date('2024-08-19T11:45:00Z').toISOString(),
         updatedAt: new Date('2024-08-19T11:45:00Z').toISOString()
@@ -1061,7 +1064,7 @@ const initialSeedStudents = [
         name: 'Kate Winslet Adams',
         gender: 'Female',
         class: '10A',
-        profileImageURL: 'https://placehold.co/100x100.png?text=KA',
+        profileImageURL: 'https://placehold.co/100x100.png?text=KWA',
         qrCodeData: 'clxkxk011',
         createdAt: new Date('2024-09-01T09:00:00Z').toISOString(),
         updatedAt: new Date('2024-09-01T09:00:00Z').toISOString()
@@ -1072,7 +1075,7 @@ const initialSeedStudents = [
         name: 'Leonardo DiCaprio Garcia',
         gender: 'Male',
         class: '8A',
-        profileImageURL: 'https://placehold.co/100x100.png?text=LG',
+        profileImageURL: 'https://placehold.co/100x100.png?text=LDG',
         qrCodeData: 'clxkxk012',
         createdAt: new Date('2022-08-15T14:30:00Z').toISOString(),
         updatedAt: new Date('2022-08-15T14:30:00Z').toISOString()
@@ -1084,6 +1087,7 @@ function StudentsPage() {
     const [isMounted, setIsMounted] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const [isLoadingTable, setIsLoadingTable] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const { toast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useToast"])();
+    const { currentUserId } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useAuth"])();
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRouter"])();
     const [searchTerm, setSearchTerm] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
     const [sortConfig, setSortConfig] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])({
@@ -1133,11 +1137,17 @@ function StudentsPage() {
     };
     const handleDeleteStudent = (studentIdToDelete)=>{
         setIsLoadingTable(true);
+        const studentToDelete = students.find((s)=>s.id === studentIdToDelete);
         setTimeout(()=>{
             try {
                 const updatedStudents = students.filter((s)=>s.id !== studentIdToDelete);
                 setStudents(updatedStudents);
                 localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["STUDENTS_STORAGE_KEY"], JSON.stringify(updatedStudents));
+                if (studentToDelete) {
+                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUserId, "STUDENT_DELETE_SUCCESS", `Deleted student ID: ${studentToDelete.studentId}, Name: ${studentToDelete.name}`);
+                } else {
+                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUserId, "STUDENT_DELETE_SUCCESS", `Deleted student with internal ID: ${studentIdToDelete}`);
+                }
                 toast({
                     title: "Student Deleted",
                     description: "The student record has been successfully deleted."
@@ -1150,6 +1160,7 @@ function StudentsPage() {
                 }
             } catch (error) {
                 console.error("Failed to delete student from localStorage", error);
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUserId, "STUDENT_DELETE_FAILURE", `Attempted to delete student. Error: ${error instanceof Error ? error.message : String(error)}`);
                 toast({
                     title: "Error",
                     description: "Failed to delete student. Please try again.",
@@ -1217,12 +1228,15 @@ function StudentsPage() {
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         if (currentPage > totalPages && totalPages > 0) {
             setCurrentPage(totalPages);
-        } else if (currentPage === 0 && totalPages > 0) {
+        } else if (currentPage < 1 && totalPages > 0) {
+            setCurrentPage(1);
+        } else if (filteredAndSortedStudents.length === 0) {
             setCurrentPage(1);
         }
     }, [
         currentPage,
-        totalPages
+        totalPages,
+        filteredAndSortedStudents.length
     ]);
     if (!isMounted) {
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1232,7 +1246,7 @@ function StudentsPage() {
                     className: "h-8 w-8 animate-spin text-primary"
                 }, void 0, false, {
                     fileName: "[project]/src/app/admin/students/page.tsx",
-                    lineNumber: 194,
+                    lineNumber: 206,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1240,13 +1254,13 @@ function StudentsPage() {
                     children: "Loading student management..."
                 }, void 0, false, {
                     fileName: "[project]/src/app/admin/students/page.tsx",
-                    lineNumber: 195,
+                    lineNumber: 207,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/admin/students/page.tsx",
-            lineNumber: 193,
+            lineNumber: 205,
             columnNumber: 7
         }, this);
     }
@@ -1265,14 +1279,14 @@ function StudentsPage() {
                                         className: "mr-3 h-8 w-8"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/students/page.tsx",
-                                        lineNumber: 205,
+                                        lineNumber: 217,
                                         columnNumber: 13
                                     }, this),
                                     " Manage Students"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 204,
+                                lineNumber: 216,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1280,13 +1294,13 @@ function StudentsPage() {
                                 children: "Add, edit, or remove student records."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 207,
+                                lineNumber: 219,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/students/page.tsx",
-                        lineNumber: 203,
+                        lineNumber: 215,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1304,19 +1318,19 @@ function StudentsPage() {
                                             className: "mr-2 h-5 w-5"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/admin/students/page.tsx",
-                                            lineNumber: 212,
+                                            lineNumber: 224,
                                             columnNumber: 15
                                         }, this),
                                         " Export Student List"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/admin/students/page.tsx",
-                                    lineNumber: 211,
+                                    lineNumber: 223,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 210,
+                                lineNumber: 222,
                                 columnNumber: 12
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -1331,19 +1345,19 @@ function StudentsPage() {
                                             className: "mr-2 h-5 w-5"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/admin/students/page.tsx",
-                                            lineNumber: 217,
+                                            lineNumber: 229,
                                             columnNumber: 15
                                         }, this),
                                         " View All ID Cards"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/admin/students/page.tsx",
-                                    lineNumber: 216,
+                                    lineNumber: 228,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 215,
+                                lineNumber: 227,
                                 columnNumber: 12
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -1357,31 +1371,31 @@ function StudentsPage() {
                                             className: "mr-2 h-5 w-5"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/admin/students/page.tsx",
-                                            lineNumber: 222,
+                                            lineNumber: 234,
                                             columnNumber: 15
                                         }, this),
                                         " Add New Student"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/admin/students/page.tsx",
-                                    lineNumber: 221,
+                                    lineNumber: 233,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 220,
+                                lineNumber: 232,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/students/page.tsx",
-                        lineNumber: 209,
+                        lineNumber: 221,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/admin/students/page.tsx",
-                lineNumber: 202,
+                lineNumber: 214,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
@@ -1393,14 +1407,14 @@ function StudentsPage() {
                                 children: "Student List"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 230,
+                                lineNumber: 242,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardDescription"], {
                                 children: "Browse and manage all registered students. Data is stored in your browser's local storage."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 231,
+                                lineNumber: 243,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1410,7 +1424,7 @@ function StudentsPage() {
                                         className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/students/page.tsx",
-                                        lineNumber: 233,
+                                        lineNumber: 245,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -1421,19 +1435,19 @@ function StudentsPage() {
                                         className: "pl-10 w-full sm:w-1/2 md:w-1/3"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/students/page.tsx",
-                                        lineNumber: 234,
+                                        lineNumber: 246,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 232,
+                                lineNumber: 244,
                                 columnNumber: 12
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/students/page.tsx",
-                        lineNumber: 229,
+                        lineNumber: 241,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1445,7 +1459,7 @@ function StudentsPage() {
                                         className: "h-6 w-6 animate-spin text-primary"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/students/page.tsx",
-                                        lineNumber: 246,
+                                        lineNumber: 258,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1453,13 +1467,13 @@ function StudentsPage() {
                                         children: "Updating table..."
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/students/page.tsx",
-                                        lineNumber: 247,
+                                        lineNumber: 259,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 245,
+                                lineNumber: 257,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$admin$2f$students$2f$StudentsTable$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["StudentsTable"], {
@@ -1470,7 +1484,7 @@ function StudentsPage() {
                                 onSort: handleSort
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 250,
+                                lineNumber: 262,
                                 columnNumber: 11
                             }, this),
                             filteredAndSortedStudents.length > ITEMS_PER_PAGE && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1489,7 +1503,7 @@ function StudentsPage() {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/admin/students/page.tsx",
-                                        lineNumber: 259,
+                                        lineNumber: 271,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1505,14 +1519,14 @@ function StudentsPage() {
                                                         className: "mr-1 h-4 w-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/admin/students/page.tsx",
-                                                        lineNumber: 269,
+                                                        lineNumber: 281,
                                                         columnNumber: 19
                                                     }, this),
                                                     "Previous"
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                                lineNumber: 263,
+                                                lineNumber: 275,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -1526,25 +1540,25 @@ function StudentsPage() {
                                                         className: "ml-1 h-4 w-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/admin/students/page.tsx",
-                                                        lineNumber: 279,
+                                                        lineNumber: 291,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                                lineNumber: 272,
+                                                lineNumber: 284,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/admin/students/page.tsx",
-                                        lineNumber: 262,
+                                        lineNumber: 274,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 258,
+                                lineNumber: 270,
                                 columnNumber: 13
                             }, this),
                             filteredAndSortedStudents.length === 0 && !isLoadingTable && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1552,25 +1566,25 @@ function StudentsPage() {
                                 children: "No students match your current search criteria."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 285,
+                                lineNumber: 297,
                                 columnNumber: 14
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/students/page.tsx",
-                        lineNumber: 243,
+                        lineNumber: 255,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/admin/students/page.tsx",
-                lineNumber: 228,
+                lineNumber: 240,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/admin/students/page.tsx",
-        lineNumber: 201,
+        lineNumber: 213,
         columnNumber: 5
     }, this);
 }

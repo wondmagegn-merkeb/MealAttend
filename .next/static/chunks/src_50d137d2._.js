@@ -1255,9 +1255,13 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/client/app-dir/link.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/constants.ts [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/card.tsx [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/activityLogger.ts [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/hooks/useAuth.ts [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
+;
+;
 ;
 ;
 ;
@@ -1272,7 +1276,8 @@ function EditUserPage() {
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
     const params = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useParams"])();
     const { toast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"])();
-    const userIdParam = typeof params.id === 'string' ? params.id : undefined; // internal id from URL
+    const { currentUserId: actorUserId } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"])(); // Renamed to avoid conflict
+    const userIdParam = typeof params.id === 'string' ? params.id : undefined;
     const [user, setUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [isLoading, setIsLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [isFetching, setIsFetching] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(true);
@@ -1334,6 +1339,7 @@ function EditUserPage() {
                 let users = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
                 users = users.map((u)=>u.id === user.id ? updatedUser : u);
                 localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["USERS_STORAGE_KEY"], JSON.stringify(users));
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(actorUserId, "USER_UPDATE_SUCCESS", `Updated user ID: ${updatedUser.userId}, Name: ${updatedUser.fullName}`);
                 toast({
                     title: "User Updated",
                     description: `${data.fullName}'s record has been updated.`
@@ -1341,6 +1347,7 @@ function EditUserPage() {
                 router.push('/admin/users');
             } catch (error) {
                 console.error("Failed to update user in localStorage", error);
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(actorUserId, "USER_UPDATE_FAILURE", `Attempted to update user ID: ${user.userId}. Error: ${error instanceof Error ? error.message : String(error)}`);
                 toast({
                     title: "Error",
                     description: "Failed to update user. Please try again.",
@@ -1359,7 +1366,7 @@ function EditUserPage() {
                     className: "h-8 w-8 animate-spin text-primary"
                 }, void 0, false, {
                     fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-                    lineNumber: 102,
+                    lineNumber: 107,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1367,13 +1374,13 @@ function EditUserPage() {
                     children: "Loading user data..."
                 }, void 0, false, {
                     fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-                    lineNumber: 103,
+                    lineNumber: 108,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-            lineNumber: 101,
+            lineNumber: 106,
             columnNumber: 7
         }, this);
     }
@@ -1389,12 +1396,12 @@ function EditUserPage() {
                             children: "User Not Found"
                         }, void 0, false, {
                             fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-                            lineNumber: 113,
+                            lineNumber: 118,
                             columnNumber: 17
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-                        lineNumber: 112,
+                        lineNumber: 117,
                         columnNumber: 13
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1404,7 +1411,7 @@ function EditUserPage() {
                                 children: "The user record you are trying to edit could not be found."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-                                lineNumber: 116,
+                                lineNumber: 121,
                                 columnNumber: 17
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -1417,36 +1424,36 @@ function EditUserPage() {
                                             className: "mr-2 h-4 w-4"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-                                            lineNumber: 119,
+                                            lineNumber: 124,
                                             columnNumber: 21
                                         }, this),
                                         "Back to User List"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-                                    lineNumber: 118,
+                                    lineNumber: 123,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-                                lineNumber: 117,
+                                lineNumber: 122,
                                 columnNumber: 17
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-                        lineNumber: 115,
+                        lineNumber: 120,
                         columnNumber: 13
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-                lineNumber: 111,
+                lineNumber: 116,
                 columnNumber: 10
             }, this)
         }, void 0, false, {
             fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-            lineNumber: 110,
+            lineNumber: 115,
             columnNumber: 7
         }, this);
     }
@@ -1463,7 +1470,7 @@ function EditUserPage() {
                                 children: "Edit User"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-                                lineNumber: 133,
+                                lineNumber: 138,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1475,13 +1482,13 @@ function EditUserPage() {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-                                lineNumber: 134,
+                                lineNumber: 139,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-                        lineNumber: 132,
+                        lineNumber: 137,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -1494,25 +1501,25 @@ function EditUserPage() {
                                     className: "mr-2 h-4 w-4"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-                                    lineNumber: 138,
+                                    lineNumber: 143,
                                     columnNumber: 13
                                 }, this),
                                 "Back to List"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-                            lineNumber: 137,
+                            lineNumber: 142,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-                        lineNumber: 136,
+                        lineNumber: 141,
                         columnNumber: 10
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-                lineNumber: 131,
+                lineNumber: 136,
                 columnNumber: 7
             }, this),
             user && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$admin$2f$users$2f$UserForm$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["UserForm"], {
@@ -1522,21 +1529,22 @@ function EditUserPage() {
                 submitButtonText: "Save Changes"
             }, void 0, false, {
                 fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-                lineNumber: 144,
+                lineNumber: 149,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/admin/users/[id]/edit/page.tsx",
-        lineNumber: 130,
+        lineNumber: 135,
         columnNumber: 5
     }, this);
 }
-_s(EditUserPage, "/WY1tqaz98vdMXGhf3e4HoSs4aY=", false, function() {
+_s(EditUserPage, "dJOfUxgpPxLdEMKtxXk69MgWPx4=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"],
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useParams"],
-        __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"]
+        __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"],
+        __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"]
     ];
 });
 _c = EditUserPage;

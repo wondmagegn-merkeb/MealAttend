@@ -724,6 +724,8 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$admin$2f$departments$2f$DepartmentsTable$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/admin/departments/DepartmentsTable.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/hooks/use-toast.ts [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/constants.ts [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/activityLogger.ts [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/hooks/useAuth.ts [app-ssr] (ecmascript)");
 "use client";
 ;
 ;
@@ -736,7 +738,8 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$t
 ;
 ;
 ;
-// Initial seed data if localStorage is empty
+;
+;
 const initialSeedDepartments = [
     {
         id: 'dept_kitchen_staff_001',
@@ -765,6 +768,7 @@ function DepartmentsPage() {
     const [isMounted, setIsMounted] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const [isLoadingTable, setIsLoadingTable] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const { toast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useToast"])();
+    const { currentUserId } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useAuth"])();
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRouter"])();
     const [searchTerm, setSearchTerm] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
     const [sortConfig, setSortConfig] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])({
@@ -799,11 +803,17 @@ function DepartmentsPage() {
     };
     const handleDeleteDepartment = (departmentIdToDelete)=>{
         setIsLoadingTable(true);
+        const departmentToDelete = departments.find((d)=>d.id === departmentIdToDelete);
         setTimeout(()=>{
             try {
                 const updatedDepartments = departments.filter((d)=>d.id !== departmentIdToDelete);
                 setDepartments(updatedDepartments);
                 localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DEPARTMENTS_STORAGE_KEY"], JSON.stringify(updatedDepartments));
+                if (departmentToDelete) {
+                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUserId, "DEPARTMENT_DELETE_SUCCESS", `Deleted department ID: ${departmentToDelete.id}, Name: ${departmentToDelete.name}`);
+                } else {
+                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUserId, "DEPARTMENT_DELETE_SUCCESS", `Deleted department with internal ID: ${departmentIdToDelete}`);
+                }
                 toast({
                     title: "Department Deleted",
                     description: "The department record has been successfully deleted."
@@ -816,6 +826,7 @@ function DepartmentsPage() {
                 }
             } catch (error) {
                 console.error("Failed to delete department from localStorage", error);
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUserId, "DEPARTMENT_DELETE_FAILURE", `Attempted to delete department. Error: ${error instanceof Error ? error.message : String(error)}`);
                 toast({
                     title: "Error",
                     description: "Failed to delete department. Please try again.",
@@ -878,12 +889,17 @@ function DepartmentsPage() {
         currentPage
     ]);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
-        if (currentPage > totalPages) {
+        if (currentPage > totalPages && totalPages > 0) {
             setCurrentPage(totalPages);
+        } else if (currentPage < 1 && totalPages > 0) {
+            setCurrentPage(1);
+        } else if (filteredAndSortedDepartments.length === 0) {
+            setCurrentPage(1);
         }
     }, [
         currentPage,
-        totalPages
+        totalPages,
+        filteredAndSortedDepartments.length
     ]);
     if (!isMounted) {
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -893,7 +909,7 @@ function DepartmentsPage() {
                     className: "h-8 w-8 animate-spin text-primary"
                 }, void 0, false, {
                     fileName: "[project]/src/app/admin/departments/page.tsx",
-                    lineNumber: 167,
+                    lineNumber: 181,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -901,13 +917,13 @@ function DepartmentsPage() {
                     children: "Loading department management..."
                 }, void 0, false, {
                     fileName: "[project]/src/app/admin/departments/page.tsx",
-                    lineNumber: 168,
+                    lineNumber: 182,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/admin/departments/page.tsx",
-            lineNumber: 166,
+            lineNumber: 180,
             columnNumber: 7
         }, this);
     }
@@ -926,14 +942,14 @@ function DepartmentsPage() {
                                         className: "mr-3 h-8 w-8"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/departments/page.tsx",
-                                        lineNumber: 178,
+                                        lineNumber: 192,
                                         columnNumber: 13
                                     }, this),
                                     " Manage Departments"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/departments/page.tsx",
-                                lineNumber: 177,
+                                lineNumber: 191,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -941,13 +957,13 @@ function DepartmentsPage() {
                                 children: "Add, edit, or remove department records."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/departments/page.tsx",
-                                lineNumber: 180,
+                                lineNumber: 194,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/departments/page.tsx",
-                        lineNumber: 176,
+                        lineNumber: 190,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -961,25 +977,25 @@ function DepartmentsPage() {
                                     className: "mr-2 h-5 w-5"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/admin/departments/page.tsx",
-                                    lineNumber: 184,
+                                    lineNumber: 198,
                                     columnNumber: 13
                                 }, this),
                                 " Add New Department"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/admin/departments/page.tsx",
-                            lineNumber: 183,
+                            lineNumber: 197,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/app/admin/departments/page.tsx",
-                        lineNumber: 182,
+                        lineNumber: 196,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/admin/departments/page.tsx",
-                lineNumber: 175,
+                lineNumber: 189,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
@@ -991,14 +1007,14 @@ function DepartmentsPage() {
                                 children: "Department List"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/departments/page.tsx",
-                                lineNumber: 191,
+                                lineNumber: 205,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardDescription"], {
                                 children: "Browse and manage all departments. Data is stored in your browser's local storage."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/departments/page.tsx",
-                                lineNumber: 192,
+                                lineNumber: 206,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1008,7 +1024,7 @@ function DepartmentsPage() {
                                         className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/departments/page.tsx",
-                                        lineNumber: 194,
+                                        lineNumber: 208,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -1019,19 +1035,19 @@ function DepartmentsPage() {
                                         className: "pl-10 w-full sm:w-1/2 md:w-1/3"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/departments/page.tsx",
-                                        lineNumber: 195,
+                                        lineNumber: 209,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/departments/page.tsx",
-                                lineNumber: 193,
+                                lineNumber: 207,
                                 columnNumber: 12
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/departments/page.tsx",
-                        lineNumber: 190,
+                        lineNumber: 204,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1043,7 +1059,7 @@ function DepartmentsPage() {
                                         className: "h-6 w-6 animate-spin text-primary"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/departments/page.tsx",
-                                        lineNumber: 207,
+                                        lineNumber: 221,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1051,13 +1067,13 @@ function DepartmentsPage() {
                                         children: "Updating table..."
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/departments/page.tsx",
-                                        lineNumber: 208,
+                                        lineNumber: 222,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/departments/page.tsx",
-                                lineNumber: 206,
+                                lineNumber: 220,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$admin$2f$departments$2f$DepartmentsTable$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DepartmentsTable"], {
@@ -1068,7 +1084,7 @@ function DepartmentsPage() {
                                 onSort: handleSort
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/departments/page.tsx",
-                                lineNumber: 211,
+                                lineNumber: 225,
                                 columnNumber: 11
                             }, this),
                             filteredAndSortedDepartments.length > ITEMS_PER_PAGE && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1087,7 +1103,7 @@ function DepartmentsPage() {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/admin/departments/page.tsx",
-                                        lineNumber: 220,
+                                        lineNumber: 234,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1103,14 +1119,14 @@ function DepartmentsPage() {
                                                         className: "mr-1 h-4 w-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/admin/departments/page.tsx",
-                                                        lineNumber: 230,
+                                                        lineNumber: 244,
                                                         columnNumber: 19
                                                     }, this),
                                                     "Previous"
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/admin/departments/page.tsx",
-                                                lineNumber: 224,
+                                                lineNumber: 238,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -1124,25 +1140,25 @@ function DepartmentsPage() {
                                                         className: "ml-1 h-4 w-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/admin/departments/page.tsx",
-                                                        lineNumber: 240,
+                                                        lineNumber: 254,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/admin/departments/page.tsx",
-                                                lineNumber: 233,
+                                                lineNumber: 247,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/admin/departments/page.tsx",
-                                        lineNumber: 223,
+                                        lineNumber: 237,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/departments/page.tsx",
-                                lineNumber: 219,
+                                lineNumber: 233,
                                 columnNumber: 13
                             }, this),
                             filteredAndSortedDepartments.length === 0 && !isLoadingTable && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1150,25 +1166,25 @@ function DepartmentsPage() {
                                 children: "No departments match your current search criteria."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/departments/page.tsx",
-                                lineNumber: 246,
+                                lineNumber: 260,
                                 columnNumber: 14
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/departments/page.tsx",
-                        lineNumber: 204,
+                        lineNumber: 218,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/admin/departments/page.tsx",
-                lineNumber: 189,
+                lineNumber: 203,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/admin/departments/page.tsx",
-        lineNumber: 174,
+        lineNumber: 188,
         columnNumber: 5
     }, this);
 }

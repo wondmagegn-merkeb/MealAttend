@@ -476,7 +476,11 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$b
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$left$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowLeft$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/arrow-left.js [app-ssr] (ecmascript) <export default as ArrowLeft>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/client/app-dir/link.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/constants.ts [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/activityLogger.ts [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/hooks/useAuth.ts [app-ssr] (ecmascript)");
 "use client";
+;
+;
 ;
 ;
 ;
@@ -489,6 +493,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$t
 function NewDepartmentPage() {
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRouter"])();
     const { toast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useToast"])();
+    const { currentUserId } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useAuth"])();
     const [isLoading, setIsLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const handleFormSubmit = (data)=>{
         setIsLoading(true);
@@ -503,6 +508,7 @@ function NewDepartmentPage() {
                 const departments = storedDepartmentsRaw ? JSON.parse(storedDepartmentsRaw) : [];
                 departments.unshift(newDepartment);
                 localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DEPARTMENTS_STORAGE_KEY"], JSON.stringify(departments));
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUserId, "DEPARTMENT_CREATE_SUCCESS", `Created department ID: ${newDepartment.id}, Name: ${newDepartment.name}`);
                 toast({
                     title: "Department Added",
                     description: `${data.name} has been successfully added.`
@@ -510,6 +516,7 @@ function NewDepartmentPage() {
                 router.push('/admin/departments');
             } catch (error) {
                 console.error("Failed to save department to localStorage", error);
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUserId, "DEPARTMENT_CREATE_FAILURE", `Attempted to create department: ${data.name}. Error: ${error instanceof Error ? error.message : String(error)}`);
                 toast({
                     title: "Error",
                     description: "Failed to save department. Please try again.",
@@ -533,7 +540,7 @@ function NewDepartmentPage() {
                                 children: "Add New Department"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/departments/new/page.tsx",
-                                lineNumber: 57,
+                                lineNumber: 62,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -541,13 +548,13 @@ function NewDepartmentPage() {
                                 children: "Enter the name for the new department."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/departments/new/page.tsx",
-                                lineNumber: 58,
+                                lineNumber: 63,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/departments/new/page.tsx",
-                        lineNumber: 56,
+                        lineNumber: 61,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -560,25 +567,25 @@ function NewDepartmentPage() {
                                     className: "mr-2 h-4 w-4"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/admin/departments/new/page.tsx",
-                                    lineNumber: 62,
+                                    lineNumber: 67,
                                     columnNumber: 13
                                 }, this),
                                 "Back to List"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/admin/departments/new/page.tsx",
-                            lineNumber: 61,
+                            lineNumber: 66,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/app/admin/departments/new/page.tsx",
-                        lineNumber: 60,
+                        lineNumber: 65,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/admin/departments/new/page.tsx",
-                lineNumber: 55,
+                lineNumber: 60,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$admin$2f$departments$2f$DepartmentForm$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DepartmentForm"], {
@@ -587,13 +594,13 @@ function NewDepartmentPage() {
                 submitButtonText: "Add Department"
             }, void 0, false, {
                 fileName: "[project]/src/app/admin/departments/new/page.tsx",
-                lineNumber: 67,
+                lineNumber: 72,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/admin/departments/new/page.tsx",
-        lineNumber: 54,
+        lineNumber: 59,
         columnNumber: 5
     }, this);
 }

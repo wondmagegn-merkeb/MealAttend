@@ -1205,9 +1205,13 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$b
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$left$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowLeft$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/arrow-left.js [app-client] (ecmascript) <export default as ArrowLeft>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/client/app-dir/link.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/constants.ts [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/activityLogger.ts [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/hooks/useAuth.ts [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
+;
+;
 ;
 ;
 ;
@@ -1220,13 +1224,13 @@ function NewStudentPage() {
     _s();
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
     const { toast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"])();
+    const { currentUserId } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"])();
     const [isLoading, setIsLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const handleFormSubmit = (data)=>{
         setIsLoading(true);
         setTimeout(()=>{
-            const studentInternalId = `stud_${Date.now()}`; // Simple unique ID for internal use
+            const studentInternalId = `stud_${Date.now()}`;
             const currentYear = new Date().getFullYear();
-            // Using a timestamp-based serial for client-side uniqueness
             const serialNumber = Date.now().toString().slice(-5).padStart(5, '0');
             const generatedStudentId = `ADERA/STU/${currentYear}/${serialNumber}`;
             const combinedClass = `${data.classNumber}${data.classAlphabet}`;
@@ -1246,6 +1250,7 @@ function NewStudentPage() {
                 const students = storedStudentsRaw ? JSON.parse(storedStudentsRaw) : [];
                 students.unshift(newStudent);
                 localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["STUDENTS_STORAGE_KEY"], JSON.stringify(students));
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUserId, "STUDENT_CREATE_SUCCESS", `Created student ID: ${newStudent.studentId}, Name: ${newStudent.name}`);
                 toast({
                     title: "Student Added",
                     description: `${data.name} has been successfully added with ID ${generatedStudentId}.`
@@ -1253,6 +1258,7 @@ function NewStudentPage() {
                 router.push('/admin/students');
             } catch (error) {
                 console.error("Failed to save student to localStorage", error);
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUserId, "STUDENT_CREATE_FAILURE", `Attempted to create student: ${data.name}. Error: ${error instanceof Error ? error.message : String(error)}`);
                 toast({
                     title: "Error",
                     description: "Failed to save student. Please try again.",
@@ -1276,7 +1282,7 @@ function NewStudentPage() {
                                 children: "Add New Student"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/students/new/page.tsx",
-                                lineNumber: 72,
+                                lineNumber: 76,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1284,13 +1290,13 @@ function NewStudentPage() {
                                 children: "Fill in the details to add a new student record. Student ID will be auto-generated."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/students/new/page.tsx",
-                                lineNumber: 73,
+                                lineNumber: 77,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/students/new/page.tsx",
-                        lineNumber: 71,
+                        lineNumber: 75,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -1303,25 +1309,25 @@ function NewStudentPage() {
                                     className: "mr-2 h-4 w-4"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/admin/students/new/page.tsx",
-                                    lineNumber: 77,
+                                    lineNumber: 81,
                                     columnNumber: 13
                                 }, this),
                                 "Back to List"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/admin/students/new/page.tsx",
-                            lineNumber: 76,
+                            lineNumber: 80,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/app/admin/students/new/page.tsx",
-                        lineNumber: 75,
+                        lineNumber: 79,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/admin/students/new/page.tsx",
-                lineNumber: 70,
+                lineNumber: 74,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$admin$2f$students$2f$StudentForm$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["StudentForm"], {
@@ -1331,20 +1337,21 @@ function NewStudentPage() {
                 isEditMode: false
             }, void 0, false, {
                 fileName: "[project]/src/app/admin/students/new/page.tsx",
-                lineNumber: 82,
+                lineNumber: 86,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/admin/students/new/page.tsx",
-        lineNumber: 69,
+        lineNumber: 73,
         columnNumber: 5
     }, this);
 }
-_s(NewStudentPage, "ODKjlCO+2Vavom6sL6pXmYw1a7Y=", false, function() {
+_s(NewStudentPage, "i6reYUVJZcroyNUKkUe/3IOj/KA=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"],
-        __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"]
+        __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"],
+        __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"]
     ];
 });
 _c = NewStudentPage;

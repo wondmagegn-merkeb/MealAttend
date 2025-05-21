@@ -1,9 +1,14 @@
 {
+  "/admin/activity-log/page": "app/admin/activity-log/page.js",
   "/admin/attendance/page": "app/admin/attendance/page.js",
+  "/admin/departments/new/page": "app/admin/departments/new/page.js",
   "/admin/departments/page": "app/admin/departments/page.js",
   "/admin/page": "app/admin/page.js",
   "/admin/settings/page": "app/admin/settings/page.js",
+  "/admin/students/new/page": "app/admin/students/new/page.js",
   "/admin/students/page": "app/admin/students/page.js",
+  "/admin/users/[id]/edit/page": "app/admin/users/[id]/edit/page.js",
+  "/admin/users/new/page": "app/admin/users/new/page.js",
   "/admin/users/page": "app/admin/users/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/page": "app/page.js"
