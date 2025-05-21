@@ -7,6 +7,7 @@ export const ATTENDANCE_RECORDS_STORAGE_KEY = 'mealAttendAttendanceRecords_v1';
 export const AUTH_TOKEN_KEY = 'mealAttendAuthToken_v1';
 export const CURRENT_USER_ROLE_KEY = 'mealAttendCurrentUserRole_v1';
 export const CURRENT_USER_ID_KEY = 'mealAttendCurrentUserId_v1';
-export const CURRENT_USER_DETAILS_KEY = 'mealAttendCurrentUserDetails_v1'; // New
+export const CURRENT_USER_DETAILS_KEY = 'mealAttendCurrentUserDetails_v1';
 export const PASSWORD_CHANGE_REQUIRED_KEY_PREFIX = 'mealAttendPasswordChangeRequired_';
+export const USER_ACTIVITY_LOG_KEY = 'mealAttendUserActivityLog_v1'; // New key for activity logs
     

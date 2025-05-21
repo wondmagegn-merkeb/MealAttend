@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from '@/hooks/use-toast';
 import { KeyRound, Lock, CheckCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { logUserActivity } from '@/lib/activityLogger'; // Import the logger
 
 export default function ChangePasswordPage() {
   const router = useRouter();
@@ -21,9 +22,8 @@ export default function ChangePasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Redirect if not authenticated or no password change is required
     if (isAuthenticated === false || (isAuthenticated === true && !isPasswordChangeRequired)) {
-      router.replace('/admin'); // Or '/auth/login' if not authenticated
+      router.replace('/admin');
     }
   }, [isAuthenticated, isPasswordChangeRequired, router]);
 
@@ -50,18 +50,17 @@ export default function ChangePasswordPage() {
       return;
     }
 
-    // Simulate API call to change password
     setTimeout(() => {
-      // In a real app, you would update the password on the backend here.
-      // For this simulation, we just clear the requirement flag.
       if (currentUserId) {
         clearPasswordChangeRequirement();
+        logUserActivity(currentUserId, "PASSWORD_CHANGE_SUCCESS"); // Log password change
         toast({
           title: "Password Changed (Simulated)",
           description: "Your password has been successfully updated. You can now access the system.",
         });
-        router.push('/admin'); // Redirect to dashboard
+        router.push('/admin');
       } else {
+         logUserActivity(null, "PASSWORD_CHANGE_FAILURE", "User ID not found during password change attempt.");
          toast({
           title: "Error",
           description: "Could not identify user to update password.",
@@ -75,8 +74,7 @@ export default function ChangePasswordPage() {
   if (isAuthenticated === null) {
      return <div className="flex justify-center items-center h-screen"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   }
-  if (isAuthenticated === false || !isPasswordChangeRequired) {
-    // This state should ideally be handled by the useEffect redirect, but as a fallback:
+  if (isAuthenticated === false || (isAuthenticated === true && !isPasswordChangeRequired)) {
     return <div className="flex justify-center items-center h-screen"><p>Redirecting...</p></div>;
   }
 

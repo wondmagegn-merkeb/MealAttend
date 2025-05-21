@@ -11,11 +11,12 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, UserCog } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { logUserActivity } from '@/lib/activityLogger'; // Import the logger
 
 export default function EditProfilePage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { currentUser, updateCurrentUserDetails, isAuthenticated } = useAuth();
+  const { currentUser, updateCurrentUserDetails, isAuthenticated, currentUserId } = useAuth();
 
   const [isLoading, setIsLoading] = useState(false);
   const [isClientMounted, setIsClientMounted] = useState(false);
@@ -25,28 +26,27 @@ export default function EditProfilePage() {
   }, []);
 
   const handleFormSubmit = (data: ProfileEditFormData) => {
-    if (!currentUser) {
+    if (!currentUser || !currentUserId) {
         toast({ title: "Error", description: "No user session found.", variant: "destructive" });
+        logUserActivity(null, "PROFILE_UPDATE_FAILURE", "No user session found.");
         return;
     }
     setIsLoading(true);
     
-    // Simulate API call delay
     setTimeout(() => {
       try {
-        // Only pass fields that are part of ProfileEditFormData to updateCurrentUserDetails
         const detailsToUpdate: Partial<User> = {
             fullName: data.fullName,
-            department: data.department,
+            // department is not editable here
             email: data.email,
             profileImageURL: data.profileImageURL,
         };
         updateCurrentUserDetails(detailsToUpdate);
+        logUserActivity(currentUserId, "PROFILE_UPDATE_SUCCESS"); // Log profile update
         // Toast is handled within updateCurrentUserDetails
-        // Optionally, redirect or give further feedback
-        // router.push('/admin'); // Or stay on page
       } catch (error) {
         console.error("Failed to update profile", error);
+        logUserActivity(currentUserId, "PROFILE_UPDATE_FAILURE", "Error during profile update.");
         toast({
           title: "Error",
           description: "Failed to update profile. Please try again.",
@@ -68,7 +68,6 @@ export default function EditProfilePage() {
   }
   
   if (isAuthenticated === false) {
-     // This case should ideally be handled by AuthGuard, but as a fallback
     return (
          <div className="space-y-6 max-w-2xl mx-auto text-center">
             <Card className="shadow-lg">

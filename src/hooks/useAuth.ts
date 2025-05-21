@@ -10,17 +10,17 @@ import {
   CURRENT_USER_ROLE_KEY,
   CURRENT_USER_ID_KEY,
   PASSWORD_CHANGE_REQUIRED_KEY_PREFIX,
-  CURRENT_USER_DETAILS_KEY, // New key for full user details
+  CURRENT_USER_DETAILS_KEY,
 } from '@/lib/constants';
 import { useToast } from './use-toast';
 import type { User } from '@/types/user';
+import { logUserActivity } from '@/lib/activityLogger'; // Import the logger
 
 const MOCK_DEFAULT_PASSWORD = "password123";
 
-// Define a fallback admin user to ensure login is always possible for demo
 const MOCK_DEFAULT_ADMIN_USER: User = {
-  id: 'usr_smp_001_fallback', // Use a distinct internal ID for fallback
-  userId: 'ADERA/USR/2024/00001', // The ADERA ID used for login
+  id: 'usr_smp_001_fallback',
+  userId: 'ADERA/USR/2024/00001',
   fullName: 'Alice Admin (Fallback)',
   department: 'Administration',
   email: 'alice.admin@example.com',
@@ -32,9 +32,9 @@ const MOCK_DEFAULT_ADMIN_USER: User = {
 
 interface AuthContextType {
   isAuthenticated: boolean | null;
-  currentUser: User | null; // Changed to store full user object
-  currentUserRole: User['role'] | null; // Kept for direct access if needed
-  currentUserId: string | null; // Kept for direct access if needed
+  currentUser: User | null;
+  currentUserRole: User['role'] | null;
+  currentUserId: string | null; // ADERA User ID
   isPasswordChangeRequired: boolean;
   login: (userIdInput?: string, password?: string) => Promise<boolean>;
   logout: () => void;
@@ -51,8 +51,7 @@ export function useAuth(): AuthContextType {
   const { toast } = useToast();
 
   const currentUserRole = currentUser?.role || null;
-  const currentUserId = currentUser?.userId || null;
-
+  const currentUserId = currentUser?.userId || null; // This is the ADERA User ID
 
   const checkPasswordChangeStatus = useCallback((userIdToCheck: string | null) => {
     if (!userIdToCheck) {
@@ -77,7 +76,7 @@ export function useAuth(): AuthContextType {
         const storedUser: User = JSON.parse(storedUserDetailsRaw);
         setIsAuthenticated(true);
         setCurrentUser(storedUser);
-        checkPasswordChangeStatus(storedUser.userId);
+        checkPasswordChangeStatus(storedUser.userId); // Use ADERA User ID here
       } else {
         setIsAuthenticated(false);
         setCurrentUser(null);
@@ -111,27 +110,21 @@ export function useAuth(): AuthContextType {
           const adminExistsInStorage = usersToSearch.some(u => u.userId === MOCK_DEFAULT_ADMIN_USER.userId);
           if (!adminExistsInStorage) {
             usersToSearch.push(MOCK_DEFAULT_ADMIN_USER);
-            // Optionally save the updated list back to localStorage if it was missing the default admin
-            // localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(usersToSearch));
           }
           
           const user = usersToSearch.find(u => u.userId === userIdInput);
 
           if (user && password === MOCK_DEFAULT_PASSWORD) {
             localStorage.setItem(AUTH_TOKEN_KEY, `mock-jwt-token-for-${user.userId}`);
-            localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(user)); // Store full user object
-
-            // Keep these for potential direct use or quicker checks if needed, though currentUser is primary
+            localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(user));
             localStorage.setItem(CURRENT_USER_ROLE_KEY, user.role);
-            localStorage.setItem(CURRENT_USER_ID_KEY, user.userId);
-
+            localStorage.setItem(CURRENT_USER_ID_KEY, user.userId); // ADERA User ID
 
             setIsAuthenticated(true);
             setCurrentUser(user);
 
             const passwordChangeDismissedKey = PASSWORD_CHANGE_REQUIRED_KEY_PREFIX + user.userId + "_dismissed";
             const passwordChangeRequiredKey = PASSWORD_CHANGE_REQUIRED_KEY_PREFIX + user.userId;
-            
             const passwordChangeDismissed = localStorage.getItem(passwordChangeDismissedKey);
 
             if (!passwordChangeDismissed) {
@@ -141,15 +134,18 @@ export function useAuth(): AuthContextType {
               localStorage.removeItem(passwordChangeRequiredKey);
               setIsPasswordChangeRequired(false);
             }
-
+            
+            logUserActivity(user.userId, "LOGIN_SUCCESS"); // Log successful login
             toast({ title: "Login Successful", description: `Welcome back, ${user.fullName}!` });
             resolve(true);
           } else {
+            logUserActivity(userIdInput || 'unknown_user', "LOGIN_FAILURE", "Invalid User ID or password."); // Log failed login
             toast({ title: "Login Failed", description: "Invalid User ID or password.", variant: "destructive" });
             resolve(false);
           }
         } catch (e) {
           console.error("Login error:", e);
+          logUserActivity(userIdInput || 'unknown_user', "LOGIN_ERROR", "An unexpected error occurred during login."); // Log login error
           toast({ title: "Login Error", description: "An unexpected error occurred.", variant: "destructive" });
           resolve(false);
         }
@@ -158,30 +154,38 @@ export function useAuth(): AuthContextType {
   }, [toast]); 
 
   const logout = useCallback(() => {
+    const loggingOutUserId = currentUser?.userId || null; // Get user ID before clearing currentUser
     try {
       localStorage.removeItem(AUTH_TOKEN_KEY);
       localStorage.removeItem(CURRENT_USER_ROLE_KEY);
       localStorage.removeItem(CURRENT_USER_ID_KEY);
-      localStorage.removeItem(CURRENT_USER_DETAILS_KEY); // Clear full user details
-
+      localStorage.removeItem(CURRENT_USER_DETAILS_KEY);
 
       setIsAuthenticated(false);
       setCurrentUser(null);
       setIsPasswordChangeRequired(false); 
+      
+      if (loggingOutUserId) {
+        logUserActivity(loggingOutUserId, "LOGOUT_SUCCESS"); // Log successful logout
+      }
       toast({ title: "Logged Out", description: "You have been successfully logged out." });
       router.push('/auth/login');
     } catch (e) {
+      if (loggingOutUserId) {
+        logUserActivity(loggingOutUserId, "LOGOUT_ERROR", "Failed to clear session.");
+      }
       toast({ title: "Logout Error", description: "Could not clear session.", variant: "destructive" });
     }
-  }, [router, toast]);
+  }, [router, toast, currentUser]);
 
   const clearPasswordChangeRequirement = useCallback(() => {
-    const uid = currentUser?.userId; // Use userId from currentUser
+    const uid = currentUser?.userId;
     if (uid) {
       try {
         localStorage.setItem(PASSWORD_CHANGE_REQUIRED_KEY_PREFIX + uid + "_dismissed", 'true');
         localStorage.removeItem(PASSWORD_CHANGE_REQUIRED_KEY_PREFIX + uid);
         setIsPasswordChangeRequired(false);
+        logUserActivity(uid, "PASSWORD_CHANGE_FLAG_CLEARED");
       } catch (e) {
         console.error("Error clearing password change requirement flag:", e);
       }
@@ -193,13 +197,9 @@ export function useAuth(): AuthContextType {
 
     const updatedUser: User = { ...currentUser, ...updatedDetails, updatedAt: new Date().toISOString() };
     
-    // Update state
     setCurrentUser(updatedUser);
-    
-    // Update localStorage for the CURRENT_USER_DETAILS_KEY
     localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(updatedUser));
 
-    // Also update this user in the general USERS_STORAGE_KEY list
     try {
       const storedUsersRaw = localStorage.getItem(USERS_STORAGE_KEY);
       let users: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
@@ -207,21 +207,19 @@ export function useAuth(): AuthContextType {
       if (userIndex > -1) {
         users[userIndex] = updatedUser;
       } else {
-        // This case should ideally not happen if the user was loaded correctly
         users.push(updatedUser); 
       }
       localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
       
-      // Optionally, dispatch a storage event if other tabs need to react
       window.dispatchEvent(new StorageEvent('storage', { key: USERS_STORAGE_KEY, newValue: JSON.stringify(users) }));
       window.dispatchEvent(new StorageEvent('storage', { key: CURRENT_USER_DETAILS_KEY, newValue: JSON.stringify(updatedUser) }));
-
 
     } catch (error) {
       console.error("Failed to update user details in USERS_STORAGE_KEY:", error);
       toast({ title: "Storage Error", description: "Could not update user in main list.", variant: "destructive" });
     }
-
+    // Log profile update success in the profile edit page component itself, as it has more context.
+    // logUserActivity(currentUser.userId, "PROFILE_UPDATE_SUCCESS"); 
     toast({ title: "Profile Updated", description: "Your profile details have been saved." });
   }, [currentUser, toast]);
 
