@@ -12,8 +12,9 @@ import { UsersTable } from "@/components/admin/users/UsersTable";
 import type { User } from "@/types/user";
 import { useToast } from "@/hooks/use-toast";
 import { USERS_STORAGE_KEY } from '@/lib/constants';
+import { logUserActivity } from '@/lib/activityLogger';
+import { useAuth } from '@/hooks/useAuth';
 
-// Initial seed data if localStorage is empty
 const initialSeedUsers: User[] = [
   { id: 'usr_smp_001', userId: 'ADERA/USR/2024/00001', fullName: 'Alice Admin', department: 'Administration', email: 'alice.admin@example.com', role: 'Admin', profileImageURL: 'https://placehold.co/100x100.png?text=AA', createdAt: new Date('2023-01-10T10:00:00Z').toISOString(), updatedAt: new Date('2023-01-10T10:00:00Z').toISOString() },
   { id: 'usr_smp_002', userId: 'ADERA/USR/2024/00002', fullName: 'Bob Operator', department: 'Kitchen Staff', email: 'bob.operator@example.com', role: 'User', profileImageURL: 'https://placehold.co/100x100.png?text=BO', createdAt: new Date('2023-02-15T11:30:00Z').toISOString(), updatedAt: new Date('2023-02-15T11:30:00Z').toISOString() },
@@ -36,6 +37,7 @@ export default function UsersPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [isLoadingTable, setIsLoadingTable] = useState(false);
   const { toast } = useToast();
+  const { currentUserId: actorUserId } = useAuth(); // Renamed to avoid conflict
   const router = useRouter();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -67,13 +69,20 @@ export default function UsersPage() {
     router.push(`/admin/users/${user.id}/edit`);
   };
 
-  const handleDeleteUser = (userIdToDelete: string) => {
+  const handleDeleteUser = (internalUserIdToDelete: string) => {
     setIsLoadingTable(true);
+    const userToDelete = users.find(u => u.id === internalUserIdToDelete);
     setTimeout(() => {
       try {
-        const updatedUsers = users.filter(u => u.id !== userIdToDelete);
+        const updatedUsers = users.filter(u => u.id !== internalUserIdToDelete);
         setUsers(updatedUsers);
         localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(updatedUsers));
+        
+        if(userToDelete) {
+          logUserActivity(actorUserId, "USER_DELETE_SUCCESS", `Deleted user ID: ${userToDelete.userId}, Name: ${userToDelete.fullName}`);
+        } else {
+          logUserActivity(actorUserId, "USER_DELETE_SUCCESS", `Deleted user with internal ID: ${internalUserIdToDelete}`);
+        }
         toast({
           title: "User Deleted",
           description: "The user record has been successfully deleted.",
@@ -95,6 +104,7 @@ export default function UsersPage() {
 
       } catch (error) {
         console.error("Failed to delete user from localStorage", error);
+        logUserActivity(actorUserId, "USER_DELETE_FAILURE", `Attempted to delete user. Error: ${error instanceof Error ? error.message : String(error)}`);
         toast({
           title: "Error",
           description: "Failed to delete user. Please try again.",
@@ -168,10 +178,12 @@ export default function UsersPage() {
   useEffect(() => {
     if (currentPage > totalPages && totalPages > 0) { 
       setCurrentPage(totalPages);
-    } else if (currentPage === 0 && totalPages > 0) { 
+    } else if (currentPage < 1 && totalPages > 0) { // Changed from currentPage === 0
+        setCurrentPage(1);
+    } else if (filteredAndSortedUsers.length === 0){ // Added condition for empty list
         setCurrentPage(1);
     }
-  }, [currentPage, totalPages]);
+  }, [currentPage, totalPages, filteredAndSortedUsers.length]);
 
 
   if (!isMounted) {

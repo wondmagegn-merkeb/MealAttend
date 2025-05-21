@@ -10,10 +10,13 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { DEPARTMENTS_STORAGE_KEY } from '@/lib/constants';
+import { logUserActivity } from '@/lib/activityLogger';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function NewDepartmentPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { currentUserId } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleFormSubmit = (data: DepartmentFormData) => {
@@ -32,6 +35,7 @@ export default function NewDepartmentPage() {
         departments.unshift(newDepartment);
         localStorage.setItem(DEPARTMENTS_STORAGE_KEY, JSON.stringify(departments));
         
+        logUserActivity(currentUserId, "DEPARTMENT_CREATE_SUCCESS", `Created department ID: ${newDepartment.id}, Name: ${newDepartment.name}`);
         toast({
           title: "Department Added",
           description: `${data.name} has been successfully added.`,
@@ -39,6 +43,7 @@ export default function NewDepartmentPage() {
         router.push('/admin/departments');
       } catch (error) {
         console.error("Failed to save department to localStorage", error);
+        logUserActivity(currentUserId, "DEPARTMENT_CREATE_FAILURE", `Attempted to create department: ${data.name}. Error: ${error instanceof Error ? error.message : String(error)}`);
         toast({
           title: "Error",
           description: "Failed to save department. Please try again.",

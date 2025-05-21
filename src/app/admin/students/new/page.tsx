@@ -10,20 +10,22 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { STUDENTS_STORAGE_KEY } from '@/lib/constants';
+import { logUserActivity } from '@/lib/activityLogger';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function NewStudentPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { currentUserId } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleFormSubmit = (data: StudentFormData) => {
     setIsLoading(true);
     
     setTimeout(() => {
-      const studentInternalId = `stud_${Date.now()}`; // Simple unique ID for internal use
+      const studentInternalId = `stud_${Date.now()}`; 
       
       const currentYear = new Date().getFullYear();
-      // Using a timestamp-based serial for client-side uniqueness
       const serialNumber = Date.now().toString().slice(-5).padStart(5, '0');
       const generatedStudentId = `ADERA/STU/${currentYear}/${serialNumber}`;
       
@@ -47,6 +49,7 @@ export default function NewStudentPage() {
         students.unshift(newStudent); 
         localStorage.setItem(STUDENTS_STORAGE_KEY, JSON.stringify(students));
         
+        logUserActivity(currentUserId, "STUDENT_CREATE_SUCCESS", `Created student ID: ${newStudent.studentId}, Name: ${newStudent.name}`);
         toast({
           title: "Student Added",
           description: `${data.name} has been successfully added with ID ${generatedStudentId}.`,
@@ -54,6 +57,7 @@ export default function NewStudentPage() {
         router.push('/admin/students');
       } catch (error) {
         console.error("Failed to save student to localStorage", error);
+        logUserActivity(currentUserId, "STUDENT_CREATE_FAILURE", `Attempted to create student: ${data.name}. Error: ${error instanceof Error ? error.message : String(error)}`);
         toast({
           title: "Error",
           description: "Failed to save student. Please try again.",

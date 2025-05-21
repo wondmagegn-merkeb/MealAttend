@@ -11,20 +11,20 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { STUDENTS_STORAGE_KEY } from '@/lib/constants';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { logUserActivity } from '@/lib/activityLogger';
+import { useAuth } from '@/hooks/useAuth';
 
-// Helper to parse class string "10A" into { classNumber: "10", classAlphabet: "A" }
 const parseClassString = (classStr: string | undefined): { classNumber: string, classAlphabet: string } => {
   if (!classStr) return { classNumber: "", classAlphabet: "" };
   const match = classStr.match(/^(\d+)([A-Za-z]*)$/);
   if (match) {
     return { classNumber: match[1], classAlphabet: match[2] };
   }
-  // Fallback for only numbers or non-standard formats
   const numericMatch = classStr.match(/^(\d+)$/);
   if (numericMatch) {
     return { classNumber: numericMatch[1], classAlphabet: "" };
   }
-  return { classNumber: "", classAlphabet: classStr }; // Or handle error/default
+  return { classNumber: "", classAlphabet: classStr };
 };
 
 
@@ -32,6 +32,7 @@ export default function EditStudentPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
+  const { currentUserId } = useAuth();
   
   const studentInternalId = typeof params.id === 'string' ? params.id : undefined;
 
@@ -53,7 +54,7 @@ export default function EditStudentPage() {
             setStudent(foundStudent);
             const { classNumber, classAlphabet } = parseClassString(foundStudent.class);
             setInitialFormValues({
-              studentId: foundStudent.studentId, // for display
+              studentId: foundStudent.studentId,
               name: foundStudent.name,
               gender: foundStudent.gender,
               classNumber: classNumber,
@@ -90,7 +91,7 @@ export default function EditStudentPage() {
     setTimeout(() => {
       const combinedClass = `${data.classNumber}${data.classAlphabet}`;
       const updatedStudent: Student = {
-        ...student, // Retains id, studentId, qrCodeData, createdAt
+        ...student,
         name: data.name,
         gender: data.gender,
         class: combinedClass,
@@ -104,6 +105,7 @@ export default function EditStudentPage() {
         students = students.map(s => s.id === student.id ? updatedStudent : s);
         localStorage.setItem(STUDENTS_STORAGE_KEY, JSON.stringify(students));
 
+        logUserActivity(currentUserId, "STUDENT_UPDATE_SUCCESS", `Updated student ID: ${updatedStudent.studentId}, Name: ${updatedStudent.name}`);
         toast({
           title: "Student Updated",
           description: `${data.name}'s record has been updated.`,
@@ -111,6 +113,7 @@ export default function EditStudentPage() {
         router.push('/admin/students');
       } catch (error) {
         console.error("Failed to update student in localStorage", error);
+        logUserActivity(currentUserId, "STUDENT_UPDATE_FAILURE", `Attempted to update student ID: ${student.studentId}. Error: ${error instanceof Error ? error.message : String(error)}`);
         toast({
           title: "Error",
           description: "Failed to update student. Please try again.",

@@ -11,11 +11,14 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { DEPARTMENTS_STORAGE_KEY } from '@/lib/constants';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { logUserActivity } from '@/lib/activityLogger';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function EditDepartmentPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
+  const { currentUserId } = useAuth();
   
   const departmentId = typeof params.id === 'string' ? params.id : undefined;
 
@@ -73,6 +76,7 @@ export default function EditDepartmentPage() {
         departments = departments.map(d => d.id === department.id ? updatedDepartment : d);
         localStorage.setItem(DEPARTMENTS_STORAGE_KEY, JSON.stringify(departments));
 
+        logUserActivity(currentUserId, "DEPARTMENT_UPDATE_SUCCESS", `Updated department ID: ${updatedDepartment.id}, Name: ${updatedDepartment.name}`);
         toast({
           title: "Department Updated",
           description: `${data.name}'s record has been updated.`,
@@ -80,6 +84,7 @@ export default function EditDepartmentPage() {
         router.push('/admin/departments');
       } catch (error) {
         console.error("Failed to update department in localStorage", error);
+        logUserActivity(currentUserId, "DEPARTMENT_UPDATE_FAILURE", `Attempted to update department ID: ${department.id}. Error: ${error instanceof Error ? error.message : String(error)}`);
         toast({
           title: "Error",
           description: "Failed to update department. Please try again.",

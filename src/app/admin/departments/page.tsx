@@ -12,8 +12,9 @@ import { DepartmentsTable } from "@/components/admin/departments/DepartmentsTabl
 import type { Department } from "@/types/department";
 import { useToast } from "@/hooks/use-toast";
 import { DEPARTMENTS_STORAGE_KEY } from '@/lib/constants';
+import { logUserActivity } from '@/lib/activityLogger';
+import { useAuth } from '@/hooks/useAuth';
 
-// Initial seed data if localStorage is empty
 const initialSeedDepartments: Department[] = [
   { id: 'dept_kitchen_staff_001', name: 'Kitchen Staff' },
   { id: 'dept_serving_team_002', name: 'Serving Team' },
@@ -37,6 +38,7 @@ export default function DepartmentsPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [isLoadingTable, setIsLoadingTable] = useState(false);
   const { toast } = useToast();
+  const { currentUserId } = useAuth();
   const router = useRouter();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -70,11 +72,18 @@ export default function DepartmentsPage() {
 
   const handleDeleteDepartment = (departmentIdToDelete: string) => {
     setIsLoadingTable(true);
+    const departmentToDelete = departments.find(d => d.id === departmentIdToDelete);
     setTimeout(() => {
       try {
         const updatedDepartments = departments.filter(d => d.id !== departmentIdToDelete);
         setDepartments(updatedDepartments);
         localStorage.setItem(DEPARTMENTS_STORAGE_KEY, JSON.stringify(updatedDepartments));
+
+        if (departmentToDelete) {
+            logUserActivity(currentUserId, "DEPARTMENT_DELETE_SUCCESS", `Deleted department ID: ${departmentToDelete.id}, Name: ${departmentToDelete.name}`);
+        } else {
+            logUserActivity(currentUserId, "DEPARTMENT_DELETE_SUCCESS", `Deleted department with internal ID: ${departmentIdToDelete}`);
+        }
         toast({
           title: "Department Deleted",
           description: "The department record has been successfully deleted.",
@@ -93,6 +102,7 @@ export default function DepartmentsPage() {
 
       } catch (error) {
         console.error("Failed to delete department from localStorage", error);
+        logUserActivity(currentUserId, "DEPARTMENT_DELETE_FAILURE", `Attempted to delete department. Error: ${error instanceof Error ? error.message : String(error)}`);
         toast({
           title: "Error",
           description: "Failed to delete department. Please try again.",
@@ -155,10 +165,14 @@ export default function DepartmentsPage() {
   }, [filteredAndSortedDepartments, currentPage]);
 
   useEffect(() => {
-    if (currentPage > totalPages) {
+    if (currentPage > totalPages && totalPages > 0) { // Added totalPages > 0
       setCurrentPage(totalPages);
+    } else if (currentPage < 1 && totalPages > 0) { // Added totalPages > 0
+        setCurrentPage(1);
+    } else if (filteredAndSortedDepartments.length === 0){ // Added condition for empty list
+        setCurrentPage(1);
     }
-  }, [currentPage, totalPages]);
+  }, [currentPage, totalPages, filteredAndSortedDepartments.length]);
 
 
   if (!isMounted) {
@@ -250,4 +264,3 @@ export default function DepartmentsPage() {
     </div>
   );
 }
-

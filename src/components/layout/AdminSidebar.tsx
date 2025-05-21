@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, BookUser, Settings, QrCode, UsersRound, Users as UsersIcon, Building2 as DepartmentIcon } from 'lucide-react';
+import { LayoutDashboard, BookUser, Settings, QrCode, UsersRound, Users as UsersIcon, Building2 as DepartmentIcon, History } from 'lucide-react'; // Added History
 import { cn } from '@/lib/utils';
 import {
   SidebarContent as ShadSidebarContent,
@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/shared/Logo';
 import { Button } from '../ui/button';
-import { useAuth } from '@/hooks/useAuth'; // Import useAuth
+import { useAuth } from '@/hooks/useAuth'; 
 
 const navItemsBase = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, tooltip: 'Dashboard Overview' },
@@ -27,6 +27,7 @@ const navItemsBase = [
 const adminOnlyNavItems = [
   { href: '/admin/users', label: 'Users', icon: UsersIcon, tooltip: 'Manage Users (Admin)' },
   { href: '/admin/departments', label: 'Departments', icon: DepartmentIcon, tooltip: 'Manage Departments (Admin)' },
+  { href: '/admin/activity-log', label: 'Activity Log', icon: History, tooltip: 'View User Activity (Admin)' }, // Added Activity Log
 ];
 
 const navItemsSettings = [
@@ -35,7 +36,7 @@ const navItemsSettings = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
-  const { currentUserRole } = useAuth(); // Get current user's role
+  const { currentUserRole } = useAuth(); 
 
   let navItems = [...navItemsBase];
   if (currentUserRole === 'Admin') {

@@ -10,10 +10,13 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { USERS_STORAGE_KEY } from '@/lib/constants';
+import { logUserActivity } from '@/lib/activityLogger';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function NewUserPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { currentUserId: actorUserId } = useAuth(); // Renamed to avoid conflict
   const [isLoading, setIsLoading] = useState(false);
 
   const handleFormSubmit = (data: UserFormData) => {
@@ -43,6 +46,7 @@ export default function NewUserPage() {
         users.unshift(newUser);
         localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
         
+        logUserActivity(actorUserId, "USER_CREATE_SUCCESS", `Created user ID: ${newUser.userId}, Name: ${newUser.fullName}`);
         toast({
           title: "User Added",
           description: `${data.fullName} has been successfully added with ID ${formattedUserId}.`,
@@ -50,6 +54,7 @@ export default function NewUserPage() {
         router.push('/admin/users');
       } catch (error) {
         console.error("Failed to save user to localStorage", error);
+        logUserActivity(actorUserId, "USER_CREATE_FAILURE", `Attempted to create user: ${data.fullName}. Error: ${error instanceof Error ? error.message : String(error)}`);
         toast({
           title: "Error",
           description: "Failed to save user. Please try again.",

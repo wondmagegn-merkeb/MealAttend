@@ -11,13 +11,16 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { USERS_STORAGE_KEY } from '@/lib/constants';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { logUserActivity } from '@/lib/activityLogger';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function EditUserPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
+  const { currentUserId: actorUserId } = useAuth(); // Renamed to avoid conflict
   
-  const userIdParam = typeof params.id === 'string' ? params.id : undefined; // internal id from URL
+  const userIdParam = typeof params.id === 'string' ? params.id : undefined;
 
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,7 +66,7 @@ export default function EditUserPage() {
 
     setTimeout(() => {
       const updatedUser: User = {
-        ...user, // Retains id, userId, createdAt
+        ...user,
         fullName: data.fullName,
         department: data.department,
         email: data.email,
@@ -78,6 +81,7 @@ export default function EditUserPage() {
         users = users.map(u => u.id === user.id ? updatedUser : u);
         localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
 
+        logUserActivity(actorUserId, "USER_UPDATE_SUCCESS", `Updated user ID: ${updatedUser.userId}, Name: ${updatedUser.fullName}`);
         toast({
           title: "User Updated",
           description: `${data.fullName}'s record has been updated.`,
@@ -85,6 +89,7 @@ export default function EditUserPage() {
         router.push('/admin/users');
       } catch (error) {
         console.error("Failed to update user in localStorage", error);
+        logUserActivity(actorUserId, "USER_UPDATE_FAILURE", `Attempted to update user ID: ${user.userId}. Error: ${error instanceof Error ? error.message : String(error)}`);
         toast({
           title: "Error",
           description: "Failed to update user. Please try again.",
@@ -140,7 +145,7 @@ export default function EditUserPage() {
           </Link>
         </Button>
       </div>
-      {user && ( // Pass the full user object which includes userId for display in the form
+      {user && (
         <UserForm 
           onSubmit={handleFormSubmit} 
           initialData={user} 

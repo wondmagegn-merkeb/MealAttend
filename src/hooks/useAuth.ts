@@ -14,7 +14,7 @@ import {
 } from '@/lib/constants';
 import { useToast } from './use-toast';
 import type { User } from '@/types/user';
-import { logUserActivity } from '@/lib/activityLogger'; // Import the logger
+import { logUserActivity } from '@/lib/activityLogger';
 
 const MOCK_DEFAULT_PASSWORD = "password123";
 
@@ -51,7 +51,7 @@ export function useAuth(): AuthContextType {
   const { toast } = useToast();
 
   const currentUserRole = currentUser?.role || null;
-  const currentUserId = currentUser?.userId || null; // This is the ADERA User ID
+  const currentUserId = currentUser?.userId || null;
 
   const checkPasswordChangeStatus = useCallback((userIdToCheck: string | null) => {
     if (!userIdToCheck) {
@@ -76,7 +76,7 @@ export function useAuth(): AuthContextType {
         const storedUser: User = JSON.parse(storedUserDetailsRaw);
         setIsAuthenticated(true);
         setCurrentUser(storedUser);
-        checkPasswordChangeStatus(storedUser.userId); // Use ADERA User ID here
+        checkPasswordChangeStatus(storedUser.userId);
       } else {
         setIsAuthenticated(false);
         setCurrentUser(null);
@@ -108,7 +108,7 @@ export function useAuth(): AuthContextType {
           }
           
           const adminExistsInStorage = usersToSearch.some(u => u.userId === MOCK_DEFAULT_ADMIN_USER.userId);
-          if (!adminExistsInStorage) {
+          if (!adminExistsInStorage && MOCK_DEFAULT_ADMIN_USER.userId === userIdInput) { // Ensure we add if it's the one being searched for
             usersToSearch.push(MOCK_DEFAULT_ADMIN_USER);
           }
           
@@ -118,7 +118,7 @@ export function useAuth(): AuthContextType {
             localStorage.setItem(AUTH_TOKEN_KEY, `mock-jwt-token-for-${user.userId}`);
             localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(user));
             localStorage.setItem(CURRENT_USER_ROLE_KEY, user.role);
-            localStorage.setItem(CURRENT_USER_ID_KEY, user.userId); // ADERA User ID
+            localStorage.setItem(CURRENT_USER_ID_KEY, user.userId); 
 
             setIsAuthenticated(true);
             setCurrentUser(user);
@@ -135,17 +135,17 @@ export function useAuth(): AuthContextType {
               setIsPasswordChangeRequired(false);
             }
             
-            logUserActivity(user.userId, "LOGIN_SUCCESS"); // Log successful login
+            logUserActivity(user.userId, "LOGIN_SUCCESS");
             toast({ title: "Login Successful", description: `Welcome back, ${user.fullName}!` });
             resolve(true);
           } else {
-            logUserActivity(userIdInput || 'unknown_user', "LOGIN_FAILURE", "Invalid User ID or password."); // Log failed login
+            logUserActivity(userIdInput || 'unknown_user', "LOGIN_FAILURE", "Invalid User ID or password.");
             toast({ title: "Login Failed", description: "Invalid User ID or password.", variant: "destructive" });
             resolve(false);
           }
         } catch (e) {
           console.error("Login error:", e);
-          logUserActivity(userIdInput || 'unknown_user', "LOGIN_ERROR", "An unexpected error occurred during login."); // Log login error
+          logUserActivity(userIdInput || 'unknown_user', "LOGIN_ERROR", "An unexpected error occurred during login.");
           toast({ title: "Login Error", description: "An unexpected error occurred.", variant: "destructive" });
           resolve(false);
         }
@@ -154,7 +154,7 @@ export function useAuth(): AuthContextType {
   }, [toast]); 
 
   const logout = useCallback(() => {
-    const loggingOutUserId = currentUser?.userId || null; // Get user ID before clearing currentUser
+    const loggingOutUserId = currentUser?.userId || null;
     try {
       localStorage.removeItem(AUTH_TOKEN_KEY);
       localStorage.removeItem(CURRENT_USER_ROLE_KEY);
@@ -166,7 +166,7 @@ export function useAuth(): AuthContextType {
       setIsPasswordChangeRequired(false); 
       
       if (loggingOutUserId) {
-        logUserActivity(loggingOutUserId, "LOGOUT_SUCCESS"); // Log successful logout
+        logUserActivity(loggingOutUserId, "LOGOUT_SUCCESS");
       }
       toast({ title: "Logged Out", description: "You have been successfully logged out." });
       router.push('/auth/login');
@@ -218,8 +218,6 @@ export function useAuth(): AuthContextType {
       console.error("Failed to update user details in USERS_STORAGE_KEY:", error);
       toast({ title: "Storage Error", description: "Could not update user in main list.", variant: "destructive" });
     }
-    // Log profile update success in the profile edit page component itself, as it has more context.
-    // logUserActivity(currentUser.userId, "PROFILE_UPDATE_SUCCESS"); 
     toast({ title: "Profile Updated", description: "Your profile details have been saved." });
   }, [currentUser, toast]);
 
