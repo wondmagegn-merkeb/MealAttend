@@ -306,218 +306,228 @@ function ForgotPasswordPage() {
         }, 1000);
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "flex flex-col md:flex-row items-stretch justify-center min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10",
-        children: [
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "flex flex-1 items-center justify-center p-4 sm:p-8",
-                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
-                    className: "w-full max-w-md shadow-2xl bg-card",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardHeader"], {
-                            className: "text-center",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "flex justify-center mb-4 md:hidden",
-                                    children: [
-                                        " ",
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$key$2d$round$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__KeyRound$3e$__["KeyRound"], {
-                                            className: "h-16 w-16 text-primary"
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                                            lineNumber: 50,
-                                            columnNumber: 15
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                                    lineNumber: 49,
-                                    columnNumber: 14
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardTitle"], {
-                                    className: "text-3xl font-bold",
-                                    children: "Forgot Password?"
-                                }, void 0, false, {
-                                    fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                                    lineNumber: 52,
-                                    columnNumber: 13
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardDescription"], {
-                                    children: "No worries! Enter your email address below and we'll (simulate) send you a code to reset your password."
-                                }, void 0, false, {
-                                    fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                                    lineNumber: 53,
-                                    columnNumber: 13
-                                }, this)
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                            lineNumber: 48,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
-                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
-                                onSubmit: handleSubmit,
-                                className: "space-y-6",
+        className: "flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4 sm:p-8",
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+            className: "flex flex-col md:flex-row w-full max-w-4xl shadow-2xl rounded-xl overflow-hidden",
+            children: [
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "flex-1 p-6 sm:p-10 bg-card",
+                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
+                        className: "border-none shadow-none w-full",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardHeader"], {
+                                className: "text-center p-0 pb-6",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "space-y-2",
+                                        className: "flex justify-center mb-4 md:hidden",
                                         children: [
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
-                                                htmlFor: "email",
-                                                children: "Email Address"
+                                            " ",
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$key$2d$round$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__KeyRound$3e$__["KeyRound"], {
+                                                className: "h-12 w-12 text-primary"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                                                lineNumber: 58,
-                                                columnNumber: 17
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
-                                                id: "email",
-                                                type: "email",
-                                                placeholder: "you@example.com",
-                                                value: email,
-                                                onChange: (e)=>setEmail(e.target.value),
-                                                required: true,
-                                                disabled: isLoading
-                                            }, void 0, false, {
-                                                fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                                                lineNumber: 59,
+                                                lineNumber: 51,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                                        lineNumber: 57,
+                                        lineNumber: 50,
+                                        columnNumber: 16
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardTitle"], {
+                                        className: "text-3xl font-bold",
+                                        children: "Forgot Password?"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/auth/forgot-password/page.tsx",
+                                        lineNumber: 53,
                                         columnNumber: 15
                                     }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
-                                        type: "submit",
-                                        className: "w-full",
-                                        disabled: isLoading,
-                                        children: [
-                                            isLoading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$loader$2d$circle$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Loader2$3e$__["Loader2"], {
-                                                className: "mr-2 h-4 w-4 animate-spin"
-                                            }, void 0, false, {
-                                                fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                                                lineNumber: 71,
-                                                columnNumber: 19
-                                            }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$mail$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Mail$3e$__["Mail"], {
-                                                className: "mr-2 h-4 w-4"
-                                            }, void 0, false, {
-                                                fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                                                lineNumber: 73,
-                                                columnNumber: 19
-                                            }, this),
-                                            "Send Reset Code"
-                                        ]
-                                    }, void 0, true, {
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardDescription"], {
+                                        className: "text-muted-foreground",
+                                        children: "No worries! Enter your email address below and we'll (simulate) send you a code to reset your password."
+                                    }, void 0, false, {
                                         fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                                        lineNumber: 69,
+                                        lineNumber: 54,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                                lineNumber: 56,
+                                lineNumber: 49,
                                 columnNumber: 13
-                            }, this)
-                        }, void 0, false, {
-                            fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                            lineNumber: 55,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardFooter"], {
-                            className: "flex justify-center",
-                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
-                                href: "/auth/login",
-                                legacyBehavior: true,
-                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
-                                    variant: "link",
-                                    className: "text-sm",
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
+                                className: "p-0",
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
+                                    onSubmit: handleSubmit,
+                                    className: "space-y-6",
                                     children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$left$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowLeft$3e$__["ArrowLeft"], {
-                                            className: "mr-2 h-4 w-4"
-                                        }, void 0, false, {
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "space-y-2",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
+                                                    htmlFor: "email",
+                                                    children: "Email Address"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/app/auth/forgot-password/page.tsx",
+                                                    lineNumber: 61,
+                                                    columnNumber: 19
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
+                                                    id: "email",
+                                                    type: "email",
+                                                    placeholder: "you@example.com",
+                                                    value: email,
+                                                    onChange: (e)=>setEmail(e.target.value),
+                                                    required: true,
+                                                    disabled: isLoading,
+                                                    className: "h-11"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/app/auth/forgot-password/page.tsx",
+                                                    lineNumber: 62,
+                                                    columnNumber: 19
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
                                             fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                                            lineNumber: 82,
+                                            lineNumber: 60,
                                             columnNumber: 17
                                         }, this),
-                                        " Back to Login"
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
+                                            type: "submit",
+                                            className: "w-full h-11 text-base",
+                                            disabled: isLoading,
+                                            children: [
+                                                isLoading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$loader$2d$circle$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Loader2$3e$__["Loader2"], {
+                                                    className: "mr-2 h-5 w-5 animate-spin"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/app/auth/forgot-password/page.tsx",
+                                                    lineNumber: 75,
+                                                    columnNumber: 21
+                                                }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$mail$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Mail$3e$__["Mail"], {
+                                                    className: "mr-2 h-5 w-5"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/app/auth/forgot-password/page.tsx",
+                                                    lineNumber: 77,
+                                                    columnNumber: 21
+                                                }, this),
+                                                "Send Reset Code"
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/src/app/auth/forgot-password/page.tsx",
+                                            lineNumber: 73,
+                                            columnNumber: 17
+                                        }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                                    lineNumber: 81,
+                                    lineNumber: 59,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                                lineNumber: 80,
+                                lineNumber: 58,
                                 columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardFooter"], {
+                                className: "flex justify-center pt-6 p-0",
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
+                                    href: "/auth/login",
+                                    legacyBehavior: true,
+                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
+                                        variant: "link",
+                                        className: "text-sm",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$left$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowLeft$3e$__["ArrowLeft"], {
+                                                className: "mr-2 h-4 w-4"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/app/auth/forgot-password/page.tsx",
+                                                lineNumber: 86,
+                                                columnNumber: 19
+                                            }, this),
+                                            " Back to Login"
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/app/auth/forgot-password/page.tsx",
+                                        lineNumber: 85,
+                                        columnNumber: 17
+                                    }, this)
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/auth/forgot-password/page.tsx",
+                                    lineNumber: 84,
+                                    columnNumber: 15
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/auth/forgot-password/page.tsx",
+                                lineNumber: 83,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/app/auth/forgot-password/page.tsx",
+                        lineNumber: 48,
+                        columnNumber: 11
+                    }, this)
+                }, void 0, false, {
+                    fileName: "[project]/src/app/auth/forgot-password/page.tsx",
+                    lineNumber: 47,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "hidden md:flex md:w-2/5 bg-accent/80 text-accent-foreground flex-col items-center justify-center p-8 sm:p-12 space-y-6 text-center",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$key$2d$round$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__KeyRound$3e$__["KeyRound"], {
+                            className: "h-20 w-20 lg:h-24 lg:w-24 text-accent-foreground"
+                        }, void 0, false, {
+                            fileName: "[project]/src/app/auth/forgot-password/page.tsx",
+                            lineNumber: 95,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
+                            className: "text-3xl lg:text-4xl font-bold",
+                            children: "Password Recovery"
+                        }, void 0, false, {
+                            fileName: "[project]/src/app/auth/forgot-password/page.tsx",
+                            lineNumber: 96,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                            className: "text-md lg:text-lg text-accent-foreground/90 leading-relaxed",
+                            children: "Regain access to your MealAttend account quickly and securely."
+                        }, void 0, false, {
+                            fileName: "[project]/src/app/auth/forgot-password/page.tsx",
+                            lineNumber: 97,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "mt-6 border-t border-accent-foreground/30 pt-6 w-full max-w-xs",
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                className: "text-sm text-accent-foreground/80",
+                                children: "MealAttend Security"
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/auth/forgot-password/page.tsx",
+                                lineNumber: 101,
+                                columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                            lineNumber: 79,
-                            columnNumber: 11
+                            lineNumber: 100,
+                            columnNumber: 12
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                    lineNumber: 47,
+                    lineNumber: 94,
                     columnNumber: 9
                 }, this)
-            }, void 0, false, {
-                fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                lineNumber: 46,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "hidden md:flex md:w-2/5 lg:w-1/2 bg-accent/80 text-accent-foreground flex-col items-center justify-center p-12 space-y-6 text-center shadow-2xl",
-                children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$key$2d$round$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__KeyRound$3e$__["KeyRound"], {
-                        className: "h-24 w-24 text-accent-foreground"
-                    }, void 0, false, {
-                        fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                        lineNumber: 91,
-                        columnNumber: 9
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
-                        className: "text-4xl lg:text-5xl font-bold",
-                        children: "Password Recovery"
-                    }, void 0, false, {
-                        fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                        lineNumber: 92,
-                        columnNumber: 9
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-lg lg:text-xl text-accent-foreground/90",
-                        children: "Regain access to your MealAttend account quickly and securely."
-                    }, void 0, false, {
-                        fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                        lineNumber: 93,
-                        columnNumber: 9
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "mt-8 border-t border-accent-foreground/30 pt-6 w-full max-w-xs",
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                            className: "text-sm text-accent-foreground/80",
-                            children: "MealAttend Security"
-                        }, void 0, false, {
-                            fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                            lineNumber: 97,
-                            columnNumber: 13
-                        }, this)
-                    }, void 0, false, {
-                        fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                        lineNumber: 96,
-                        columnNumber: 10
-                    }, this)
-                ]
-            }, void 0, true, {
-                fileName: "[project]/src/app/auth/forgot-password/page.tsx",
-                lineNumber: 90,
-                columnNumber: 7
-            }, this)
-        ]
-    }, void 0, true, {
+            ]
+        }, void 0, true, {
+            fileName: "[project]/src/app/auth/forgot-password/page.tsx",
+            lineNumber: 45,
+            columnNumber: 7
+        }, this)
+    }, void 0, false, {
         fileName: "[project]/src/app/auth/forgot-password/page.tsx",
         lineNumber: 44,
         columnNumber: 5
