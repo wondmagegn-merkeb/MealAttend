@@ -1342,6 +1342,10 @@ body {
   border-style: dashed;
 }
 
+.border-none {
+  border-style: none;
+}
+
 .border-\[--color-border\] {
   border-color: var(--color-border);
 }
@@ -1563,9 +1567,20 @@ body {
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
+.from-sky-100 {
+  --tw-gradient-from: #e0f2fe var(--tw-gradient-from-position);
+  --tw-gradient-to: #e0f2fe00 var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
 .via-background {
   --tw-gradient-to: hsl(var(--background) / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), hsl(var(--background)) var(--tw-gradient-via-position), var(--tw-gradient-to);
+}
+
+.via-blue-50 {
+  --tw-gradient-to: #eff6ff00 var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), #eff6ff var(--tw-gradient-via-position), var(--tw-gradient-to);
 }
 
 .to-accent\/10 {
@@ -1574,6 +1589,10 @@ body {
 
 .to-accent\/80 {
   --tw-gradient-to: hsl(var(--accent) / .8) var(--tw-gradient-to-position);
+}
+
+.to-indigo-100 {
+  --tw-gradient-to: #e0e7ff var(--tw-gradient-to-position);
 }
 
 .fill-current {
@@ -1753,6 +1772,14 @@ body {
 
 .pt-8 {
   padding-top: 2rem;
+}
+
+.pb-6 {
+  padding-bottom: 1.5rem;
+}
+
+.pr-10 {
+  padding-right: 2.5rem;
 }
 
 .text-left {
@@ -2385,6 +2412,10 @@ body {
   background-color: #fff3;
 }
 
+.hover\:bg-transparent:hover {
+  background-color: #0000;
+}
+
 .hover\:text-accent-foreground:hover {
   color: hsl(var(--accent-foreground));
 }
@@ -2403,6 +2434,10 @@ body {
 
 .hover\:text-sidebar-accent-foreground:hover {
   color: hsl(var(--sidebar-accent-foreground));
+}
+
+.hover\:text-primary\/80:hover {
+  color: hsl(var(--primary) / .8);
 }
 
 .hover\:underline:hover {
@@ -3180,6 +3215,14 @@ body {
     padding: 2rem;
   }
 
+  .sm\:p-10 {
+    padding: 2.5rem;
+  }
+
+  .sm\:p-12 {
+    padding: 3rem;
+  }
+
   .sm\:px-6 {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
@@ -3329,6 +3372,11 @@ body {
   .lg\:text-xl {
     font-size: 1.25rem;
     line-height: 1.75rem;
+  }
+
+  .lg\:text-2xl {
+    font-size: 1.5rem;
+    line-height: 2rem;
   }
 }
 
