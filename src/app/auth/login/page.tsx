@@ -16,7 +16,7 @@ export default function LoginPage() {
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth(); // Removed isPasswordChangeRequired as it's handled by AuthGuard
+  const { login } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -35,8 +35,6 @@ export default function LoginPage() {
     const success = await login(userId, password);
     setIsLoading(false);
     if (success) {
-      // AuthGuard will handle redirection if password change is required
-      // So, we can directly try to push to /admin, AuthGuard will intercept if needed
       router.push('/admin'); 
     }
   };
@@ -118,4 +116,3 @@ export default function LoginPage() {
     </div>
   );
 }
-    
