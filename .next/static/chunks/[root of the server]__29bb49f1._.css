@@ -3452,8 +3452,16 @@ body {
     grid-column: span 3 / span 3;
   }
 
+  .lg\:h-24 {
+    height: 6rem;
+  }
+
   .lg\:w-1\/2 {
     width: 50%;
+  }
+
+  .lg\:w-24 {
+    width: 6rem;
   }
 
   .lg\:grid-cols-2 {
@@ -3481,6 +3489,16 @@ body {
   .lg\:text-2xl {
     font-size: 1.5rem;
     line-height: 2rem;
+  }
+
+  .lg\:text-4xl {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+  }
+
+  .lg\:text-lg {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
   }
 }
 
