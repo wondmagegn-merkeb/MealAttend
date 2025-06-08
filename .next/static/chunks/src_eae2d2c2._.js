@@ -453,7 +453,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/table.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/button.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$avatar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/avatar.tsx [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$square$2d$pen$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Edit$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/square-pen.js [app-client] (ecmascript) <export default as Edit>"); // Removed Printer
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$square$2d$pen$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Edit$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/square-pen.js [app-client] (ecmascript) <export default as Edit>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$trash$2d$2$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Trash2$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/trash-2.js [app-client] (ecmascript) <export default as Trash2>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$eye$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Eye$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/eye.js [app-client] (ecmascript) <export default as Eye>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevrons$2d$up$2d$down$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronsUpDown$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chevrons-up-down.js [app-client] (ecmascript) <export default as ChevronsUpDown>");
@@ -486,7 +486,7 @@ function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }) {
     };
     const confirmDelete = ()=>{
         if (studentToDelete) {
-            onDelete(studentToDelete.id);
+            onDelete(studentToDelete.id); // Pass the Prisma 'id' for deletion
         }
         setShowDeleteDialog(false);
         setStudentToDelete(null);
@@ -537,7 +537,7 @@ function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }) {
     if (students.length === 0) {
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
             className: "text-center py-10 text-muted-foreground",
-            children: "No students found. Check your search term or add new students."
+            children: "No students found. Check your search or add new students."
         }, void 0, false, {
             fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
             lineNumber: 76,
@@ -570,7 +570,7 @@ function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }) {
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(SortableTableHead, {
-                                        columnKey: "class",
+                                        columnKey: "classGrade",
                                         children: "Grade"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
@@ -678,7 +678,7 @@ function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }) {
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TableCell"], {
-                                            children: student.class
+                                            children: student.classGrade || 'N/A'
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
                                             lineNumber: 115,
@@ -725,7 +725,7 @@ function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }) {
                                                                                 className: "h-4 w-4"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                                                                lineNumber: 126,
+                                                                                lineNumber: 127,
                                                                                 columnNumber: 29
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -733,13 +733,13 @@ function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }) {
                                                                                 children: "View ID Card"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                                                                lineNumber: 127,
+                                                                                lineNumber: 128,
                                                                                 columnNumber: 29
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                                                        lineNumber: 125,
+                                                                        lineNumber: 126,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 }, void 0, false, {
@@ -757,12 +757,12 @@ function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }) {
                                                                     children: "View ID Card"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                                                    lineNumber: 132,
+                                                                    lineNumber: 133,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                                                lineNumber: 131,
+                                                                lineNumber: 132,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
@@ -784,7 +784,7 @@ function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }) {
                                                                             className: "h-4 w-4"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                                                            lineNumber: 139,
+                                                                            lineNumber: 140,
                                                                             columnNumber: 27
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -792,18 +792,18 @@ function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }) {
                                                                             children: "Edit Student"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                                                            lineNumber: 140,
+                                                                            lineNumber: 141,
                                                                             columnNumber: 27
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                                                    lineNumber: 138,
+                                                                    lineNumber: 139,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                                                lineNumber: 137,
+                                                                lineNumber: 138,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$tooltip$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TooltipContent"], {
@@ -811,18 +811,18 @@ function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }) {
                                                                     children: "Edit Student"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                                                    lineNumber: 144,
+                                                                    lineNumber: 145,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                                                lineNumber: 143,
+                                                                lineNumber: 144,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                                        lineNumber: 136,
+                                                        lineNumber: 137,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$tooltip$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Tooltip"], {
@@ -839,7 +839,7 @@ function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }) {
                                                                             className: "h-4 w-4"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                                                            lineNumber: 151,
+                                                                            lineNumber: 152,
                                                                             columnNumber: 27
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -847,18 +847,18 @@ function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }) {
                                                                             children: "Delete Student"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                                                            lineNumber: 152,
+                                                                            lineNumber: 153,
                                                                             columnNumber: 27
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                                                    lineNumber: 150,
+                                                                    lineNumber: 151,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                                                lineNumber: 149,
+                                                                lineNumber: 150,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$tooltip$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TooltipContent"], {
@@ -866,18 +866,18 @@ function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }) {
                                                                     children: "Delete Student"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                                                    lineNumber: 156,
+                                                                    lineNumber: 157,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                                                lineNumber: 155,
+                                                                lineNumber: 156,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                                        lineNumber: 148,
+                                                        lineNumber: 149,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
@@ -924,24 +924,24 @@ function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }) {
                                     children: "Are you sure?"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                    lineNumber: 170,
+                                    lineNumber: 171,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2d$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertDialogDescription"], {
                                     children: [
                                         'This action cannot be undone. This will permanently delete the student "',
                                         studentToDelete?.name,
-                                        '" and remove their data from servers.'
+                                        '" and remove their data from the database.'
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                    lineNumber: 171,
+                                    lineNumber: 172,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                            lineNumber: 169,
+                            lineNumber: 170,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2d$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertDialogFooter"], {
@@ -951,7 +951,7 @@ function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }) {
                                     children: "Cancel"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                    lineNumber: 177,
+                                    lineNumber: 178,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2d$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertDialogAction"], {
@@ -960,24 +960,24 @@ function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }) {
                                     children: "Delete"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                                    lineNumber: 178,
+                                    lineNumber: 179,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                            lineNumber: 176,
+                            lineNumber: 177,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                    lineNumber: 168,
+                    lineNumber: 169,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/admin/students/StudentsTable.tsx",
-                lineNumber: 167,
+                lineNumber: 168,
                 columnNumber: 7
             }, this)
         ]
@@ -1018,11 +1018,14 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$right$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronRight$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chevron-right.js [app-client] (ecmascript) <export default as ChevronRight>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$credit$2d$card$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CreditCard$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/credit-card.js [app-client] (ecmascript) <export default as CreditCard>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$file$2d$text$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__FileText$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/file-text.js [app-client] (ecmascript) <export default as FileText>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$triangle$2d$alert$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertTriangle$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/triangle-alert.js [app-client] (ecmascript) <export default as AlertTriangle>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$admin$2f$students$2f$StudentsTable$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/admin/students/StudentsTable.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/hooks/use-toast.ts [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/constants.ts [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/activityLogger.ts [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/hooks/useAuth.ts [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useQuery$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@tanstack/react-query/build/modern/useQuery.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useMutation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@tanstack/react-query/build/modern/useMutation.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$QueryClientProvider$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
@@ -1038,234 +1041,78 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
-const initialSeedStudents = [
-    {
-        id: 'clxkxk001',
-        studentId: 'ADERA/STU/2024/00001',
-        name: 'Alice Wonderland Johnson',
-        gender: 'Female',
-        class: '10A',
-        profileImageURL: 'https://placehold.co/100x100.png?text=AWJ',
-        qrCodeData: 'clxkxk001',
-        createdAt: new Date('2024-01-15T10:00:00Z').toISOString(),
-        updatedAt: new Date('2024-01-15T10:00:00Z').toISOString()
-    },
-    {
-        id: 'clxkxk002',
-        studentId: 'ADERA/STU/2024/00002',
-        name: 'Bob The Builder Williams',
-        gender: 'Male',
-        class: '9B',
-        profileImageURL: 'https://placehold.co/100x100.png?text=BBW',
-        qrCodeData: 'clxkxk002',
-        createdAt: new Date('2024-02-20T11:00:00Z').toISOString(),
-        updatedAt: new Date('2024-02-20T11:00:00Z').toISOString()
-    },
-    {
-        id: 'clxkxk003',
-        studentId: 'ADERA/STU/2023/00001',
-        name: 'Carol Danvers Davis',
-        gender: 'Female',
-        class: '11A',
-        profileImageURL: 'https://placehold.co/100x100.png?text=CDD',
-        qrCodeData: 'clxkxk003',
-        createdAt: new Date('2023-03-10T09:00:00Z').toISOString(),
-        updatedAt: new Date('2023-03-10T09:00:00Z').toISOString()
-    },
-    {
-        id: 'clxkxk004',
-        studentId: 'ADERA/STU/2023/00002',
-        name: 'David Copperfield Brown',
-        gender: 'Male',
-        class: '10B',
-        profileImageURL: 'https://placehold.co/100x100.png?text=DCB',
-        qrCodeData: 'clxkxk004',
-        createdAt: new Date('2023-01-01T14:00:00Z').toISOString(),
-        updatedAt: new Date('2023-01-01T14:00:00Z').toISOString()
-    },
-    {
-        id: 'clxkxk005',
-        studentId: 'ADERA/STU/2022/00001',
-        name: 'Eva Green Gardenia',
-        gender: 'Female',
-        class: '9A',
-        profileImageURL: 'https://placehold.co/100x100.png?text=EGG',
-        qrCodeData: 'clxkxk005',
-        createdAt: new Date('2022-09-05T16:00:00Z').toISOString(),
-        updatedAt: new Date('2022-09-05T16:00:00Z').toISOString()
-    },
-    {
-        id: 'clxkxk006',
-        studentId: 'ADERA/STU/2024/00003',
-        name: 'Frank N. Stein Harris',
-        gender: 'Male',
-        class: '12A',
-        profileImageURL: 'https://placehold.co/100x100.png?text=FSH',
-        qrCodeData: 'clxkxk006',
-        createdAt: new Date('2024-05-01T08:00:00Z').toISOString(),
-        updatedAt: new Date('2024-05-01T08:00:00Z').toISOString()
-    },
-    {
-        id: 'clxkxk007',
-        studentId: 'ADERA/STU/2023/00003',
-        name: 'Grace Hopper Lee',
-        gender: 'Female',
-        class: '11B',
-        profileImageURL: 'https://placehold.co/100x100.png?text=GHL',
-        qrCodeData: 'clxkxk007',
-        createdAt: new Date('2023-06-12T13:00:00Z').toISOString(),
-        updatedAt: new Date('2023-06-12T13:00:00Z').toISOString()
-    },
-    {
-        id: 'clxkxk008',
-        studentId: 'ADERA/STU/2022/00002',
-        name: 'Henry Ford Wilson',
-        gender: 'Male',
-        class: '10A',
-        profileImageURL: 'https://placehold.co/100x100.png?text=HFW',
-        qrCodeData: 'clxkxk008',
-        createdAt: new Date('2022-11-25T15:30:00Z').toISOString(),
-        updatedAt: new Date('2022-11-25T15:30:00Z').toISOString()
-    },
-    {
-        id: 'clxkxk009',
-        studentId: 'ADERA/STU/2023/00004',
-        name: 'Ivy League Clark',
-        gender: 'Female',
-        class: '9C',
-        profileImageURL: 'https://placehold.co/100x100.png?text=ILC',
-        qrCodeData: 'clxkxk009',
-        createdAt: new Date('2023-07-02T10:30:00Z').toISOString(),
-        updatedAt: new Date('2023-07-02T10:30:00Z').toISOString()
-    },
-    {
-        id: 'clxkxk010',
-        studentId: 'ADERA/STU/2024/00004',
-        name: 'Jack Sparrow Martinez',
-        gender: 'Male',
-        class: '12B',
-        profileImageURL: 'https://placehold.co/100x100.png?text=JSM',
-        qrCodeData: 'clxkxk010',
-        createdAt: new Date('2024-08-19T11:45:00Z').toISOString(),
-        updatedAt: new Date('2024-08-19T11:45:00Z').toISOString()
-    },
-    {
-        id: 'clxkxk011',
-        studentId: 'ADERA/STU/2024/00005',
-        name: 'Kate Winslet Adams',
-        gender: 'Female',
-        class: '10A',
-        profileImageURL: 'https://placehold.co/100x100.png?text=KWA',
-        qrCodeData: 'clxkxk011',
-        createdAt: new Date('2024-09-01T09:00:00Z').toISOString(),
-        updatedAt: new Date('2024-09-01T09:00:00Z').toISOString()
-    },
-    {
-        id: 'clxkxk012',
-        studentId: 'ADERA/STU/2022/00003',
-        name: 'Leonardo DiCaprio Garcia',
-        gender: 'Male',
-        class: '8A',
-        profileImageURL: 'https://placehold.co/100x100.png?text=LDG',
-        qrCodeData: 'clxkxk012',
-        createdAt: new Date('2022-08-15T14:30:00Z').toISOString(),
-        updatedAt: new Date('2022-08-15T14:30:00Z').toISOString()
-    }
-];
 const ITEMS_PER_PAGE = 5;
+async function fetchStudents() {
+    const response = await fetch('/api/students');
+    if (!response.ok) {
+        throw new Error('Failed to fetch students');
+    }
+    return response.json();
+}
+async function deleteStudentAPI(studentId) {
+    const response = await fetch(`/api/students/${studentId}`, {
+        method: 'DELETE'
+    });
+    if (!response.ok) {
+        const errorData = await response.json().catch(()=>({
+                message: 'Failed to delete student'
+            }));
+        throw new Error(errorData.message || 'Failed to delete student');
+    }
+}
 function StudentsPage() {
     _s();
-    const [students, setStudents] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
-    const [isMounted, setIsMounted] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
-    const [isLoadingTable, setIsLoadingTable] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const { toast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"])();
     const { currentUserId } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"])();
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
+    const queryClient = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$QueryClientProvider$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useQueryClient"])();
     const [searchTerm, setSearchTerm] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
     const [sortConfig, setSortConfig] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])({
         key: 'createdAt',
         direction: 'descending'
     });
     const [currentPage, setCurrentPage] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(1);
-    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "StudentsPage.useEffect": ()=>{
-            setIsMounted(true);
-            try {
-                const storedStudentsRaw = localStorage.getItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["STUDENTS_STORAGE_KEY"]);
-                if (storedStudentsRaw) {
-                    let loadedStudents = JSON.parse(storedStudentsRaw);
-                    let updated = false;
-                    loadedStudents = loadedStudents.map({
-                        "StudentsPage.useEffect": (s)=>{
-                            if (!s.qrCodeData) {
-                                updated = true;
-                                return {
-                                    ...s,
-                                    qrCodeData: s.id
-                                };
-                            }
-                            return s;
-                        }
-                    }["StudentsPage.useEffect"]);
-                    setStudents(loadedStudents);
-                    if (updated) {
-                        localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["STUDENTS_STORAGE_KEY"], JSON.stringify(loadedStudents));
-                    }
-                } else {
-                    setStudents(initialSeedStudents);
-                    localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["STUDENTS_STORAGE_KEY"], JSON.stringify(initialSeedStudents));
-                }
-            } catch (error) {
-                console.error("Failed to load students from localStorage", error);
-                setStudents(initialSeedStudents);
-                toast({
-                    title: "Error",
-                    description: "Could not load student data. Displaying default list.",
-                    variant: "destructive"
+    const { data: students = [], isLoading: isLoadingStudents, error: studentsError } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useQuery$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useQuery"])({
+        queryKey: [
+            'students'
+        ],
+        queryFn: fetchStudents
+    });
+    const deleteMutation = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useMutation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMutation"])({
+        mutationFn: deleteStudentAPI,
+        onSuccess: {
+            "StudentsPage.useMutation[deleteMutation]": (_, studentIdToDelete)=>{
+                queryClient.invalidateQueries({
+                    queryKey: [
+                        'students'
+                    ]
                 });
-            }
-        }
-    }["StudentsPage.useEffect"], [
-        toast
-    ]);
-    const handleEditStudent = (student)=>{
-        router.push(`/admin/students/${student.id}/edit`);
-    };
-    const handleDeleteStudent = (studentIdToDelete)=>{
-        setIsLoadingTable(true);
-        const studentToDelete = students.find((s)=>s.id === studentIdToDelete);
-        setTimeout(()=>{
-            try {
-                const updatedStudents = students.filter((s)=>s.id !== studentIdToDelete);
-                setStudents(updatedStudents);
-                localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["STUDENTS_STORAGE_KEY"], JSON.stringify(updatedStudents));
-                if (studentToDelete) {
-                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUserId, "STUDENT_DELETE_SUCCESS", `Deleted student ID: ${studentToDelete.studentId}, Name: ${studentToDelete.name}`);
-                } else {
-                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUserId, "STUDENT_DELETE_SUCCESS", `Deleted student with internal ID: ${studentIdToDelete}`);
-                }
+                const deletedStudent = students.find({
+                    "StudentsPage.useMutation[deleteMutation].deletedStudent": (s)=>s.id === studentIdToDelete
+                }["StudentsPage.useMutation[deleteMutation].deletedStudent"]);
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUserId, "STUDENT_DELETE_SUCCESS", `Deleted student ID: ${deletedStudent?.studentId || 'N/A'}, Name: ${deletedStudent?.name || 'Unknown'}`);
                 toast({
                     title: "Student Deleted",
                     description: "The student record has been successfully deleted."
                 });
-                const totalPagesAfterDelete = Math.ceil(updatedStudents.filter((student)=>student.name.toLowerCase().includes(searchTerm.toLowerCase()) || student.studentId.toLowerCase().includes(searchTerm.toLowerCase()) || student.class.toLowerCase().includes(searchTerm.toLowerCase())).length / ITEMS_PER_PAGE);
-                if (currentPage > totalPagesAfterDelete && totalPagesAfterDelete > 0) {
-                    setCurrentPage(totalPagesAfterDelete);
-                } else if (totalPagesAfterDelete === 0) {
-                    setCurrentPage(1);
-                }
-            } catch (error) {
-                console.error("Failed to delete student from localStorage", error);
-                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUserId, "STUDENT_DELETE_FAILURE", `Attempted to delete student. Error: ${error instanceof Error ? error.message : String(error)}`);
+            }
+        }["StudentsPage.useMutation[deleteMutation]"],
+        onError: {
+            "StudentsPage.useMutation[deleteMutation]": (error, studentIdToDelete)=>{
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUserId, "STUDENT_DELETE_FAILURE", `Attempted to delete student (internal ID: ${studentIdToDelete}). Error: ${error.message}`);
                 toast({
-                    title: "Error",
-                    description: "Failed to delete student. Please try again.",
+                    title: "Error Deleting Student",
+                    description: error.message || "Failed to delete student. Please try again.",
                     variant: "destructive"
                 });
-            } finally{
-                setIsLoadingTable(false);
             }
-        }, 500);
+        }["StudentsPage.useMutation[deleteMutation]"]
+    });
+    const handleEditStudent = (student)=>{
+        router.push(`/admin/students/${student.id}/edit`);
+    };
+    const handleDeleteStudent = (studentInternalId)=>{
+        deleteMutation.mutate(studentInternalId);
     };
     const handleSort = (key)=>{
         let direction = 'ascending';
@@ -1289,7 +1136,7 @@ function StudentsPage() {
             ];
             if (searchTerm) {
                 processedStudents = processedStudents.filter({
-                    "StudentsPage.useMemo[filteredAndSortedStudents]": (student)=>student.name.toLowerCase().includes(searchTerm.toLowerCase()) || student.studentId.toLowerCase().includes(searchTerm.toLowerCase()) || student.class.toLowerCase().includes(searchTerm.toLowerCase())
+                    "StudentsPage.useMemo[filteredAndSortedStudents]": (student)=>student.name.toLowerCase().includes(searchTerm.toLowerCase()) || student.studentId.toLowerCase().includes(searchTerm.toLowerCase()) || student.classGrade && student.classGrade.toLowerCase().includes(searchTerm.toLowerCase())
                 }["StudentsPage.useMemo[filteredAndSortedStudents]"]);
             }
             if (sortConfig.key) {
@@ -1344,7 +1191,7 @@ function StudentsPage() {
         totalPages,
         filteredAndSortedStudents.length
     ]);
-    if (!isMounted) {
+    if (isLoadingStudents) {
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
             className: "flex justify-center items-center h-screen",
             children: [
@@ -1352,21 +1199,21 @@ function StudentsPage() {
                     className: "h-8 w-8 animate-spin text-primary"
                 }, void 0, false, {
                     fileName: "[project]/src/app/admin/students/page.tsx",
-                    lineNumber: 206,
+                    lineNumber: 159,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                     className: "ml-2",
-                    children: "Loading student management..."
+                    children: "Loading students..."
                 }, void 0, false, {
                     fileName: "[project]/src/app/admin/students/page.tsx",
-                    lineNumber: 207,
+                    lineNumber: 160,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/admin/students/page.tsx",
-            lineNumber: 205,
+            lineNumber: 158,
             columnNumber: 7
         }, this);
     }
@@ -1385,28 +1232,28 @@ function StudentsPage() {
                                         className: "mr-3 h-8 w-8"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/students/page.tsx",
-                                        lineNumber: 217,
+                                        lineNumber: 170,
                                         columnNumber: 13
                                     }, this),
                                     " Manage Students"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 216,
+                                lineNumber: 169,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                 className: "text-muted-foreground",
-                                children: "Add, edit, or remove student records."
+                                children: "Add, edit, or remove student records from the database."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 219,
+                                lineNumber: 172,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/students/page.tsx",
-                        lineNumber: 215,
+                        lineNumber: 168,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1424,19 +1271,19 @@ function StudentsPage() {
                                             className: "mr-2 h-5 w-5"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/admin/students/page.tsx",
-                                            lineNumber: 224,
+                                            lineNumber: 177,
                                             columnNumber: 15
                                         }, this),
                                         " Export Student List"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/admin/students/page.tsx",
-                                    lineNumber: 223,
+                                    lineNumber: 176,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 222,
+                                lineNumber: 175,
                                 columnNumber: 12
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -1451,19 +1298,19 @@ function StudentsPage() {
                                             className: "mr-2 h-5 w-5"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/admin/students/page.tsx",
-                                            lineNumber: 229,
+                                            lineNumber: 182,
                                             columnNumber: 15
                                         }, this),
                                         " View All ID Cards"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/admin/students/page.tsx",
-                                    lineNumber: 228,
+                                    lineNumber: 181,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 227,
+                                lineNumber: 180,
                                 columnNumber: 12
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -1477,31 +1324,31 @@ function StudentsPage() {
                                             className: "mr-2 h-5 w-5"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/admin/students/page.tsx",
-                                            lineNumber: 234,
+                                            lineNumber: 187,
                                             columnNumber: 15
                                         }, this),
                                         " Add New Student"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/admin/students/page.tsx",
-                                    lineNumber: 233,
+                                    lineNumber: 186,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 232,
+                                lineNumber: 185,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/students/page.tsx",
-                        lineNumber: 221,
+                        lineNumber: 174,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/admin/students/page.tsx",
-                lineNumber: 214,
+                lineNumber: 167,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
@@ -1513,14 +1360,14 @@ function StudentsPage() {
                                 children: "Student List"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 242,
+                                lineNumber: 195,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardDescription"], {
-                                children: "Browse and manage all registered students. Data is stored in your browser's local storage."
+                                children: "Browse and manage all registered students."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 243,
+                                lineNumber: 196,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1530,7 +1377,7 @@ function StudentsPage() {
                                         className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/students/page.tsx",
-                                        lineNumber: 245,
+                                        lineNumber: 198,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -1541,48 +1388,74 @@ function StudentsPage() {
                                         className: "pl-10 w-full sm:w-1/2 md:w-1/3"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/students/page.tsx",
-                                        lineNumber: 246,
+                                        lineNumber: 199,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 244,
+                                lineNumber: 197,
                                 columnNumber: 12
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/students/page.tsx",
-                        lineNumber: 241,
+                        lineNumber: 194,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
                         children: [
-                            isLoadingTable && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            deleteMutation.isPending && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "flex justify-center items-center py-4",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$loader$2d$circle$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Loader2$3e$__["Loader2"], {
                                         className: "h-6 w-6 animate-spin text-primary"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/students/page.tsx",
-                                        lineNumber: 258,
+                                        lineNumber: 211,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "ml-2",
-                                        children: "Updating table..."
+                                        children: "Deleting student..."
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/students/page.tsx",
-                                        lineNumber: 259,
+                                        lineNumber: 212,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 257,
+                                lineNumber: 210,
                                 columnNumber: 13
                             }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$admin$2f$students$2f$StudentsTable$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["StudentsTable"], {
+                            studentsError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "text-center py-10 text-destructive",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$triangle$2d$alert$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertTriangle$3e$__["AlertTriangle"], {
+                                        className: "mx-auto h-8 w-8 mb-2"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/admin/students/page.tsx",
+                                        lineNumber: 217,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                        children: [
+                                            "Error loading students: ",
+                                            studentsError.message
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/app/admin/students/page.tsx",
+                                        lineNumber: 218,
+                                        columnNumber: 17
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/app/admin/students/page.tsx",
+                                lineNumber: 216,
+                                columnNumber: 14
+                            }, this),
+                            !isLoadingStudents && !studentsError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$admin$2f$students$2f$StudentsTable$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["StudentsTable"], {
                                 students: currentTableData,
                                 onEdit: handleEditStudent,
                                 onDelete: handleDeleteStudent,
@@ -1590,10 +1463,10 @@ function StudentsPage() {
                                 onSort: handleSort
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 262,
-                                columnNumber: 11
+                                lineNumber: 222,
+                                columnNumber: 13
                             }, this),
-                            filteredAndSortedStudents.length > ITEMS_PER_PAGE && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            filteredAndSortedStudents.length > ITEMS_PER_PAGE && !isLoadingStudents && !studentsError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "flex items-center justify-between pt-4 mt-4 border-t",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1609,7 +1482,7 @@ function StudentsPage() {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/admin/students/page.tsx",
-                                        lineNumber: 271,
+                                        lineNumber: 232,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1625,14 +1498,14 @@ function StudentsPage() {
                                                         className: "mr-1 h-4 w-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/admin/students/page.tsx",
-                                                        lineNumber: 281,
+                                                        lineNumber: 242,
                                                         columnNumber: 19
                                                     }, this),
                                                     "Previous"
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                                lineNumber: 275,
+                                                lineNumber: 236,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -1646,59 +1519,62 @@ function StudentsPage() {
                                                         className: "ml-1 h-4 w-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/admin/students/page.tsx",
-                                                        lineNumber: 291,
+                                                        lineNumber: 252,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                                lineNumber: 284,
+                                                lineNumber: 245,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/admin/students/page.tsx",
-                                        lineNumber: 274,
+                                        lineNumber: 235,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 270,
+                                lineNumber: 231,
                                 columnNumber: 13
                             }, this),
-                            filteredAndSortedStudents.length === 0 && !isLoadingTable && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                            !isLoadingStudents && filteredAndSortedStudents.length === 0 && !studentsError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                 className: "text-center text-muted-foreground py-4",
-                                children: "No students match your current search criteria."
+                                children: "No students match your current search criteria or none exist in the database."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/students/page.tsx",
-                                lineNumber: 297,
+                                lineNumber: 258,
                                 columnNumber: 14
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/students/page.tsx",
-                        lineNumber: 255,
+                        lineNumber: 208,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/admin/students/page.tsx",
-                lineNumber: 240,
+                lineNumber: 193,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/admin/students/page.tsx",
-        lineNumber: 213,
+        lineNumber: 166,
         columnNumber: 5
     }, this);
 }
-_s(StudentsPage, "95Z1dc02hLZSqi70nePw7ezQAek=", false, function() {
+_s(StudentsPage, "u949zJyzg/QO+LiTSPd6he6IyzE=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"],
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"],
-        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"]
+        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"],
+        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$QueryClientProvider$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useQueryClient"],
+        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useQuery$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useQuery"],
+        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useMutation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMutation"]
     ];
 });
 _c = StudentsPage;

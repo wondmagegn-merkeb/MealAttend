@@ -1,13 +1,7 @@
 {
-  "/admin/activity-log/page": "app/admin/activity-log/page.js",
-  "/admin/attendance/page": "app/admin/attendance/page.js",
-  "/admin/departments/page": "app/admin/departments/page.js",
   "/admin/page": "app/admin/page.js",
-  "/admin/settings/page": "app/admin/settings/page.js",
+  "/admin/students/new/page": "app/admin/students/new/page.js",
   "/admin/students/page": "app/admin/students/page.js",
-  "/api/departments/route": "app/api/departments/route.js",
-  "/auth/change-password/page": "app/auth/change-password/page.js",
-  "/auth/login/page": "app/auth/login/page.js",
-  "/page": "app/page.js",
-  "/scan/page": "app/scan/page.js"
+  "/api/students/route": "app/api/students/route.js",
+  "/page": "app/page.js"
 }

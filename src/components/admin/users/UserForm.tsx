@@ -210,9 +210,11 @@ export function UserForm({
                       </FormControl>
                       <SelectContent>
                         {availableDepartments.map((dept) => (
-                          <SelectItem key={dept.id} value={dept.name}>
-                            {dept.name}
-                          </SelectItem>
+                          // Ensure dept.name is not an empty string
+                          dept.name !== '' && (
+                            <SelectItem key={dept.id} value={dept.name}>
+                              {dept.name}
+                            </SelectItem>)
                         ))}
                       </SelectContent>
                     </Select>

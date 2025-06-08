@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react"; 
 import { Card, CardContent } from "@/components/ui/card";
 import type { Student } from "@prisma/client";
 
@@ -43,7 +43,7 @@ const studentFormSchema = z.object({
 export type StudentFormData = z.infer<typeof studentFormSchema>;
 
 interface StudentFormProps {
-  onSubmit: (data: Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string }) => void;
+  onSubmit: (data: Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string | null }) => void;
   initialData?: Student | null; // Prisma Student type
   isLoading?: boolean;
   submitButtonText?: string;
@@ -58,14 +58,14 @@ const parseClassGrade = (classGrade: string | null | undefined): { classNumber: 
   if (!classGrade) return { classNumber: "", classAlphabet: "" };
   const match = classGrade.match(/^(\d+)([A-Za-z]*)$/);
   if (match) {
-    return { classNumber: match[1], classAlphabet: match[2] };
+    return { classNumber: match[1], classAlphabet: match[2].toUpperCase() };
   }
   const numericMatch = classGrade.match(/^(\d+)$/);
   if (numericMatch) {
     return { classNumber: numericMatch[1], classAlphabet: "" };
   }
   // If it's just letters or unparsable, treat as alphabet part of an unknown number
-  return { classNumber: "", classAlphabet: classGrade };
+  return { classNumber: "", classAlphabet: classGrade.toUpperCase() };
 };
 
 
@@ -114,7 +114,7 @@ export function StudentForm({
       });
       setImagePreview(null);
     }
-  }, [initialData, form.reset]);
+  }, [initialData, form]); // Changed form.reset to form
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -135,16 +135,15 @@ export function StudentForm({
 
   const onFormSubmit = (data: StudentFormData) => {
     const { classNumber, classAlphabet, ...restOfData } = data;
-    let classGrade: string | undefined = undefined;
+    let classGrade: string | null = null;
     if (classNumber && classAlphabet) {
       classGrade = `${classNumber}${classAlphabet}`;
     } else if (classNumber) {
       classGrade = classNumber;
-    } else if (classAlphabet) {
-      // This case might be less common (e.g., "A" without a number)
-      // but depends on how you want to treat it.
+    } else if (classAlphabet) { // Only alphabet part, store it as is or handle as per requirements
       classGrade = classAlphabet;
     }
+    // If both are empty, classGrade remains null
 
     onSubmit({ ...restOfData, classGrade });
   };
@@ -187,7 +186,7 @@ export function StudentForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Gender</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value || ""}>
+                  <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select gender" />
@@ -212,7 +211,7 @@ export function StudentForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Class Number</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value || ""}>
+                    <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select number" />
@@ -239,7 +238,7 @@ export function StudentForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Grade Stream/Letter</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value || ""}>
+                    <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select letter" />
@@ -248,9 +247,11 @@ export function StudentForm({
                       <SelectContent>
                         <SelectItem value="">N/A</SelectItem>
                         {gradeAlphabetOptions.map((option) => (
-                          <SelectItem key={option} value={option}>
-                            {option}
-                          </SelectItem>
+                          option !== '' && ( // Corrected: removed erroneous curly braces
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          )
                         ))}
                       </SelectContent>
                     </Select>
@@ -296,7 +297,7 @@ export function StudentForm({
                 render={({ field }) => <Input type="hidden" {...field} />}
               />
               {form.formState.errors.profileImageURL && (
-                <FormMessage>{form.formState.errors.profileImageURL.message}</FormMessage>
+                <FormMessage>{(form.formState.errors.profileImageURL as any)?.message}</FormMessage>
               )}
             </FormItem>
 
