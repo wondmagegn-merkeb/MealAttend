@@ -1,22 +1,92 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-generator client {
-  provider = "prisma-client-js"
-}
 
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
+generator client {
+  provider = "prisma-client-js"
+}
+
 model Student {
-  id              String    @id @default(cuid()) // Primary key, used for QR codes
-  studentId       String    @unique // Formatted ID like ADERA/STU/YYYY/NNNNN
-  name            String
-  gender          String?   // "Male", "Female", "Other", or null/empty
-  classGrade      String?   // Combined class and grade, e.g., "10A"
-  profileImageURL String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id                String              @id @default(cuid())
+  studentId         String              @unique // Formatted ADERA ID: ADERA/STU/YYYY/NNNNN
+  name              String
+  gender            Gender?
+  classGrade        String?             @map("class") // Mapped from 'class' in app to avoid Prisma keyword conflict
+  profileImageURL   String?
+  qrCodeData        String?             @unique // Should ideally match id or studentId
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  attendanceRecords AttendanceRecord[]
+}
+
+model Department {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     User[]
+}
+
+model User {
+  id                       String    @id @default(cuid())
+  userId                   String    @unique // Formatted ADERA ID: ADERA/USR/YYYY/SERIAL
+  fullName                 String
+  email                    String    @unique
+  passwordHash             String // Store hashed passwords only
+  role                     Role      @default(USER)
+  profileImageURL          String?
+  passwordChangeRequired   Boolean   @default(false)
+  departmentId             String?
+  department               Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+  // userActivityLogs UserActivityLog[] // If we want to link logs directly to a user performing an action
+}
+
+model AttendanceRecord {
+  id                 String           @id @default(cuid())
+  studentInternalId  String
+  student            Student          @relation(fields: [studentInternalId], references: [id], onDelete: Cascade)
+  recordDate         DateTime         @db.Date // Stores YYYY-MM-DD
+  mealType           MealType
+  scannedAtTimestamp DateTime?        // Full timestamp of scan
+  status             AttendanceStatus
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@unique([studentInternalId, recordDate, mealType], name: "unique_attendance_constraint")
+}
+
+model UserActivityLog {
+  id                String   @id @default(cuid())
+  userIdentifier    String   // Can be User.userId or special values like "system", "unknown_user"
+  activityTimestamp DateTime @default(now())
+  action            String
+  details           String?  @db.Text
+  createdAt         DateTime @default(now())
+  // No updatedAt for activity logs typically
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
 }
