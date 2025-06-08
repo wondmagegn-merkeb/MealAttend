@@ -7,86 +7,76 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Loader2, Printer, AlertTriangle } from 'lucide-react';
-import type { Student } from '@/types/student';
 import { StudentIdCard } from '@/components/admin/students/StudentIdCard';
-import { STUDENTS_STORAGE_KEY } from '@/lib/constants';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
+import type { Student } from '@prisma/client';
 
 const getYearFromStudentId = (studentId: string): string | null => {
-  const parts = studentId.split('/'); // "ADERA/STU/2024/00001"
+  const parts = studentId.split('/'); 
   if (parts.length === 4 && /^\d{4}$/.test(parts[2])) {
     return parts[2];
   }
   return null;
 };
 
-const parseClass = (classStr: string): { number: number; letter: string } => {
+const parseClass = (classStr: string | null | undefined): { number: number; letter: string } => {
   if (!classStr) return { number: Infinity, letter: '' };
   const match = classStr.match(/^(\d+)([A-Za-z]*)$/);
   if (match) {
     return { number: parseInt(match[1], 10), letter: match[2].toUpperCase() };
   }
-  // Fallback for classes that don't match the number+letter pattern, or only numbers
   const numericMatch = classStr.match(/^(\d+)$/);
   if (numericMatch) {
      return { number: parseInt(numericMatch[1], 10), letter: '' };
   }
-  return { number: Infinity, letter: classStr.toUpperCase() }; // Sort unparsable/non-standard last
+  return { number: Infinity, letter: classStr.toUpperCase() };
 };
 
+async function fetchAllStudents(): Promise<Student[]> {
+  const response = await fetch('/api/students');
+  if (!response.ok) {
+    throw new Error('Failed to fetch students for ID cards');
+  }
+  return response.json();
+}
 
 export default function ViewAllIdCardsPage() {
   const { toast } = useToast();
-  const [students, setStudents] = useState<Student[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
   
   const [selectedClass, setSelectedClass] = useState<string>('all');
   const [selectedYear, setSelectedYear] = useState<string>('all');
 
-  useEffect(() => {
-    setIsMounted(true);
-    setIsLoading(true);
-    try {
-      const storedStudentsRaw = localStorage.getItem(STUDENTS_STORAGE_KEY);
-      if (storedStudentsRaw) {
-        const loadedStudents: Student[] = JSON.parse(storedStudentsRaw);
-        setStudents(loadedStudents);
-      } else {
-        setStudents([]); 
-      }
-    } catch (error) {
-      console.error("Failed to load students from localStorage", error);
-      setStudents([]);
-      toast({
-        title: "Error Loading Data",
-        description: "Could not load student data from local storage.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [toast]);
+  const { data: allStudents = [], isLoading: isLoadingStudents, error: studentsError } = useQuery<Student[]>({
+    queryKey: ['allStudentsForIdCards'],
+    queryFn: fetchAllStudents,
+  });
 
   useEffect(() => {
-    if (isMounted && !isLoading && students.length === 0) {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isMounted && !isLoadingStudents && allStudents.length === 0 && !studentsError) {
       toast({
         title: "No Students Found",
         description: "There are no student records to display ID cards for.",
         variant: "default",
       });
     }
-  }, [isMounted, isLoading, students.length, toast]);
+  }, [isMounted, isLoadingStudents, allStudents.length, studentsError, toast]);
 
   const handlePrint = useCallback(() => {
     window.print();
   }, []);
 
   const uniqueClasses = useMemo(() => {
+    if (!allStudents) return [];
     const classSet = new Set<string>();
-    students.forEach(student => {
-      if (student.class) classSet.add(student.class);
+    allStudents.forEach(student => {
+      if (student.classGrade) classSet.add(student.classGrade);
     });
     return Array.from(classSet).sort((a, b) => {
         const classA = parseClass(a);
@@ -94,51 +84,75 @@ export default function ViewAllIdCardsPage() {
         if (classA.number !== classB.number) return classA.number - classB.number;
         return classA.letter.localeCompare(classB.letter);
     });
-  }, [students]);
+  }, [allStudents]);
 
   const uniqueYears = useMemo(() => {
+    if (!allStudents) return [];
     const yearSet = new Set<string>();
-    students.forEach(student => {
+    allStudents.forEach(student => {
       const year = getYearFromStudentId(student.studentId);
       if (year) yearSet.add(year);
     });
-    return Array.from(yearSet).sort((a,b) => b.localeCompare(a)); // Sort years descending
-  }, [students]);
+    return Array.from(yearSet).sort((a,b) => b.localeCompare(a));
+  }, [allStudents]);
 
   const filteredAndSortedStudents = useMemo(() => {
-    let tempStudents = [...students];
+    let tempStudents = [...allStudents];
 
     if (selectedClass !== 'all') {
-      tempStudents = tempStudents.filter(student => student.class === selectedClass);
+      tempStudents = tempStudents.filter(student => student.classGrade === selectedClass);
     }
 
     if (selectedYear !== 'all') {
       tempStudents = tempStudents.filter(student => getYearFromStudentId(student.studentId) === selectedYear);
     }
 
-    // Sort by class (number then letter), then by name
     tempStudents.sort((a, b) => {
-      const classA = parseClass(a.class);
-      const classB = parseClass(b.class);
+      const classA = parseClass(a.classGrade);
+      const classB = parseClass(b.classGrade);
 
       if (classA.number !== classB.number) {
         return classA.number - classB.number;
       }
       if (classA.letter !== classB.letter) {
-         return classA.letter.localeCompare(classB.letter); // Corrected typo here
+         return classA.letter.localeCompare(classB.letter);
       }
-      return a.name.localeCompare(b.name); // Secondary sort by name
+      return a.name.localeCompare(b.name);
     });
 
     return tempStudents;
-  }, [students, selectedClass, selectedYear]);
+  }, [allStudents, selectedClass, selectedYear]);
 
-  if (!isMounted || isLoading) {
+  if (!isMounted || isLoadingStudents) {
     return (
       <div className="flex flex-col justify-center items-center h-screen space-y-4 p-4">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
         <p className="text-lg text-muted-foreground">Loading Student ID Cards...</p>
       </div>
+    );
+  }
+
+  if (studentsError) {
+    return (
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] p-4">
+            <Card className="w-full max-w-md text-center shadow-lg">
+                <CardHeader>
+                    <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-2" />
+                    <CardTitle className="text-2xl text-destructive">Error Loading Students</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <CardDescription className="mb-6">
+                        Failed to load student data: {studentsError.message}. Please try again later.
+                    </CardDescription>
+                    <Button variant="outline" asChild>
+                        <Link href="/admin/students">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Student List
+                        </Link>
+                    </Button>
+                </CardContent>
+            </Card>
+        </div>
     );
   }
 
@@ -165,7 +179,7 @@ export default function ViewAllIdCardsPage() {
             </Select>
           </div>
            <div className="w-full sm:w-auto">
-            <Label htmlFor="year-filter" className="text-sm font-medium">Filter by Year</Label>
+            <Label htmlFor="year-filter" className="text-sm font-medium">Filter by Admission Year</Label>
             <Select value={selectedYear} onValueChange={setSelectedYear}>
               <SelectTrigger id="year-filter" className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Select Year" />
@@ -194,7 +208,7 @@ export default function ViewAllIdCardsPage() {
       </div>
 
 
-      {filteredAndSortedStudents.length === 0 && !isLoading && (
+      {filteredAndSortedStudents.length === 0 && !isLoadingStudents && (
         <Card className="shadow-lg mt-6">
           <CardHeader className="items-center text-center">
             <AlertTriangle className="h-10 w-10 text-amber-500 mb-2" />
@@ -206,7 +220,7 @@ export default function ViewAllIdCardsPage() {
             <CardDescription className="text-center">
               {selectedClass !== 'all' || selectedYear !== 'all'
                 ? "No students match your current filter criteria." 
-                : "There are currently no student records. Please add students first."}
+                : "There are currently no student records to display ID cards for."}
             </CardDescription>
           </CardContent>
         </Card>
@@ -225,8 +239,8 @@ export default function ViewAllIdCardsPage() {
       <style jsx global>{`
         .print-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Adjust minmax for card size */
-          gap: 1.5rem; /* Spacing between cards */
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+          gap: 1.5rem; 
         }
         
         .id-card-container {
@@ -235,9 +249,9 @@ export default function ViewAllIdCardsPage() {
 
         @media print {
           body {
-            -webkit-print-color-adjust: exact; /* Chrome, Safari, Edge */
-            print-color-adjust: exact; /* Firefox */
-            margin: 0.5cm; /* Add some margin for printing */
+            -webkit-print-color-adjust: exact; 
+            print-color-adjust: exact; 
+            margin: 0.5cm; 
             padding: 0;
           }
           .no-print {
@@ -245,20 +259,18 @@ export default function ViewAllIdCardsPage() {
           }
           .print-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* Aim for 2 cards per row on print */
-            gap: 10mm 5mm; /* Gap between cards on paper */
+            grid-template-columns: 1fr 1fr; 
+            gap: 10mm 5mm; 
             width: 100%;
           }
           .id-card-container {
-            page-break-inside: avoid !important; /* Try to keep each card on one page */
+            page-break-inside: avoid !important; 
             break-inside: avoid !important;
-            border: 1px solid #eee; /* Optional: add a light border for cutting guides */
-            transform: scale(0.95); /* Slightly scale down to ensure fit, adjust as needed */
+            border: 1px solid #eee; 
+            transform: scale(0.95); 
             transform-origin: top left;
-            /* margin-bottom: 5mm; // Removed this to let grid gap control spacing */
           }
-          /* Ensure StudentIdCard itself scales appropriately if needed */
-          .id-card-container > div { /* Assuming StudentIdCard is the direct child */
+          .id-card-container > div { 
              width: 100% !important;
              max-width: 100% !important;
           }

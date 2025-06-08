@@ -1,72 +1,73 @@
 
 "use client";
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { StudentForm, type StudentFormData } from "@/components/admin/students/StudentForm";
-import type { Student } from "@/types/student";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { STUDENTS_STORAGE_KEY } from '@/lib/constants';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Student } from '@prisma/client';
+
+// Type for the data sent to the API
+type ApiStudentCreateData = {
+  name: string;
+  gender?: string | null;
+  classGrade?: string | null;
+  profileImageURL?: string | null;
+};
+
+async function createStudentAPI(data: ApiStudentCreateData): Promise<Student> {
+  const response = await fetch('/api/students', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ message: 'Failed to create student' }));
+    throw new Error(errorData.message || 'Failed to create student');
+  }
+  return response.json();
+}
 
 export default function NewStudentPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { currentUserId } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
 
-  const handleFormSubmit = (data: StudentFormData) => {
-    setIsLoading(true);
-    
-    setTimeout(() => {
-      const studentInternalId = `stud_${Date.now()}`; 
-      
-      const currentYear = new Date().getFullYear();
-      const serialNumber = Date.now().toString().slice(-5).padStart(5, '0');
-      const generatedStudentId = `ADERA/STU/${currentYear}/${serialNumber}`;
-      
-      const combinedClass = `${data.classNumber}${data.classAlphabet}`;
+  const mutation = useMutation({
+    mutationFn: createStudentAPI,
+    onSuccess: (newStudent) => {
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+      logUserActivity(currentUserId, "STUDENT_CREATE_SUCCESS", `Created student ID: ${newStudent.studentId}, Name: ${newStudent.name}`);
+      toast({
+        title: "Student Added",
+        description: `${newStudent.name} has been successfully added with ID ${newStudent.studentId}.`,
+      });
+      router.push('/admin/students');
+    },
+    onError: (error: Error) => {
+      logUserActivity(currentUserId, "STUDENT_CREATE_FAILURE", `Error: ${error.message}`);
+      toast({
+        title: "Error Adding Student",
+        description: error.message || "Failed to save student. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
-      const newStudent: Student = {
-        id: studentInternalId, 
-        studentId: generatedStudentId,
-        name: data.name,
-        gender: data.gender,
-        class: combinedClass,
-        profileImageURL: data.profileImageURL,
-        qrCodeData: studentInternalId, 
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      try {
-        const storedStudentsRaw = localStorage.getItem(STUDENTS_STORAGE_KEY);
-        const students: Student[] = storedStudentsRaw ? JSON.parse(storedStudentsRaw) : [];
-        students.unshift(newStudent); 
-        localStorage.setItem(STUDENTS_STORAGE_KEY, JSON.stringify(students));
-        
-        logUserActivity(currentUserId, "STUDENT_CREATE_SUCCESS", `Created student ID: ${newStudent.studentId}, Name: ${newStudent.name}`);
-        toast({
-          title: "Student Added",
-          description: `${data.name} has been successfully added with ID ${generatedStudentId}.`,
-        });
-        router.push('/admin/students');
-      } catch (error) {
-        console.error("Failed to save student to localStorage", error);
-        logUserActivity(currentUserId, "STUDENT_CREATE_FAILURE", `Attempted to create student: ${data.name}. Error: ${error instanceof Error ? error.message : String(error)}`);
-        toast({
-          title: "Error",
-          description: "Failed to save student. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    }, 1000);
+  const handleFormSubmit = (data: Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string }) => {
+    const apiData: ApiStudentCreateData = {
+      name: data.name,
+      gender: data.gender || null, // Ensure null if empty string
+      classGrade: data.classGrade || null, // Ensure null if empty or undefined
+      profileImageURL: data.profileImageURL || null, // Ensure null if empty string
+    };
+    mutation.mutate(apiData);
   };
 
   return (
@@ -85,7 +86,7 @@ export default function NewStudentPage() {
       </div>
       <StudentForm 
         onSubmit={handleFormSubmit} 
-        isLoading={isLoading}
+        isLoading={mutation.isPending}
         submitButtonText="Add Student"
         isEditMode={false}
       />

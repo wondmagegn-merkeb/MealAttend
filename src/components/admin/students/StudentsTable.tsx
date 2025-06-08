@@ -11,15 +11,15 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Edit, Trash2, Eye, ChevronsUpDown, ArrowUp, ArrowDown, CreditCard } from "lucide-react"; // Removed Printer
-import type { Student } from "@/types/student";
+import { Edit, Trash2, Eye, ChevronsUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import type { Student } from '@prisma/client'; // Import Prisma's Student type
 
-type SortableStudentKeys = 'studentId' | 'name' | 'class' | 'gender' | 'createdAt';
+type SortableStudentKeys = 'studentId' | 'name' | 'classGrade' | 'gender' | 'createdAt';
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -30,7 +30,7 @@ interface SortConfig {
 interface StudentsTableProps {
   students: Student[];
   onEdit: (student: Student) => void;
-  onDelete: (studentId: string) => void;
+  onDelete: (studentId: string) => void; // studentId here refers to the internal Prisma ID (cuid)
   sortConfig: SortConfig;
   onSort: (key: SortableStudentKeys) => void;
 }
@@ -46,7 +46,7 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
 
   const confirmDelete = () => {
     if (studentToDelete) {
-      onDelete(studentToDelete.id);
+      onDelete(studentToDelete.id); // Pass the Prisma 'id' for deletion
     }
     setShowDeleteDialog(false);
     setStudentToDelete(null);
@@ -74,7 +74,7 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
   if (students.length === 0) {
     return (
       <div className="text-center py-10 text-muted-foreground">
-        No students found. Check your search term or add new students.
+        No students found. Check your search or add new students.
       </div>
     );
   }
@@ -87,7 +87,7 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
             <TableRow>
               <SortableTableHead columnKey="studentId">Student ID</SortableTableHead>
               <SortableTableHead columnKey="name">Name</SortableTableHead>
-              <SortableTableHead columnKey="class">Grade</SortableTableHead>
+              <SortableTableHead columnKey="classGrade">Grade</SortableTableHead>
               <SortableTableHead columnKey="gender">Gender</SortableTableHead>
               <SortableTableHead columnKey="createdAt">Created At</SortableTableHead>
               <TableHead className="text-right w-[130px]">Actions</TableHead>
@@ -112,7 +112,7 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>{student.class}</TableCell>
+                <TableCell>{student.classGrade || 'N/A'}</TableCell>
                 <TableCell>
                   {student.gender ? <Badge variant="secondary">{student.gender}</Badge> : 'N/A'}
                 </TableCell>
@@ -122,7 +122,8 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button variant="ghost" size="icon" asChild>
-                          <Link href={`/admin/students/${student.id}/id-card`}>
+                          {/* Link to student's Prisma ID for the ID card page */}
+                          <Link href={`/admin/students/${student.id}/id-card`}> 
                             <Eye className="h-4 w-4" />
                             <span className="sr-only">View ID Card</span>
                           </Link>
@@ -170,7 +171,7 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the student
-              &quot;{studentToDelete?.name}&quot; and remove their data from servers.
+              &quot;{studentToDelete?.name}&quot; and remove their data from the database.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

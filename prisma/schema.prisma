@@ -1,26 +1,11 @@
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-model Student {
-  id                String             @id @default(cuid())
-  studentId         String             @unique // School-specific or custom student ID
-  name              String
-  gender            String?            // Was Gender enum. Consider application-level validation.
-  classGrade        String?            @map("class") // Renamed field 'class' to 'classGrade' to avoid keyword conflict
-  profileImageURL   String?
-  qrCodeData        String?            @unique // Optional: Data to be encoded in QR Code (e.g., student's unique ID)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  attendanceRecords AttendanceRecord[]
-
-  @@map("students")
+generator client {
+  provider = "prisma-client-js"
 }
 
 model Department {
@@ -29,49 +14,55 @@ model Department {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   users     User[]
-
-  @@map("departments")
 }
 
 model User {
-  id                       String      @id @default(cuid())
-  userId                   String      @unique // Formatted ADERA ID: ADERA/USR/YYYY/SERIAL
+  id                       String     @id @default(cuid())
+  userId                   String     @unique // ADERA/USR/YYYY/SERIAL
   fullName                 String
-  email                    String      @unique
-  passwordHash             String // Store hashed passwords only
-  role                     String      // Was Role enum. 'Admin' or 'User'. Consider application-level validation.
-  profileImageURL          String?
-  passwordChangeRequired Boolean     @default(false)
   departmentId             String?
+  email                    String     @unique
+  passwordHash             String // Store hashed passwords only
+  role                     String // Was Role enum, now String. API should handle 'Admin', 'User'
+  profileImageURL          String?
+  passwordChangeRequired   Boolean    @default(false)
+  createdAt                DateTime   @default(now())
+  updatedAt                DateTime   @updatedAt
   department               Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  createdAt                DateTime    @default(now())
-  updatedAt                DateTime    @updatedAt
+}
 
-  @@map("users")
+model Student {
+  id                String   @id @default(cuid())
+  studentId         String   @unique // "ADERA/STU/YYYY/NNNNN" - Will be auto-generated
+  name              String
+  gender            String?  // 'Male', 'Female', 'Other', ''
+  classGrade        String?  // e.g., "10A"
+  profileImageURL   String?
+  qrCodeData        String?  @unique // Should match 'id' after creation
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  attendanceRecords AttendanceRecord[]
 }
 
 model AttendanceRecord {
-  id                 String   @id @default(cuid())
-  studentInternalId  String
-  student            Student  @relation(fields: [studentInternalId], references: [id], onDelete: Cascade)
-  recordDate         DateTime // Stores YYYY-MM-DD. Removed @db.Date
-  mealType           String   // Was MealType enum. 'Breakfast', 'Lunch', 'Dinner'. Consider application-level validation.
-  scannedAtTimestamp DateTime? // Full timestamp of scan
-  status             String   // Was AttendanceStatus enum. 'Present' or 'Absent'. Consider application-level validation.
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  studentInternalId   String   // References students.id
+  recordDate          DateTime // YYYY-MM-DD (stored as DateTime, but only date part is relevant for uniqueness)
+  mealType            String   // Was MealType enum, now String. API should handle 'Breakfast', 'Lunch', 'Dinner'
+  scannedAtTimestamp  DateTime? // Full timestamp of scan
+  status              String   // Was AttendanceStatus enum, now String. API should handle 'Present', 'Absent'
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  student             Student  @relation(fields: [studentInternalId], references: [id], onDelete: Cascade)
 
   @@unique([studentInternalId, recordDate, mealType], name: "unique_attendance_constraint")
-  @@map("attendance_records")
 }
 
 model UserActivityLog {
   id                String   @id @default(cuid())
-  userIdentifier    String // ADERA User ID or special values like system/unknown_user
+  userIdentifier    String   // Can be ADERA User ID or special values like system/unknown_user
   activityTimestamp DateTime
   action            String
-  details           String? // Removed @db.Text
+  details           String?
   createdAt         DateTime @default(now())
-
-  @@map("user_activity_logs")
 }

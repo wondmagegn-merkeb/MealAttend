@@ -6,14 +6,14 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Loader2, FileText, FileSpreadsheet, ChevronLeft, ChevronRight } from 'lucide-react';
-import type { Student } from '@/types/student';
-import { STUDENTS_STORAGE_KEY } from '@/lib/constants';
+import { ArrowLeft, Loader2, FileText, FileSpreadsheet, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import { useQuery } from '@tanstack/react-query';
+import type { Student } from '@prisma/client';
 
 const getYearFromStudentId = (studentId: string): string | null => {
   const parts = studentId.split('/'); 
@@ -23,7 +23,7 @@ const getYearFromStudentId = (studentId: string): string | null => {
   return null;
 };
 
-const parseClass = (classStr: string | undefined): { number: number; letter: string } => {
+const parseClass = (classStr: string | null | undefined): { number: number; letter: string } => {
   if (!classStr) return { number: Infinity, letter: '' };
   const match = classStr.match(/^(\d+)([A-Za-z]*)$/);
   if (match) {
@@ -38,44 +38,36 @@ const parseClass = (classStr: string | undefined): { number: number; letter: str
 
 const ITEMS_PER_PAGE_DISPLAY = 10;
 
+async function fetchAllStudentsForExport(): Promise<Student[]> {
+  const response = await fetch('/api/students');
+  if (!response.ok) {
+    throw new Error('Failed to fetch students for export');
+  }
+  return response.json();
+}
+
 export default function ExportStudentsPage() {
   const { toast } = useToast();
-  const [allStudents, setAllStudents] = useState<Student[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
   
   const [selectedClass, setSelectedClass] = useState<string>('all');
   const [selectedYear, setSelectedYear] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
 
+  const { data: allStudents = [], isLoading: isLoadingStudents, error: studentsError } = useQuery<Student[]>({
+    queryKey: ['allStudentsForExport'],
+    queryFn: fetchAllStudentsForExport,
+  });
+
   useEffect(() => {
     setIsMounted(true);
-    setIsLoading(true);
-    try {
-      const storedStudentsRaw = localStorage.getItem(STUDENTS_STORAGE_KEY);
-      if (storedStudentsRaw) {
-        const loadedStudents: Student[] = JSON.parse(storedStudentsRaw);
-        setAllStudents(loadedStudents);
-      } else {
-        setAllStudents([]);
-      }
-    } catch (error) {
-      console.error("Failed to load students from localStorage", error);
-      setAllStudents([]);
-      toast({
-        title: "Error Loading Data",
-        description: "Could not load student data from local storage.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [toast]);
+  }, []);
 
   const uniqueClasses = useMemo(() => {
+    if (!allStudents) return [];
     const classSet = new Set<string>();
     allStudents.forEach(student => {
-      if (student.class) classSet.add(student.class);
+      if (student.classGrade) classSet.add(student.classGrade);
     });
     return Array.from(classSet).sort((a, b) => {
       const classA = parseClass(a);
@@ -86,6 +78,7 @@ export default function ExportStudentsPage() {
   }, [allStudents]);
 
   const uniqueYears = useMemo(() => {
+    if (!allStudents) return [];
     const yearSet = new Set<string>();
     allStudents.forEach(student => {
       const year = getYearFromStudentId(student.studentId);
@@ -98,7 +91,7 @@ export default function ExportStudentsPage() {
     let tempStudents = [...allStudents];
 
     if (selectedClass !== 'all') {
-      tempStudents = tempStudents.filter(student => student.class === selectedClass);
+      tempStudents = tempStudents.filter(student => student.classGrade === selectedClass);
     }
 
     if (selectedYear !== 'all') {
@@ -106,8 +99,8 @@ export default function ExportStudentsPage() {
     }
 
     tempStudents.sort((a, b) => {
-      const classA = parseClass(a.class);
-      const classB = parseClass(b.class);
+      const classA = parseClass(a.classGrade);
+      const classB = parseClass(b.classGrade);
       if (classA.number !== classB.number) return classA.number - classB.number;
       if (classA.letter !== classB.letter) return classA.letter.localeCompare(classB.letter);
       return a.name.localeCompare(b.name);
@@ -125,7 +118,6 @@ export default function ExportStudentsPage() {
   }, [filteredStudents, currentPage]);
 
   useEffect(() => {
-    // Reset to first page if filters change
     setCurrentPage(1);
   }, [selectedClass, selectedYear]);
   
@@ -139,7 +131,7 @@ export default function ExportStudentsPage() {
 
   const generatedHeaderTitle = useMemo(() => {
     const gradeText = selectedClass === 'all' ? 'All Grades' : `Grade ${selectedClass}`;
-    const yearText = selectedYear === 'all' ? 'All Years' : `Year ${selectedYear}`;
+    const yearText = selectedYear === 'all' ? 'All Years' : `Admission Year ${selectedYear}`;
     return `Student List - ${gradeText} - ${yearText}`;
   }, [selectedClass, selectedYear]);
 
@@ -155,18 +147,18 @@ export default function ExportStudentsPage() {
     autoTable(doc, {
       startY: 25,
       head: [['Student ID', 'Name', 'Gender', 'Grade']],
-      body: filteredStudents.map(student => [ // Use all filtered students for export
+      body: filteredStudents.map(student => [
         student.studentId,
         student.name,
-        student.gender,
-        student.class,
+        student.gender || 'N/A',
+        student.classGrade || 'N/A',
       ]),
       styles: { fontSize: 10 },
       headStyles: { fillColor: [22, 160, 133] },
       margin: { top: 20 },
     });
 
-    const fileName = `student_list${selectedClass !== 'all' ? `_grade_${selectedClass}` : ''}${selectedYear !== 'all' ? `_year_${selectedYear}` : ''}.pdf`;
+    const fileName = `student_list${selectedClass !== 'all' ? `_grade_${selectedClass.replace(/\s+/g, '_')}` : ''}${selectedYear !== 'all' ? `_year_${selectedYear}` : ''}.pdf`;
     doc.save(fileName);
     toast({ title: "PDF Exported", description: `Successfully exported ${filteredStudents.length} records to ${fileName}.` });
   }, [filteredStudents, generatedHeaderTitle, selectedClass, selectedYear, toast]);
@@ -181,11 +173,11 @@ export default function ExportStudentsPage() {
       [generatedHeaderTitle], 
       [], 
       ['Student ID', 'Name', 'Gender', 'Grade'], 
-      ...filteredStudents.map(student => [ // Use all filtered students for export
+      ...filteredStudents.map(student => [
         student.studentId,
         student.name,
-        student.gender,
-        student.class,
+        student.gender || 'N/A',
+        student.classGrade || 'N/A',
       ]),
     ];
 
@@ -201,13 +193,13 @@ export default function ExportStudentsPage() {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Students');
     
-    const fileName = `student_list${selectedClass !== 'all' ? `_grade_${selectedClass}` : ''}${selectedYear !== 'all' ? `_year_${selectedYear}` : ''}.xlsx`;
+    const fileName = `student_list${selectedClass !== 'all' ? `_grade_${selectedClass.replace(/\s+/g, '_')}` : ''}${selectedYear !== 'all' ? `_year_${selectedYear}` : ''}.xlsx`;
     XLSX.writeFile(workbook, fileName);
     toast({ title: "Excel Exported", description: `Successfully exported ${filteredStudents.length} records to ${fileName}.` });
   }, [filteredStudents, generatedHeaderTitle, selectedClass, selectedYear, toast]);
 
 
-  if (!isMounted || isLoading) {
+  if (!isMounted || isLoadingStudents) {
     return (
       <div className="flex flex-col justify-center items-center h-screen space-y-4 p-4">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -216,12 +208,36 @@ export default function ExportStudentsPage() {
     );
   }
 
+  if (studentsError) {
+     return (
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] p-4">
+            <Card className="w-full max-w-md text-center shadow-lg">
+                <CardHeader>
+                    <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-2" />
+                    <CardTitle className="text-2xl text-destructive">Error Loading Students</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <CardDescription className="mb-6">
+                        Failed to load student data: {studentsError.message}. Please try again later.
+                    </CardDescription>
+                    <Button variant="outline" asChild>
+                        <Link href="/admin/students">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Student List
+                        </Link>
+                    </Button>
+                </CardContent>
+            </Card>
+        </div>
+    );
+  }
+
   return (
     <div className="space-y-6 p-4 md:p-8 max-w-4xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-primary">Export Student List</h1>
-          <p className="text-muted-foreground">Filter students by grade and/or year, then export the data as PDF or Excel.</p>
+          <p className="text-muted-foreground">Filter students by grade and/or admission year, then export the data.</p>
         </div>
         <Button variant="outline" asChild>
           <Link href="/admin/students">
@@ -308,12 +324,12 @@ export default function ExportStudentsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border bg-background">
-                  {currentTableData.map(student => ( // Use currentTableData for display
+                  {currentTableData.map(student => (
                     <tr key={student.id}>
                       <td className="px-4 py-2 whitespace-nowrap">{student.studentId}</td>
                       <td className="px-4 py-2 whitespace-nowrap">{student.name}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{student.gender}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{student.class}</td>
+                      <td className="px-4 py-2 whitespace-nowrap">{student.gender || 'N/A'}</td>
+                      <td className="px-4 py-2 whitespace-nowrap">{student.classGrade || 'N/A'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -353,5 +369,3 @@ export default function ExportStudentsPage() {
     </div>
   );
 }
-
-    

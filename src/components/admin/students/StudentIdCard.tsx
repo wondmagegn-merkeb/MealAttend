@@ -1,11 +1,11 @@
 
 "use client";
 
-import type { Student } from "@/types/student";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from 'next/image';
 import { School } from "lucide-react"; 
+import type { Student } from "@prisma/client"; // Use Prisma client type
 
 interface StudentIdCardProps {
   student: Student;
@@ -15,6 +15,7 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
   const schoolName = "Greenfield Secondary School"; 
   const validUntil = "July 2026"; 
 
+  // Ensure qrCodeData has a fallback to student.id if it's null/undefined
   const qrDataToEncode = student.qrCodeData || student.id;
   const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrDataToEncode)}&format=png&qzone=1`;
 
@@ -32,7 +33,6 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
       
       <CardContent className="p-4 md:p-6">
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:items-stretch">
-          {/* Left part: Image, Name, and Details */}
           <div className="flex-shrink-0 flex flex-col items-center sm:items-start w-full sm:w-[60%]">
             <div className="flex flex-row items-center gap-3 mb-4 w-full">
               <Avatar className="h-24 w-24 sm:h-28 sm:w-28 rounded-lg border-2 border-muted shadow-md flex-shrink-0">
@@ -44,7 +44,6 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
                 />
                 <AvatarFallback className="text-3xl">{student.name.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
               </Avatar>
-              {/* Removed truncate class, added min-w-0 to allow wrapping with flex */}
               <h3 className="text-xl font-semibold text-primary flex-grow min-w-0" title={student.name}>{student.name}</h3>
             </div>
             
@@ -55,8 +54,8 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
               </div>
               
               <div className="flex">
-                <p className="w-16 font-medium text-muted-foreground">Grade:</p> {/* Changed Class to Grade */}
-                <p className="font-medium">{student.class}</p>
+                <p className="w-16 font-medium text-muted-foreground">Grade:</p>
+                <p className="font-medium">{student.classGrade || 'N/A'}</p> {/* Changed to classGrade */}
               </div>
               
               <div className="flex">
@@ -66,9 +65,7 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
             </div>
           </div>
 
-          {/* Right part: QR Code - Adjusted for full height */}
           <div className="flex-grow flex flex-col items-center justify-center w-full sm:w-[40%] mt-4 sm:mt-0 h-full">
-            {/* Wrapper for QR code to control its size and aspect ratio, taking full available height */}
             <div className="relative w-full h-full aspect-square"> 
                 <Image
                     src={qrCodeImageUrl}

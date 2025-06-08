@@ -1,86 +1,57 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, AlertTriangle, Printer } from 'lucide-react';
-import type { Student } from '@/types/student';
 import { StudentIdCard } from '@/components/admin/students/StudentIdCard';
-import { STUDENTS_STORAGE_KEY } from '@/lib/constants';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
+import type { Student } from '@prisma/client';
+
+async function fetchStudentById(id: string): Promise<Student> {
+  const response = await fetch(`/api/students/${id}`);
+  if (!response.ok) {
+    if (response.status === 404) throw new Error('Student not found');
+    throw new Error('Failed to fetch student');
+  }
+  return response.json();
+}
 
 export default function StudentIdCardPage() {
   const params = useParams();
-  const router = useRouter();
+  const router = useRouter(); // Keep for potential future use with query params
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const studentId = typeof params.id === 'string' ? params.id : undefined;
-
-  const [student, setStudent] = useState<Student | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const studentInternalId = typeof params.id === 'string' ? params.id : undefined;
   const [autoPrintTriggered, setAutoPrintTriggered] = useState(false);
 
+  const { data: student, isLoading: isFetchingStudent, error: fetchError, isError } = useQuery<Student, Error>({
+    queryKey: ['studentIdCard', studentInternalId],
+    queryFn: () => fetchStudentById(studentInternalId!),
+    enabled: !!studentInternalId,
+  });
+
   const handlePrint = useCallback(() => {
-    // Optionally hide elements not meant for printing before calling window.print()
-    // e.g., document.getElementById('print-button-container').style.display = 'none';
-    // document.getElementById('back-button-container').style.display = 'none';
     window.print();
-    // And restore them after:
-    // document.getElementById('print-button-container').style.display = 'flex';
-    // document.getElementById('back-button-container').style.display = 'block';
   }, []);
-
+  
   useEffect(() => {
-    if (studentId) {
-      setIsLoading(true);
-      try {
-        const storedStudentsRaw = localStorage.getItem(STUDENTS_STORAGE_KEY);
-        if (storedStudentsRaw) {
-          const students: Student[] = JSON.parse(storedStudentsRaw);
-          const foundStudent = students.find(s => s.id === studentId);
-          if (foundStudent) {
-            setStudent(foundStudent);
-          } else {
-            setNotFound(true);
-          }
-        } else {
-          setNotFound(true); 
-        }
-      } catch (error) {
-        console.error("Failed to load student from localStorage", error);
-        setNotFound(true);
-        toast({
-          title: "Error",
-          description: "Failed to load student data for ID card.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      setNotFound(true);
-      setIsLoading(false);
-    }
-  }, [studentId, toast]);
-
-  useEffect(() => {
-    if (student && !isLoading && !notFound && !autoPrintTriggered) {
+    if (student && !isFetchingStudent && !isError && !autoPrintTriggered) {
       const autoprintQueryParam = searchParams.get('autoprint');
       if (autoprintQueryParam === 'true') {
         handlePrint();
         setAutoPrintTriggered(true);
-        // Optionally, remove the query param to prevent re-print on manual refresh.
-        // router.replace(`/admin/students/${studentId}/id-card`, { scroll: false }); 
+        // router.replace(`/admin/students/${studentInternalId}/id-card`, { scroll: false }); // Optional: remove query param
       }
     }
-  }, [student, isLoading, notFound, searchParams, autoPrintTriggered, handlePrint, studentId, router]);
+  }, [student, isFetchingStudent, isError, searchParams, autoPrintTriggered, handlePrint, studentInternalId, router]);
 
 
-  if (isLoading) {
+  if (isFetchingStudent) {
     return (
       <div className="flex flex-col justify-center items-center h-screen space-y-4">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -89,7 +60,7 @@ export default function StudentIdCardPage() {
     );
   }
 
-  if (notFound) {
+  if (isError || !student) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] p-4">
         <Card className="w-full max-w-md text-center shadow-lg">
@@ -99,7 +70,10 @@ export default function StudentIdCardPage() {
             </CardHeader>
             <CardContent>
                 <CardDescription className="mb-6">
-                The student record for this ID card could not be found.
+                  {fetchError?.message === 'Student not found'
+                    ? 'The student record for this ID card could not be found in the database.'
+                    : `Failed to load student data: ${fetchError?.message || 'Unknown error'}`
+                  }
                 </CardDescription>
                 <Button variant="outline" asChild>
                 <Link href="/admin/students">
@@ -139,8 +113,8 @@ export default function StudentIdCardPage() {
       <style jsx global>{`
         @media print {
           body {
-            -webkit-print-color-adjust: exact; /* Chrome, Safari, Edge */
-            print-color-adjust: exact; /* Firefox */
+            -webkit-print-color-adjust: exact; 
+            print-color-adjust: exact; 
           }
           .print\\:hidden {
             display: none !important;
@@ -153,7 +127,6 @@ export default function StudentIdCardPage() {
             padding-left: 0 !important;
             padding-right: 0 !important;
           }
-           /* Ensure the card itself takes up the space, adjust as needed */
           .max-w-xl {
             max-width: 100% !important;
             width: 100% !important;

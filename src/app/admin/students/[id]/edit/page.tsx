@@ -1,31 +1,47 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { StudentForm, type StudentFormData } from "@/components/admin/students/StudentForm";
-import type { Student } from "@/types/student";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
-import { STUDENTS_STORAGE_KEY } from '@/lib/constants';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Student } from '@prisma/client';
 
-const parseClassString = (classStr: string | undefined): { classNumber: string, classAlphabet: string } => {
-  if (!classStr) return { classNumber: "", classAlphabet: "" };
-  const match = classStr.match(/^(\d+)([A-Za-z]*)$/);
-  if (match) {
-    return { classNumber: match[1], classAlphabet: match[2] };
+async function fetchStudentById(id: string): Promise<Student> {
+  const response = await fetch(`/api/students/${id}`);
+  if (!response.ok) {
+    if (response.status === 404) throw new Error('Student not found');
+    throw new Error('Failed to fetch student');
   }
-  const numericMatch = classStr.match(/^(\d+)$/);
-  if (numericMatch) {
-    return { classNumber: numericMatch[1], classAlphabet: "" };
-  }
-  return { classNumber: "", classAlphabet: classStr };
+  return response.json();
+}
+
+type ApiStudentUpdateData = {
+  name: string;
+  gender?: string | null;
+  classGrade?: string | null;
+  profileImageURL?: string | null;
+  // studentId is not typically updated this way or is handled specially if allowed
 };
+
+async function updateStudentAPI({ id, data }: { id: string, data: ApiStudentUpdateData }): Promise<Student> {
+  const response = await fetch(`/api/students/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ message: 'Failed to update student' }));
+    throw new Error(errorData.message || 'Failed to update student');
+  }
+  return response.json();
+}
 
 
 export default function EditStudentPage() {
@@ -33,99 +49,51 @@ export default function EditStudentPage() {
   const params = useParams();
   const { toast } = useToast();
   const { currentUserId } = useAuth();
+  const queryClient = useQueryClient();
   
   const studentInternalId = typeof params.id === 'string' ? params.id : undefined;
 
-  const [student, setStudent] = useState<Student | null>(null);
-  const [initialFormValues, setInitialFormValues] = useState<Partial<StudentFormData> & { studentId?: string } | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const { data: student, isLoading: isFetchingStudent, error: fetchError } = useQuery<Student, Error>({
+    queryKey: ['student', studentInternalId],
+    queryFn: () => fetchStudentById(studentInternalId!),
+    enabled: !!studentInternalId,
+  });
 
-  useEffect(() => {
-    if (studentInternalId) {
-      setIsFetching(true);
-      try {
-        const storedStudentsRaw = localStorage.getItem(STUDENTS_STORAGE_KEY);
-        if (storedStudentsRaw) {
-          const students: Student[] = JSON.parse(storedStudentsRaw);
-          const foundStudent = students.find(s => s.id === studentInternalId);
-          if (foundStudent) {
-            setStudent(foundStudent);
-            const { classNumber, classAlphabet } = parseClassString(foundStudent.class);
-            setInitialFormValues({
-              studentId: foundStudent.studentId,
-              name: foundStudent.name,
-              gender: foundStudent.gender,
-              classNumber: classNumber,
-              classAlphabet: classAlphabet,
-              profileImageURL: foundStudent.profileImageURL,
-            });
-          } else {
-            setNotFound(true);
-          }
-        } else {
-          setNotFound(true); 
-        }
-      } catch (error) {
-        console.error("Failed to load student from localStorage", error);
-        setNotFound(true);
-         toast({
-          title: "Error",
-          description: "Failed to load student data.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsFetching(false);
-      }
-    } else {
-      setNotFound(true); 
-      setIsFetching(false);
-    }
-  }, [studentInternalId, toast]);
+  const mutation = useMutation({
+    mutationFn: updateStudentAPI,
+    onSuccess: (updatedStudent) => {
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+      queryClient.invalidateQueries({ queryKey: ['student', updatedStudent.id] });
+      logUserActivity(currentUserId, "STUDENT_UPDATE_SUCCESS", `Updated student ID: ${updatedStudent.studentId}, Name: ${updatedStudent.name}`);
+      toast({
+        title: "Student Updated",
+        description: `${updatedStudent.name}'s record has been updated.`,
+      });
+      router.push('/admin/students');
+    },
+    onError: (error: Error) => {
+      logUserActivity(currentUserId, "STUDENT_UPDATE_FAILURE", `Attempted to update student ID: ${student?.studentId}. Error: ${error.message}`);
+      toast({
+        title: "Error Updating Student",
+        description: error.message || "Failed to update student. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
-  const handleFormSubmit = (data: StudentFormData) => {
-    if (!student) return;
-    setIsLoading(true);
-
-    setTimeout(() => {
-      const combinedClass = `${data.classNumber}${data.classAlphabet}`;
-      const updatedStudent: Student = {
-        ...student,
-        name: data.name,
-        gender: data.gender,
-        class: combinedClass,
-        profileImageURL: data.profileImageURL,
-        updatedAt: new Date().toISOString(),
-      };
-      
-      try {
-        const storedStudentsRaw = localStorage.getItem(STUDENTS_STORAGE_KEY);
-        let students: Student[] = storedStudentsRaw ? JSON.parse(storedStudentsRaw) : [];
-        students = students.map(s => s.id === student.id ? updatedStudent : s);
-        localStorage.setItem(STUDENTS_STORAGE_KEY, JSON.stringify(students));
-
-        logUserActivity(currentUserId, "STUDENT_UPDATE_SUCCESS", `Updated student ID: ${updatedStudent.studentId}, Name: ${updatedStudent.name}`);
-        toast({
-          title: "Student Updated",
-          description: `${data.name}'s record has been updated.`,
-        });
-        router.push('/admin/students');
-      } catch (error) {
-        console.error("Failed to update student in localStorage", error);
-        logUserActivity(currentUserId, "STUDENT_UPDATE_FAILURE", `Attempted to update student ID: ${student.studentId}. Error: ${error instanceof Error ? error.message : String(error)}`);
-        toast({
-          title: "Error",
-          description: "Failed to update student. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    }, 1000);
+  const handleFormSubmit = (data: Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string }) => {
+    if (!studentInternalId) return;
+    
+    const apiData: ApiStudentUpdateData = {
+      name: data.name,
+      gender: data.gender || null,
+      classGrade: data.classGrade || null,
+      profileImageURL: data.profileImageURL || null,
+    };
+    mutation.mutate({ id: studentInternalId, data: apiData });
   };
 
-  if (isFetching) {
+  if (isFetchingStudent) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -134,15 +102,22 @@ export default function EditStudentPage() {
     );
   }
 
-  if (notFound) {
+  if (fetchError) {
     return (
       <div className="space-y-6 max-w-2xl mx-auto text-center">
          <Card className="shadow-lg">
             <CardHeader>
-                <CardTitle className="text-2xl text-destructive">Student Not Found</CardTitle>
+                <CardTitle className="text-2xl text-destructive flex items-center justify-center">
+                    <AlertTriangle className="mr-2 h-7 w-7" /> Error
+                </CardTitle>
             </CardHeader>
             <CardContent>
-                <p className="text-muted-foreground mb-4">The student record you are trying to edit could not be found.</p>
+                <p className="text-muted-foreground mb-4">
+                  {fetchError.message === 'Student not found' 
+                    ? 'The student record you are trying to edit could not be found.'
+                    : `Failed to load student data: ${fetchError.message}`
+                  }
+                </p>
                 <Button variant="outline" asChild>
                 <Link href="/admin/students">
                     <ArrowLeft className="mr-2 h-4 w-4" />
@@ -169,11 +144,11 @@ export default function EditStudentPage() {
           </Link>
         </Button>
       </div>
-      {initialFormValues && (
+      {student && ( // student from useQuery
         <StudentForm 
           onSubmit={handleFormSubmit} 
-          initialData={initialFormValues}
-          isLoading={isLoading}
+          initialData={student} // Pass the fetched student data
+          isLoading={mutation.isPending}
           submitButtonText="Save Changes"
           isEditMode={true}
         />
