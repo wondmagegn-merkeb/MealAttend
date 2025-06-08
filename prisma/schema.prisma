@@ -1,0 +1,22 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Student {
+  id              String    @id @default(cuid()) // Primary key, used for QR codes
+  studentId       String    @unique // Formatted ID like ADERA/STU/YYYY/NNNNN
+  name            String
+  gender          String?   // "Male", "Female", "Other", or null/empty
+  classGrade      String?   // Combined class and grade, e.g., "10A"
+  profileImageURL String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
