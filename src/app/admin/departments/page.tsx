@@ -7,21 +7,13 @@ import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { PlusCircle, Building2 as DepartmentIcon, Loader2, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { PlusCircle, Building2 as DepartmentIcon, Loader2, Search, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react";
 import { DepartmentsTable } from "@/components/admin/departments/DepartmentsTable";
 import type { Department } from "@/types/department";
 import { useToast } from "@/hooks/use-toast";
-import { DEPARTMENTS_STORAGE_KEY } from '@/lib/constants';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
-
-const initialSeedDepartments: Department[] = [
-  { id: 'dept_kitchen_staff_001', name: 'Kitchen Staff' },
-  { id: 'dept_serving_team_002', name: 'Serving Team' },
-  { id: 'dept_logistics_supply_003', name: 'Logistics & Supply' },
-  { id: 'dept_admin_004', name: 'Administration' },
-  { id: 'dept_cleaning_crew_005', name: 'Cleaning Crew' },
-];
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 type SortableDepartmentKeys = 'id' | 'name';
 type SortDirection = 'ascending' | 'descending';
@@ -33,85 +25,66 @@ interface SortConfig {
 
 const ITEMS_PER_PAGE = 5;
 
+async function fetchDepartments(): Promise<Department[]> {
+  const response = await fetch('/api/departments');
+  if (!response.ok) {
+    throw new Error('Failed to fetch departments');
+  }
+  return response.json();
+}
+
+async function deleteDepartmentAPI(departmentId: string): Promise<void> {
+  const response = await fetch(`/api/departments/${departmentId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ message: 'Failed to delete department' }));
+    throw new Error(errorData.message || 'Failed to delete department');
+  }
+}
+
 export default function DepartmentsPage() {
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [isMounted, setIsMounted] = useState(false);
-  const [isLoadingTable, setIsLoadingTable] = useState(false);
   const { toast } = useToast();
   const { currentUserId } = useAuth();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'ascending' });
   const [currentPage, setCurrentPage] = useState(1);
+  
+  const { data: departments = [], isLoading: isLoadingDepartments, error: departmentsError } = useQuery<Department[]>({
+    queryKey: ['departments'],
+    queryFn: fetchDepartments,
+  });
 
-  useEffect(() => {
-    setIsMounted(true);
-    try {
-      const storedDepartmentsRaw = localStorage.getItem(DEPARTMENTS_STORAGE_KEY);
-      if (storedDepartmentsRaw) {
-        setDepartments(JSON.parse(storedDepartmentsRaw));
-      } else {
-        setDepartments(initialSeedDepartments);
-        localStorage.setItem(DEPARTMENTS_STORAGE_KEY, JSON.stringify(initialSeedDepartments));
-      }
-    } catch (error) {
-      console.error("Failed to load departments from localStorage", error);
-      setDepartments(initialSeedDepartments); 
+  const deleteMutation = useMutation({
+    mutationFn: deleteDepartmentAPI,
+    onSuccess: (_, departmentIdToDelete) => {
+      queryClient.invalidateQueries({ queryKey: ['departments'] });
+      const deletedDepartment = departments.find(d => d.id === departmentIdToDelete);
+      logUserActivity(currentUserId, "DEPARTMENT_DELETE_SUCCESS", `Deleted department ID: ${departmentIdToDelete}, Name: ${deletedDepartment?.name || 'Unknown'}`);
       toast({
-        title: "Error",
-        description: "Could not load department data. Displaying default list.",
-        variant: "destructive"
+        title: "Department Deleted",
+        description: "The department record has been successfully deleted.",
       });
-    }
-  }, [toast]);
+    },
+    onError: (error: Error, departmentIdToDelete) => {
+      logUserActivity(currentUserId, "DEPARTMENT_DELETE_FAILURE", `Attempted to delete department ID: ${departmentIdToDelete}. Error: ${error.message}`);
+      toast({
+        title: "Error Deleting Department",
+        description: error.message || "Failed to delete department. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleEditDepartment = (department: Department) => {
     router.push(`/admin/departments/${department.id}/edit`);
   };
 
   const handleDeleteDepartment = (departmentIdToDelete: string) => {
-    setIsLoadingTable(true);
-    const departmentToDelete = departments.find(d => d.id === departmentIdToDelete);
-    setTimeout(() => {
-      try {
-        const updatedDepartments = departments.filter(d => d.id !== departmentIdToDelete);
-        setDepartments(updatedDepartments);
-        localStorage.setItem(DEPARTMENTS_STORAGE_KEY, JSON.stringify(updatedDepartments));
-
-        if (departmentToDelete) {
-            logUserActivity(currentUserId, "DEPARTMENT_DELETE_SUCCESS", `Deleted department ID: ${departmentToDelete.id}, Name: ${departmentToDelete.name}`);
-        } else {
-            logUserActivity(currentUserId, "DEPARTMENT_DELETE_SUCCESS", `Deleted department with internal ID: ${departmentIdToDelete}`);
-        }
-        toast({
-          title: "Department Deleted",
-          description: "The department record has been successfully deleted.",
-        });
-        
-        const totalPagesAfterDelete = Math.ceil(updatedDepartments.filter(dept =>
-          dept.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          dept.id.toLowerCase().includes(searchTerm.toLowerCase())
-        ).length / ITEMS_PER_PAGE);
-
-        if (currentPage > totalPagesAfterDelete && totalPagesAfterDelete > 0) {
-          setCurrentPage(totalPagesAfterDelete);
-        } else if (totalPagesAfterDelete === 0) {
-          setCurrentPage(1);
-        }
-
-      } catch (error) {
-        console.error("Failed to delete department from localStorage", error);
-        logUserActivity(currentUserId, "DEPARTMENT_DELETE_FAILURE", `Attempted to delete department. Error: ${error instanceof Error ? error.message : String(error)}`);
-        toast({
-          title: "Error",
-          description: "Failed to delete department. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoadingTable(false);
-      }
-    }, 500);
+    deleteMutation.mutate(departmentIdToDelete);
   };
 
   const handleSort = (key: SortableDepartmentKeys) => {
@@ -165,21 +138,21 @@ export default function DepartmentsPage() {
   }, [filteredAndSortedDepartments, currentPage]);
 
   useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) { // Added totalPages > 0
+    if (currentPage > totalPages && totalPages > 0) {
       setCurrentPage(totalPages);
-    } else if (currentPage < 1 && totalPages > 0) { // Added totalPages > 0
+    } else if (currentPage < 1 && totalPages > 0) {
         setCurrentPage(1);
-    } else if (filteredAndSortedDepartments.length === 0){ // Added condition for empty list
+    } else if (filteredAndSortedDepartments.length === 0){
         setCurrentPage(1);
     }
   }, [currentPage, totalPages, filteredAndSortedDepartments.length]);
 
 
-  if (!isMounted) {
+  if (isLoadingDepartments) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2">Loading department management...</p>
+        <p className="ml-2">Loading departments...</p>
       </div>
     );
   }
@@ -191,7 +164,7 @@ export default function DepartmentsPage() {
           <h2 className="text-3xl font-semibold tracking-tight text-primary flex items-center">
             <DepartmentIcon className="mr-3 h-8 w-8" /> Manage Departments
           </h2>
-          <p className="text-muted-foreground">Add, edit, or remove department records.</p>
+          <p className="text-muted-foreground">Add, edit, or remove department records from the database.</p>
         </div>
         <Button asChild size="lg" className="shadow-md hover:shadow-lg transition-shadow">
           <Link href="/admin/departments/new">
@@ -203,7 +176,7 @@ export default function DepartmentsPage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Department List</CardTitle>
-          <CardDescription>Browse and manage all departments. Data is stored in your browser's local storage.</CardDescription>
+          <CardDescription>Browse and manage all departments.</CardDescription>
            <div className="mt-4 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -216,20 +189,28 @@ export default function DepartmentsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {isLoadingTable && (
+          {deleteMutation.isPending && (
             <div className="flex justify-center items-center py-4">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              <span className="ml-2">Updating table...</span>
+              <span className="ml-2">Deleting department...</span>
             </div>
           )}
-          <DepartmentsTable 
-            departments={currentTableData} 
-            onEdit={handleEditDepartment} 
-            onDelete={handleDeleteDepartment}
-            sortConfig={sortConfig}
-            onSort={handleSort}
-          />
-          {filteredAndSortedDepartments.length > ITEMS_PER_PAGE && (
+          {departmentsError && (
+             <div className="text-center py-10 text-destructive">
+                <AlertTriangle className="mx-auto h-8 w-8 mb-2" />
+                <p>Error loading departments: {departmentsError.message}</p>
+            </div>
+          )}
+          {!isLoadingDepartments && !departmentsError && (
+            <DepartmentsTable 
+              departments={currentTableData} 
+              onEdit={handleEditDepartment} 
+              onDelete={handleDeleteDepartment}
+              sortConfig={sortConfig}
+              onSort={handleSort}
+            />
+          )}
+          {filteredAndSortedDepartments.length > ITEMS_PER_PAGE && !isLoadingDepartments && (
             <div className="flex items-center justify-between pt-4 mt-4 border-t">
               <p className="text-sm text-muted-foreground">
                 Page {currentPage} of {totalPages} ({filteredAndSortedDepartments.length} departments)
@@ -256,8 +237,8 @@ export default function DepartmentsPage() {
               </div>
             </div>
           )}
-           {filteredAndSortedDepartments.length === 0 && !isLoadingTable && (
-             <p className="text-center text-muted-foreground py-4">No departments match your current search criteria.</p>
+           {!isLoadingDepartments && filteredAndSortedDepartments.length === 0 && !departmentsError && (
+             <p className="text-center text-muted-foreground py-4">No departments match your current search criteria or none exist in the database.</p>
            )}
         </CardContent>
       </Card>

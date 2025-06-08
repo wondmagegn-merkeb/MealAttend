@@ -4,55 +4,59 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DepartmentForm, type DepartmentFormData } from "@/components/admin/departments/DepartmentForm";
-import type { Department } from "@/types/department";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { DEPARTMENTS_STORAGE_KEY } from '@/lib/constants';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Department } from '@/types/department'; // For response type if needed
+
+async function createDepartmentAPI(data: DepartmentFormData): Promise<Department> {
+  const response = await fetch('/api/departments', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ message: 'Failed to create department' }));
+    throw new Error(errorData.message || 'Failed to create department');
+  }
+  return response.json();
+}
 
 export default function NewDepartmentPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { currentUserId } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: createDepartmentAPI,
+    onSuccess: (newDepartment) => {
+      queryClient.invalidateQueries({ queryKey: ['departments'] });
+      logUserActivity(currentUserId, "DEPARTMENT_CREATE_SUCCESS", `Created department ID: ${newDepartment.id}, Name: ${newDepartment.name}`);
+      toast({
+        title: "Department Added",
+        description: `${newDepartment.name} has been successfully added.`,
+      });
+      router.push('/admin/departments');
+    },
+    onError: (error: Error) => {
+      logUserActivity(currentUserId, "DEPARTMENT_CREATE_FAILURE", `Error: ${error.message}`);
+      toast({
+        title: "Error Adding Department",
+        description: error.message || "Failed to save department. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleFormSubmit = (data: DepartmentFormData) => {
-    setIsLoading(true);
-    
-    setTimeout(() => {
-      const newDepartmentId = `dept_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-      const newDepartment: Department = {
-        id: newDepartmentId, 
-        name: data.name,
-      };
-
-      try {
-        const storedDepartmentsRaw = localStorage.getItem(DEPARTMENTS_STORAGE_KEY);
-        const departments: Department[] = storedDepartmentsRaw ? JSON.parse(storedDepartmentsRaw) : [];
-        departments.unshift(newDepartment);
-        localStorage.setItem(DEPARTMENTS_STORAGE_KEY, JSON.stringify(departments));
-        
-        logUserActivity(currentUserId, "DEPARTMENT_CREATE_SUCCESS", `Created department ID: ${newDepartment.id}, Name: ${newDepartment.name}`);
-        toast({
-          title: "Department Added",
-          description: `${data.name} has been successfully added.`,
-        });
-        router.push('/admin/departments');
-      } catch (error) {
-        console.error("Failed to save department to localStorage", error);
-        logUserActivity(currentUserId, "DEPARTMENT_CREATE_FAILURE", `Attempted to create department: ${data.name}. Error: ${error instanceof Error ? error.message : String(error)}`);
-        toast({
-          title: "Error",
-          description: "Failed to save department. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    }, 1000);
+    mutation.mutate(data);
   };
 
   return (
@@ -71,7 +75,7 @@ export default function NewDepartmentPage() {
       </div>
       <DepartmentForm 
         onSubmit={handleFormSubmit} 
-        isLoading={isLoading}
+        isLoading={mutation.isPending}
         submitButtonText="Add Department"
       />
     </div>
