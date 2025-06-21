@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,14 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
 
+  useEffect(() => {
+    const rememberedUserId = localStorage.getItem('rememberedUserId');
+    if (rememberedUserId) {
+      setUserId(rememberedUserId);
+      setRememberMe(true);
+    }
+  }, []); // Run only on component mount
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -35,12 +43,18 @@ export default function LoginPage() {
       setIsLoading(false);
       return;
     }
-    // In a real app, "rememberMe" state would be handled here
+    
     const success = await login(userId, password);
-    setIsLoading(false);
+    
     if (success) {
-      router.push('/admin');
+      if (rememberMe) {
+        localStorage.setItem('rememberedUserId', userId);
+      } else {
+        localStorage.removeItem('rememberedUserId');
+      }
+      // The router push is handled inside the login function now
     }
+    setIsLoading(false);
   };
 
   return (
@@ -53,7 +67,6 @@ export default function LoginPage() {
           <p className="text-sm text-primary-foreground/80 leading-relaxed">
             Efficiently manage and track meal attendance with ease. Sign in to access your dashboard and tools.
           </p>
-          {/* Placeholder for abstract circles if desired using SVG or ::before/::after elements */}
         </div>
 
         {/* Login Form Right Panel */}
@@ -135,11 +148,7 @@ export default function LoginPage() {
               </form>
             </CardContent>
             <CardFooter className="flex-col items-center space-y-2 pt-6 p-0">
-              {/* "OR" and "Sign in with other" omitted as not implemented */}
-              {/* "Don't have an account? Sign Up" omitted as not implemented */}
-              <p className="text-xs text-muted-foreground mt-4 text-center">
-                Hint: User ID e.g., <code className="bg-muted px-1 py-0.5 rounded-sm">ADERA/USR/2024/00001</code><br/>Password: <code className="bg-muted px-1 py-0.5 rounded-sm">password123</code>
-              </p>
+              {/* Hint has been removed */}
             </CardFooter>
           </Card>
         </div>

@@ -1488,30 +1488,50 @@ function useAuth() {
         toast,
         currentUser
     ]);
-    const clearPasswordChangeRequirement = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(async ()=>{
-        if (currentUser) {
-            try {
-                const response = await fetch(`/api/users/${currentUser.id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        passwordChangeRequired: false
-                    })
-                });
-                if (!response.ok) throw new Error('Failed to update password status');
-                const updatedUser = await response.json();
-                setCurrentUser(updatedUser);
-                localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CURRENT_USER_DETAILS_KEY"], JSON.stringify(updatedUser));
-                setIsPasswordChangeRequired(false);
-                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUser.userId, "PASSWORD_CHANGE_FLAG_CLEARED");
-            } catch (e) {
-                console.error("Error clearing password change requirement flag:", e);
+    const changePassword = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(async (newPassword)=>{
+        if (!currentUser) {
+            toast({
+                title: "Error",
+                description: "No active user session found.",
+                variant: "destructive"
+            });
+            return false;
+        }
+        try {
+            const response = await fetch(`/api/users/${currentUser.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    password: newPassword,
+                    passwordChangeRequired: false
+                })
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to update password.');
             }
+            const updatedUser = await response.json();
+            setCurrentUser(updatedUser);
+            localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CURRENT_USER_DETAILS_KEY"], JSON.stringify(updatedUser));
+            setIsPasswordChangeRequired(false);
+            (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUser.userId, "PASSWORD_CHANGE_API_SUCCESS");
+            return true;
+        } catch (e) {
+            const error = e;
+            console.error("Error changing password:", error);
+            toast({
+                title: "Update Failed",
+                description: error.message,
+                variant: "destructive"
+            });
+            (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUser.userId, "PASSWORD_CHANGE_FAILURE", error.message);
+            return false;
         }
     }, [
-        currentUser
+        currentUser,
+        toast
     ]);
     const updateAuthContextUser = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])((updatedUser)=>{
         setCurrentUser(updatedUser);
@@ -1527,7 +1547,7 @@ function useAuth() {
         isPasswordChangeRequired,
         login,
         logout,
-        clearPasswordChangeRequirement,
+        changePassword,
         setIsAuthenticated,
         updateAuthContextUser
     };
