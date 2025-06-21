@@ -18,8 +18,6 @@ type ApiUserCreateData = {
   role: 'Admin' | 'User';
   departmentId: string | null;
   profileImageURL?: string | null;
-  password?: string;
-  passwordChangeRequired?: boolean;
 };
 
 async function createUserAPI(data: ApiUserCreateData): Promise<User> {
@@ -48,7 +46,7 @@ export default function NewUserPage() {
       logUserActivity(actorUserId, "USER_CREATE_SUCCESS", `Created user ID: ${newUser.userId}, Name: ${newUser.fullName}`);
       toast({
         title: "User Added",
-        description: `${newUser.fullName} has been successfully added with ID ${newUser.userId}.`,
+        description: `${newUser.fullName} has been successfully added. A welcome email has been dispatched.`,
       });
       router.push('/admin/users');
     },
@@ -69,8 +67,6 @@ export default function NewUserPage() {
       role: data.role,
       departmentId: data.departmentId || null,
       profileImageURL: data.profileImageURL || null,
-      password: "password123", // Set default password for new users
-      passwordChangeRequired: true,
     };
     mutation.mutate(apiData);
   };
@@ -80,7 +76,7 @@ export default function NewUserPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-semibold tracking-tight text-primary">Add New User</h2>
-          <p className="text-muted-foreground">Fill in the details to add a new user record. User ID will be auto-generated.</p>
+          <p className="text-muted-foreground">Fill in the details to add a new user record. A temporary password will be generated and sent via email.</p>
         </div>
         <Button variant="outline" asChild>
           <Link href="/admin/users">
@@ -92,7 +88,7 @@ export default function NewUserPage() {
       <UserForm 
         onSubmit={handleFormSubmit} 
         isLoading={mutation.isPending}
-        submitButtonText="Add User"
+        submitButtonText="Add User and Send Welcome Email"
       />
     </div>
   );

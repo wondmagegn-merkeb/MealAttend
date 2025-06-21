@@ -2,6 +2,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import type { User } from '@prisma/client';
+import { randomBytes } from 'crypto';
+import { generateWelcomeEmail } from '@/ai/flows/send-welcome-email-flow';
 
 async function generateAderaUserId(): Promise<string> {
   const currentYear = new Date().getFullYear();
@@ -33,17 +35,18 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { fullName, email, password, role, profileImageURL, departmentId, passwordChangeRequired } = body as Partial<User & { password?: string }>;
+    const { fullName, email, role, profileImageURL, departmentId } = body as Partial<User & { password?: string }>;
 
-    if (!fullName || !email || !password || !role) {
-      return NextResponse.json({ message: 'Missing required fields: fullName, email, password, and role are required.' }, { status: 400 });
+    if (!fullName || !email || !role) {
+      return NextResponse.json({ message: 'Missing required fields: fullName, email, and role are required.' }, { status: 400 });
     }
 
     const generatedUserId = await generateAderaUserId();
+    const tempPassword = randomBytes(4).toString('hex'); // e.g., 'a1b2c3d4'
     
-    // !! IMPORTANT: Hash the password before saving !!
-    // Example: const passwordHash = await bcrypt.hash(password, 10);
-    const passwordHash = password; // Replace with actual hashing
+    // !! IMPORTANT: Hash the password before saving in a real app!!
+    // Example: const passwordHash = await bcrypt.hash(tempPassword, 10);
+    const passwordHash = tempPassword; // Replace with actual hashing
 
     const dataToCreate: any = {
       userId: generatedUserId,
@@ -52,7 +55,7 @@ export async function POST(request: NextRequest) {
       passwordHash,
       role,
       profileImageURL,
-      passwordChangeRequired: passwordChangeRequired ?? false,
+      passwordChangeRequired: true, // Force password change on first login
     };
 
     if (departmentId) {
@@ -63,6 +66,28 @@ export async function POST(request: NextRequest) {
       data: dataToCreate,
       include: { department: true },
     });
+
+    // Generate and "send" welcome email after user is created
+    try {
+      const emailContent = await generateWelcomeEmail({
+        userName: newUser.fullName,
+        userEmail: newUser.email,
+        tempPassword: tempPassword,
+        loginUrl: new URL('/auth/login', request.url).toString(), // Construct login URL
+      });
+      // In a real app, you would use a service like Nodemailer, Resend, or SendGrid here.
+      // For this simulation, we log the content to the server console.
+      console.log("------- WELCOME EMAIL (SIMULATED) -------");
+      console.log(`To: ${newUser.email}`);
+      console.log(`Subject: ${emailContent.subject}`);
+      console.log("Body:");
+      console.log(emailContent.body);
+      console.log("-----------------------------------------");
+    } catch (emailError) {
+      console.error("Failed to generate welcome email content:", emailError);
+      // Don't fail the whole request if email generation fails, but log it.
+    }
+
 
     const { passwordHash: _, ...userWithoutPassword } = newUser;
     return NextResponse.json(userWithoutPassword, { status: 201 });
