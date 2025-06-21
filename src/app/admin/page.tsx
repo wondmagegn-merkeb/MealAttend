@@ -152,9 +152,64 @@ export default function AdminDashboardPage() {
     return config;
   }, [userRoleDistributionData]);
   
-  // ... Export functions remain largely the same, but should check if data has loaded
-  const handleExportDashboardPdf = useCallback(() => { /* ... no change ... */ }, [selectedYear, selectedMonth, totalStudentsInSelectedYear, dailyAttendanceData, monthlyAttendanceData, studentGradeDistributionData, userRoleDistributionData, allUsers.length, yearForCharts, toast]);
-  const handleExportDashboardExcel = useCallback(() => { /* ... no change ... */ }, [selectedYear, selectedMonth, totalStudentsInSelectedYear, dailyAttendanceData, monthlyAttendanceData, studentGradeDistributionData, userRoleDistributionData, allUsers.length, yearForCharts, toast]);
+  const handleExportDashboardPdf = useCallback(() => {
+      const doc = new jsPDF();
+      const title = `MealAttend Dashboard Summary - ${format(new Date(), 'yyyy-MM-dd')}`;
+      doc.setFontSize(18);
+      doc.text(title, 14, 20);
+
+      const summaryData = [
+          ['Metric', 'Value'],
+          [`Total Students (${selectedYear === 'all_years' ? 'All Time' : `Adm. Year: ${selectedYear}`})`, String(totalStudentsInSelectedYear)],
+          ['Total Registered Users', String(allUsers.length)],
+          ['Total Attendance Records', String(allAttendanceRecords.length)],
+      ];
+      autoTable(doc, { startY: 30, head: [['Summary', '']], body: summaryData});
+
+      autoTable(doc, { head: [['Day', 'Attendance']], body: dailyAttendanceData.map(d => [d.day, d.count]),
+          didDrawPage: (data) => { doc.text(`Daily Attendance: ${monthNames[selectedMonth]} ${yearForCharts}`, 14, data.cursor?.y ? data.cursor.y - 10 : 0); }
+      });
+      autoTable(doc, { head: [['Month', 'Attendance']], body: monthlyAttendanceData.map(m => [m.month, m.count]),
+          didDrawPage: (data) => { doc.text(`Monthly Attendance: ${yearForCharts}`, 14, data.cursor?.y ? data.cursor.y - 10 : 0); }
+      });
+      autoTable(doc, { head: [['Grade', 'Student Count']], body: studentGradeDistributionData.map(g => [g.name, g.value]),
+          didDrawPage: (data) => { doc.text('Student Grade Distribution', 14, data.cursor?.y ? data.cursor.y - 10 : 0); }
+      });
+      autoTable(doc, { head: [['Role', 'User Count']], body: userRoleDistributionData.map(r => [r.name, r.value]),
+          didDrawPage: (data) => { doc.text('User Role Distribution', 14, data.cursor?.y ? data.cursor.y - 10 : 0); }
+      });
+
+      doc.save(`MealAttend_Dashboard_${format(new Date(), 'yyyyMMdd')}.pdf`);
+      toast({ title: 'PDF Exported', description: 'Dashboard summary has been exported.' });
+  }, [selectedYear, selectedMonth, totalStudentsInSelectedYear, dailyAttendanceData, monthlyAttendanceData, studentGradeDistributionData, userRoleDistributionData, allUsers.length, allAttendanceRecords.length, yearForCharts, toast]);
+
+  const handleExportDashboardExcel = useCallback(() => {
+      const wb = XLSX.utils.book_new();
+
+      const summaryWS = XLSX.utils.aoa_to_sheet([
+          ['Metric', 'Value'],
+          [`Total Students (${selectedYear === 'all_years' ? 'All Time' : `Adm. Year: ${selectedYear}`})`, totalStudentsInSelectedYear],
+          ['Total Registered Users', allUsers.length],
+          ['Total Attendance Records', allAttendanceRecords.length],
+      ]);
+      XLSX.utils.book_append_sheet(wb, summaryWS, 'Summary');
+
+      const dailyWS = XLSX.utils.json_to_sheet(dailyAttendanceData);
+      XLSX.utils.book_append_sheet(wb, dailyWS, `Daily Attendance - ${monthNames[selectedMonth]}`);
+      
+      const monthlyWS = XLSX.utils.json_to_sheet(monthlyAttendanceData);
+      XLSX.utils.book_append_sheet(wb, monthlyWS, `Monthly Attendance - ${yearForCharts}`);
+
+      const gradeWS = XLSX.utils.json_to_sheet(studentGradeDistributionData);
+      XLSX.utils.book_append_sheet(wb, gradeWS, 'Grade Distribution');
+      
+      const roleWS = XLSX.utils.json_to_sheet(userRoleDistributionData);
+      XLSX.utils.book_append_sheet(wb, roleWS, 'Role Distribution');
+
+      XLSX.writeFile(wb, `MealAttend_Dashboard_${format(new Date(), 'yyyyMMdd')}.xlsx`);
+      toast({ title: 'Excel Exported', description: 'Dashboard data has been exported.' });
+  }, [selectedYear, selectedMonth, totalStudentsInSelectedYear, dailyAttendanceData, monthlyAttendanceData, studentGradeDistributionData, userRoleDistributionData, allUsers.length, allAttendanceRecords.length, yearForCharts, toast]);
+
 
   if (isLoading) {
     return (
@@ -263,3 +318,5 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
+    
