@@ -462,9 +462,11 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$a
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$tooltip$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/tooltip.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/badge.tsx [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/node_modules/date-fns/format.mjs [app-client] (ecmascript) <locals>");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
+;
 ;
 ;
 ;
@@ -494,7 +496,7 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                 className: "ml-2 h-4 w-4 opacity-50"
             }, void 0, false, {
                 fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                lineNumber: 56,
+                lineNumber: 61,
                 columnNumber: 14
             }, this);
         }
@@ -502,13 +504,13 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
             className: "ml-2 h-4 w-4"
         }, void 0, false, {
             fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-            lineNumber: 58,
+            lineNumber: 63,
             columnNumber: 51
         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$down$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowDown$3e$__["ArrowDown"], {
             className: "ml-2 h-4 w-4"
         }, void 0, false, {
             fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-            lineNumber: 58,
+            lineNumber: 63,
             columnNumber: 90
         }, this);
     };
@@ -523,12 +525,12 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                lineNumber: 66,
+                lineNumber: 71,
                 columnNumber: 7
             }, this)
         }, void 0, false, {
             fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-            lineNumber: 62,
+            lineNumber: 67,
             columnNumber: 5
         }, this);
     if (users.length === 0) {
@@ -537,7 +539,7 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
             children: "No users found. Check your search term or add new users."
         }, void 0, false, {
             fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-            lineNumber: 75,
+            lineNumber: 80,
             columnNumber: 7
         }, this);
     }
@@ -556,7 +558,7 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                         children: "User ID"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                        lineNumber: 87,
+                                        lineNumber: 92,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(SortableTableHead, {
@@ -564,7 +566,7 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                         children: "Full Name"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                        lineNumber: 88,
+                                        lineNumber: 93,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(SortableTableHead, {
@@ -572,7 +574,7 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                         children: "Department"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                        lineNumber: 89,
+                                        lineNumber: 94,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(SortableTableHead, {
@@ -580,7 +582,7 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                         children: "Email"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                        lineNumber: 90,
+                                        lineNumber: 95,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(SortableTableHead, {
@@ -588,7 +590,7 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                         children: "Role"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                        lineNumber: 91,
+                                        lineNumber: 96,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(SortableTableHead, {
@@ -596,7 +598,7 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                         children: "Created At"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                        lineNumber: 92,
+                                        lineNumber: 97,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TableHead"], {
@@ -604,18 +606,18 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                         children: "Actions"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                        lineNumber: 93,
+                                        lineNumber: 98,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                lineNumber: 86,
+                                lineNumber: 91,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                            lineNumber: 85,
+                            lineNumber: 90,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TableBody"], {
@@ -626,7 +628,7 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                             children: user.userId || ''
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                            lineNumber: 99,
+                                            lineNumber: 104,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TableCell"], {
@@ -637,25 +639,25 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                                         className: "h-9 w-9",
                                                         children: [
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$avatar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AvatarImage"], {
-                                                                src: user.profileImageURL || `https://placehold.co/40x40.png?text=${user.fullName.split(' ').map((n)=>n[0]).join('')}`,
+                                                                src: user.profileImageURL || undefined,
                                                                 alt: user.fullName,
                                                                 "data-ai-hint": "user avatar"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                                lineNumber: 103,
+                                                                lineNumber: 108,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$avatar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AvatarFallback"], {
                                                                 children: user.fullName.split(' ').map((n)=>n[0]).join('')
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                                lineNumber: 108,
+                                                                lineNumber: 113,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                        lineNumber: 102,
+                                                        lineNumber: 107,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -663,32 +665,32 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                                         children: user.fullName
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                        lineNumber: 110,
+                                                        lineNumber: 115,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                lineNumber: 101,
+                                                lineNumber: 106,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                            lineNumber: 100,
+                                            lineNumber: 105,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TableCell"], {
-                                            children: user.department
+                                            children: user.department?.name || 'N/A'
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                            lineNumber: 113,
+                                            lineNumber: 118,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TableCell"], {
                                             children: user.email
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                            lineNumber: 114,
+                                            lineNumber: 119,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TableCell"], {
@@ -697,19 +699,19 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                                 children: user.role
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                lineNumber: 116,
+                                                lineNumber: 121,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                            lineNumber: 115,
+                                            lineNumber: 120,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TableCell"], {
-                                            children: new Date(user.createdAt).toLocaleDateString()
+                                            children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])(new Date(user.createdAt), "yyyy-MM-dd")
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                            lineNumber: 120,
+                                            lineNumber: 125,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TableCell"], {
@@ -730,7 +732,7 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                                                             className: "h-4 w-4"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                                            lineNumber: 126,
+                                                                            lineNumber: 131,
                                                                             columnNumber: 27
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -738,18 +740,18 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                                                             children: "Edit User"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                                            lineNumber: 127,
+                                                                            lineNumber: 132,
                                                                             columnNumber: 27
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                                    lineNumber: 125,
+                                                                    lineNumber: 130,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                                lineNumber: 124,
+                                                                lineNumber: 129,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$tooltip$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TooltipContent"], {
@@ -757,18 +759,18 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                                                     children: "Edit User"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                                    lineNumber: 131,
-                                                                    columnNumber: 25
+                                                                    lineNumber: 135,
+                                                                    columnNumber: 39
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                                lineNumber: 130,
+                                                                lineNumber: 135,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                        lineNumber: 123,
+                                                        lineNumber: 128,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$tooltip$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Tooltip"], {
@@ -785,7 +787,7 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                                                             className: "h-4 w-4"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                                            lineNumber: 138,
+                                                                            lineNumber: 141,
                                                                             columnNumber: 27
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -793,18 +795,18 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                                                             children: "Delete User"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                                            lineNumber: 139,
+                                                                            lineNumber: 142,
                                                                             columnNumber: 27
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                                    lineNumber: 137,
+                                                                    lineNumber: 140,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                                lineNumber: 136,
+                                                                lineNumber: 139,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$tooltip$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TooltipContent"], {
@@ -812,51 +814,51 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                                                     children: "Delete User"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                                    lineNumber: 143,
-                                                                    columnNumber: 25
+                                                                    lineNumber: 145,
+                                                                    columnNumber: 39
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                                lineNumber: 142,
+                                                                lineNumber: 145,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                        lineNumber: 135,
+                                                        lineNumber: 138,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                                lineNumber: 122,
+                                                lineNumber: 127,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                            lineNumber: 121,
+                                            lineNumber: 126,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, user.id, true, {
                                     fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                    lineNumber: 98,
+                                    lineNumber: 103,
                                     columnNumber: 15
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                            lineNumber: 96,
+                            lineNumber: 101,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                    lineNumber: 84,
+                    lineNumber: 89,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                lineNumber: 83,
+                lineNumber: 88,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2d$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertDialog"], {
@@ -870,7 +872,7 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                     children: "Are you sure?"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                    lineNumber: 157,
+                                    lineNumber: 158,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2d$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertDialogDescription"], {
@@ -881,13 +883,13 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                    lineNumber: 158,
+                                    lineNumber: 159,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                            lineNumber: 156,
+                            lineNumber: 157,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2d$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertDialogFooter"], {
@@ -897,7 +899,7 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                     children: "Cancel"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                    lineNumber: 164,
+                                    lineNumber: 165,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$alert$2d$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertDialogAction"], {
@@ -906,30 +908,30 @@ function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }) {
                                     children: "Delete"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                                    lineNumber: 165,
+                                    lineNumber: 166,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                            lineNumber: 163,
+                            lineNumber: 164,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                    lineNumber: 155,
+                    lineNumber: 156,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-                lineNumber: 154,
+                lineNumber: 155,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/admin/users/UsersTable.tsx",
-        lineNumber: 82,
+        lineNumber: 87,
         columnNumber: 5
     }, this);
 }
@@ -962,11 +964,14 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/search.js [app-client] (ecmascript) <export default as Search>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$left$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronLeft$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chevron-left.js [app-client] (ecmascript) <export default as ChevronLeft>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$right$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronRight$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chevron-right.js [app-client] (ecmascript) <export default as ChevronRight>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$triangle$2d$alert$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertTriangle$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/triangle-alert.js [app-client] (ecmascript) <export default as AlertTriangle>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$admin$2f$users$2f$UsersTable$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/admin/users/UsersTable.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/hooks/use-toast.ts [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/constants.ts [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/activityLogger.ts [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/hooks/useAuth.ts [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useQuery$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@tanstack/react-query/build/modern/useQuery.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useMutation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@tanstack/react-query/build/modern/useMutation.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$QueryClientProvider$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
@@ -982,135 +987,83 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
-const initialSeedUsers = [
-    {
-        id: 'usr_smp_001',
-        userId: 'ADERA/USR/2024/00001',
-        fullName: 'Alice Admin',
-        department: 'Administration',
-        email: 'alice.admin@example.com',
-        role: 'Admin',
-        profileImageURL: 'https://placehold.co/100x100.png?text=AA',
-        createdAt: new Date('2023-01-10T10:00:00Z').toISOString(),
-        updatedAt: new Date('2023-01-10T10:00:00Z').toISOString()
-    },
-    {
-        id: 'usr_smp_002',
-        userId: 'ADERA/USR/2024/00002',
-        fullName: 'Bob Operator',
-        department: 'Kitchen Staff',
-        email: 'bob.operator@example.com',
-        role: 'User',
-        profileImageURL: 'https://placehold.co/100x100.png?text=BO',
-        createdAt: new Date('2023-02-15T11:30:00Z').toISOString(),
-        updatedAt: new Date('2023-02-15T11:30:00Z').toISOString()
-    },
-    {
-        id: 'usr_smp_003',
-        userId: 'ADERA/USR/2023/00003',
-        fullName: 'Carol Support',
-        department: 'Serving Team',
-        email: 'carol.support@example.com',
-        role: 'User',
-        profileImageURL: 'https://placehold.co/100x100.png?text=CS',
-        createdAt: new Date('2023-03-20T09:15:00Z').toISOString(),
-        updatedAt: new Date('2023-03-20T09:15:00Z').toISOString()
-    },
-    {
-        id: 'usr_smp_004',
-        userId: 'ADERA/USR/2024/00004',
-        fullName: 'David Manager',
-        department: 'Administration',
-        email: 'david.manager@example.com',
-        role: 'Admin',
-        profileImageURL: 'https://placehold.co/100x100.png?text=DM',
-        createdAt: new Date('2024-01-15T09:00:00Z').toISOString(),
-        updatedAt: new Date('2024-01-15T09:00:00Z').toISOString()
-    }
-];
 const ITEMS_PER_PAGE = 5;
+async function fetchUsers() {
+    const response = await fetch('/api/users');
+    if (!response.ok) throw new Error('Failed to fetch users');
+    return response.json();
+}
+async function deleteUserAPI(userId) {
+    const response = await fetch(`/api/users/${userId}`, {
+        method: 'DELETE'
+    });
+    if (!response.ok) {
+        const errorData = await response.json().catch(()=>({
+                message: 'Failed to delete user'
+            }));
+        throw new Error(errorData.message || 'Failed to delete user');
+    }
+}
 function UsersPage() {
     _s();
-    const [users, setUsers] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
-    const [isMounted, setIsMounted] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
-    const [isLoadingTable, setIsLoadingTable] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const { toast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"])();
-    const { currentUserId: actorUserId } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"])(); // Renamed to avoid conflict
+    const { currentUserId: actorUserId } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"])();
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
+    const queryClient = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$QueryClientProvider$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useQueryClient"])();
     const [searchTerm, setSearchTerm] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
     const [sortConfig, setSortConfig] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])({
         key: 'createdAt',
         direction: 'descending'
     });
     const [currentPage, setCurrentPage] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(1);
-    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "UsersPage.useEffect": ()=>{
-            setIsMounted(true);
-            try {
-                const storedUsersRaw = localStorage.getItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["USERS_STORAGE_KEY"]);
-                if (storedUsersRaw) {
-                    setUsers(JSON.parse(storedUsersRaw));
-                } else {
-                    setUsers(initialSeedUsers);
-                    localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["USERS_STORAGE_KEY"], JSON.stringify(initialSeedUsers));
-                }
-            } catch (error) {
-                console.error("Failed to load users from localStorage", error);
-                setUsers(initialSeedUsers);
-                toast({
-                    title: "Error",
-                    description: "Could not load user data. Displaying default list.",
-                    variant: "destructive"
+    const { data: users = [], isLoading: isLoadingUsers, error: usersError } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useQuery$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useQuery"])({
+        queryKey: [
+            'users'
+        ],
+        queryFn: fetchUsers
+    });
+    const deleteMutation = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useMutation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMutation"])({
+        mutationFn: deleteUserAPI,
+        onSuccess: {
+            "UsersPage.useMutation[deleteMutation]": (_, userIdToDelete)=>{
+                queryClient.invalidateQueries({
+                    queryKey: [
+                        'users'
+                    ]
                 });
-            }
-        }
-    }["UsersPage.useEffect"], [
-        toast
-    ]);
-    const handleEditUser = (user)=>{
-        router.push(`/admin/users/${user.id}/edit`);
-    };
-    const handleDeleteUser = (internalUserIdToDelete)=>{
-        setIsLoadingTable(true);
-        const userToDelete = users.find((u)=>u.id === internalUserIdToDelete);
-        setTimeout(()=>{
-            try {
-                const updatedUsers = users.filter((u)=>u.id !== internalUserIdToDelete);
-                setUsers(updatedUsers);
-                localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["USERS_STORAGE_KEY"], JSON.stringify(updatedUsers));
-                if (userToDelete) {
-                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(actorUserId, "USER_DELETE_SUCCESS", `Deleted user ID: ${userToDelete.userId}, Name: ${userToDelete.fullName}`);
-                } else {
-                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(actorUserId, "USER_DELETE_SUCCESS", `Deleted user with internal ID: ${internalUserIdToDelete}`);
-                }
+                const deletedUser = users.find({
+                    "UsersPage.useMutation[deleteMutation].deletedUser": (u)=>u.id === userIdToDelete
+                }["UsersPage.useMutation[deleteMutation].deletedUser"]);
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(actorUserId, "USER_DELETE_SUCCESS", `Deleted user ID: ${deletedUser?.userId || 'N/A'}, Name: ${deletedUser?.fullName || 'Unknown'}`);
                 toast({
                     title: "User Deleted",
                     description: "The user record has been successfully deleted."
                 });
-                const totalPagesAfterDelete = Math.ceil(updatedUsers.filter((user)=>user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || user.department && user.department.toLowerCase().includes(searchTerm.toLowerCase()) || user.email.toLowerCase().includes(searchTerm.toLowerCase()) || user.userId && user.userId.toLowerCase().includes(searchTerm.toLowerCase()) || user.role.toLowerCase().includes(searchTerm.toLowerCase())).length / ITEMS_PER_PAGE);
-                if (currentPage > totalPagesAfterDelete && totalPagesAfterDelete > 0) {
-                    setCurrentPage(totalPagesAfterDelete);
-                } else if (totalPagesAfterDelete === 0) {
-                    setCurrentPage(1);
-                }
-            } catch (error) {
-                console.error("Failed to delete user from localStorage", error);
-                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(actorUserId, "USER_DELETE_FAILURE", `Attempted to delete user. Error: ${error instanceof Error ? error.message : String(error)}`);
+            }
+        }["UsersPage.useMutation[deleteMutation]"],
+        onError: {
+            "UsersPage.useMutation[deleteMutation]": (error, userIdToDelete)=>{
+                const userToDelete = users.find({
+                    "UsersPage.useMutation[deleteMutation].userToDelete": (u)=>u.id === userIdToDelete
+                }["UsersPage.useMutation[deleteMutation].userToDelete"]);
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(actorUserId, "USER_DELETE_FAILURE", `Attempted to delete user ID: ${userToDelete?.userId}. Error: ${error.message}`);
                 toast({
-                    title: "Error",
-                    description: "Failed to delete user. Please try again.",
+                    title: "Error Deleting User",
+                    description: error.message || "Failed to delete user.",
                     variant: "destructive"
                 });
-            } finally{
-                setIsLoadingTable(false);
             }
-        }, 500);
+        }["UsersPage.useMutation[deleteMutation]"]
+    });
+    const handleEditUser = (user)=>{
+        router.push(`/admin/users/${user.id}/edit`);
+    };
+    const handleDeleteUser = (internalUserId)=>{
+        deleteMutation.mutate(internalUserId);
     };
     const handleSort = (key)=>{
         let direction = 'ascending';
-        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-            direction = 'descending';
-        }
+        if (sortConfig.key === key && sortConfig.direction === 'ascending') direction = 'descending';
         setSortConfig({
             key,
             direction
@@ -1129,24 +1082,17 @@ function UsersPage() {
             if (searchTerm) {
                 const lowerSearchTerm = searchTerm.toLowerCase();
                 processedUsers = processedUsers.filter({
-                    "UsersPage.useMemo[filteredAndSortedUsers]": (user)=>user.userId && user.userId.toLowerCase().includes(lowerSearchTerm) || user.fullName.toLowerCase().includes(lowerSearchTerm) || user.department && user.department.toLowerCase().includes(lowerSearchTerm) || user.email.toLowerCase().includes(lowerSearchTerm) || user.role.toLowerCase().includes(lowerSearchTerm)
+                    "UsersPage.useMemo[filteredAndSortedUsers]": (user)=>user.userId && user.userId.toLowerCase().includes(lowerSearchTerm) || user.fullName.toLowerCase().includes(lowerSearchTerm) || user.department && user.department.name.toLowerCase().includes(lowerSearchTerm) || user.email.toLowerCase().includes(lowerSearchTerm) || user.role.toLowerCase().includes(lowerSearchTerm)
                 }["UsersPage.useMemo[filteredAndSortedUsers]"]);
             }
             if (sortConfig.key) {
                 processedUsers.sort({
                     "UsersPage.useMemo[filteredAndSortedUsers]": (a, b)=>{
-                        const aValue = a[sortConfig.key];
-                        const bValue = b[sortConfig.key];
+                        const aValue = sortConfig.key === 'department' ? a.department?.name : a[sortConfig.key];
+                        const bValue = sortConfig.key === 'department' ? b.department?.name : b[sortConfig.key];
                         if (aValue === undefined || aValue === null) return 1;
                         if (bValue === undefined || bValue === null) return -1;
-                        let comparison = 0;
-                        if (typeof aValue === 'string' && typeof bValue === 'string') {
-                            comparison = aValue.localeCompare(bValue);
-                        } else if (typeof aValue === 'number' && typeof bValue === 'number') {
-                            comparison = aValue - bValue;
-                        } else {
-                            comparison = String(aValue).localeCompare(String(bValue));
-                        }
+                        let comparison = String(aValue).localeCompare(String(bValue));
                         return sortConfig.direction === 'ascending' ? comparison : -comparison;
                     }
                 }["UsersPage.useMemo[filteredAndSortedUsers]"]);
@@ -1171,45 +1117,15 @@ function UsersPage() {
     ]);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "UsersPage.useEffect": ()=>{
-            if (currentPage > totalPages && totalPages > 0) {
-                setCurrentPage(totalPages);
-            } else if (currentPage < 1 && totalPages > 0) {
-                setCurrentPage(1);
-            } else if (filteredAndSortedUsers.length === 0) {
-                setCurrentPage(1);
-            }
+            if (currentPage > totalPages && totalPages > 0) setCurrentPage(totalPages);
+            else if (currentPage < 1 && totalPages > 0) setCurrentPage(1);
+            else if (filteredAndSortedUsers.length === 0) setCurrentPage(1);
         }
     }["UsersPage.useEffect"], [
         currentPage,
         totalPages,
         filteredAndSortedUsers.length
     ]);
-    if (!isMounted) {
-        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "flex justify-center items-center h-screen",
-            children: [
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$loader$2d$circle$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Loader2$3e$__["Loader2"], {
-                    className: "h-8 w-8 animate-spin text-primary"
-                }, void 0, false, {
-                    fileName: "[project]/src/app/admin/users/page.tsx",
-                    lineNumber: 192,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                    className: "ml-2",
-                    children: "Loading user management..."
-                }, void 0, false, {
-                    fileName: "[project]/src/app/admin/users/page.tsx",
-                    lineNumber: 193,
-                    columnNumber: 9
-                }, this)
-            ]
-        }, void 0, true, {
-            fileName: "[project]/src/app/admin/users/page.tsx",
-            lineNumber: 191,
-            columnNumber: 7
-        }, this);
-    }
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "space-y-6",
         children: [
@@ -1225,14 +1141,14 @@ function UsersPage() {
                                         className: "mr-3 h-8 w-8"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/users/page.tsx",
-                                        lineNumber: 203,
-                                        columnNumber: 13
+                                        lineNumber: 139,
+                                        columnNumber: 96
                                     }, this),
                                     " Manage Users"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/users/page.tsx",
-                                lineNumber: 202,
+                                lineNumber: 139,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1240,13 +1156,13 @@ function UsersPage() {
                                 children: "Add, edit, or remove user records. Access restricted to Admins."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/users/page.tsx",
-                                lineNumber: 205,
+                                lineNumber: 140,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/users/page.tsx",
-                        lineNumber: 201,
+                        lineNumber: 138,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -1260,25 +1176,25 @@ function UsersPage() {
                                     className: "mr-2 h-5 w-5"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/admin/users/page.tsx",
-                                    lineNumber: 209,
-                                    columnNumber: 13
+                                    lineNumber: 143,
+                                    columnNumber: 41
                                 }, this),
                                 " Add New User"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/admin/users/page.tsx",
-                            lineNumber: 208,
+                            lineNumber: 143,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/app/admin/users/page.tsx",
-                        lineNumber: 207,
+                        lineNumber: 142,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/admin/users/page.tsx",
-                lineNumber: 200,
+                lineNumber: 137,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
@@ -1290,14 +1206,14 @@ function UsersPage() {
                                 children: "User List"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/users/page.tsx",
-                                lineNumber: 216,
+                                lineNumber: 149,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardDescription"], {
-                                children: "Browse and manage all registered users. Data is stored in your browser's local storage."
+                                children: "Browse and manage all registered users from the database."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/users/page.tsx",
-                                lineNumber: 217,
+                                lineNumber: 150,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1307,7 +1223,7 @@ function UsersPage() {
                                         className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/users/page.tsx",
-                                        lineNumber: 219,
+                                        lineNumber: 152,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -1318,48 +1234,95 @@ function UsersPage() {
                                         className: "pl-10 w-full sm:w-1/2 md:w-1/3"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/users/page.tsx",
-                                        lineNumber: 220,
+                                        lineNumber: 153,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/users/page.tsx",
-                                lineNumber: 218,
+                                lineNumber: 151,
                                 columnNumber: 12
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/users/page.tsx",
-                        lineNumber: 215,
+                        lineNumber: 148,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
                         children: [
-                            isLoadingTable && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            isLoadingUsers ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "flex justify-center items-center py-4",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$loader$2d$circle$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Loader2$3e$__["Loader2"], {
                                         className: "h-6 w-6 animate-spin text-primary"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/users/page.tsx",
-                                        lineNumber: 232,
-                                        columnNumber: 15
+                                        lineNumber: 158,
+                                        columnNumber: 68
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "ml-2",
-                                        children: "Updating table..."
+                                        children: "Loading users..."
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/users/page.tsx",
-                                        lineNumber: 233,
-                                        columnNumber: 15
+                                        lineNumber: 158,
+                                        columnNumber: 125
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/users/page.tsx",
-                                lineNumber: 231,
+                                lineNumber: 158,
                                 columnNumber: 13
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$admin$2f$users$2f$UsersTable$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["UsersTable"], {
+                            }, this) : deleteMutation.isPending ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "flex justify-center items-center py-4",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$loader$2d$circle$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Loader2$3e$__["Loader2"], {
+                                        className: "h-6 w-6 animate-spin text-primary"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/admin/users/page.tsx",
+                                        lineNumber: 160,
+                                        columnNumber: 68
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "ml-2",
+                                        children: "Deleting user..."
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/admin/users/page.tsx",
+                                        lineNumber: 160,
+                                        columnNumber: 125
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/app/admin/users/page.tsx",
+                                lineNumber: 160,
+                                columnNumber: 13
+                            }, this) : usersError ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "text-center py-10 text-destructive",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$triangle$2d$alert$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertTriangle$3e$__["AlertTriangle"], {
+                                        className: "mx-auto h-8 w-8 mb-2"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/admin/users/page.tsx",
+                                        lineNumber: 162,
+                                        columnNumber: 65
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                        children: [
+                                            "Error loading users: ",
+                                            usersError.message
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/app/admin/users/page.tsx",
+                                        lineNumber: 162,
+                                        columnNumber: 115
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/app/admin/users/page.tsx",
+                                lineNumber: 162,
+                                columnNumber: 13
+                            }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$admin$2f$users$2f$UsersTable$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["UsersTable"], {
                                 users: currentTableData,
                                 onEdit: handleEditUser,
                                 onDelete: handleDeleteUser,
@@ -1367,10 +1330,10 @@ function UsersPage() {
                                 onSort: handleSort
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/users/page.tsx",
-                                lineNumber: 236,
-                                columnNumber: 11
+                                lineNumber: 164,
+                                columnNumber: 13
                             }, this),
-                            filteredAndSortedUsers.length > ITEMS_PER_PAGE && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            !isLoadingUsers && !usersError && filteredAndSortedUsers.length > ITEMS_PER_PAGE && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "flex items-center justify-between pt-4 mt-4 border-t",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1386,7 +1349,7 @@ function UsersPage() {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/admin/users/page.tsx",
-                                        lineNumber: 245,
+                                        lineNumber: 169,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1402,14 +1365,14 @@ function UsersPage() {
                                                         className: "mr-1 h-4 w-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/admin/users/page.tsx",
-                                                        lineNumber: 255,
-                                                        columnNumber: 19
+                                                        lineNumber: 171,
+                                                        columnNumber: 144
                                                     }, this),
                                                     "Previous"
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/admin/users/page.tsx",
-                                                lineNumber: 249,
+                                                lineNumber: 171,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -1423,59 +1386,62 @@ function UsersPage() {
                                                         className: "ml-1 h-4 w-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/admin/users/page.tsx",
-                                                        lineNumber: 265,
-                                                        columnNumber: 19
+                                                        lineNumber: 172,
+                                                        columnNumber: 166
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/admin/users/page.tsx",
-                                                lineNumber: 258,
+                                                lineNumber: 172,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/admin/users/page.tsx",
-                                        lineNumber: 248,
+                                        lineNumber: 170,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/users/page.tsx",
-                                lineNumber: 244,
+                                lineNumber: 168,
                                 columnNumber: 13
                             }, this),
-                            filteredAndSortedUsers.length === 0 && !isLoadingTable && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                            !isLoadingUsers && !usersError && filteredAndSortedUsers.length === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                 className: "text-center text-muted-foreground py-4",
                                 children: "No users match your current search criteria."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/users/page.tsx",
-                                lineNumber: 271,
-                                columnNumber: 14
+                                lineNumber: 176,
+                                columnNumber: 86
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/users/page.tsx",
-                        lineNumber: 229,
+                        lineNumber: 156,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/admin/users/page.tsx",
-                lineNumber: 214,
+                lineNumber: 147,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/admin/users/page.tsx",
-        lineNumber: 199,
+        lineNumber: 136,
         columnNumber: 5
     }, this);
 }
-_s(UsersPage, "JZ/N38/123yVRXV9sYvdKisBPeY=", false, function() {
+_s(UsersPage, "4q62GbjzitbftCVyTHz38gnpXzY=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"],
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"],
-        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"]
+        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"],
+        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$QueryClientProvider$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useQueryClient"],
+        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useQuery$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useQuery"],
+        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useMutation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMutation"]
     ];
 });
 _c = UsersPage;
