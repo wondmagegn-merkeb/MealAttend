@@ -7,6 +7,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 import type { User } from '@/types/user';
+import { toast } from '@/hooks/use-toast';
 
 const PUBLIC_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-password', '/auth/change-password'];
 
@@ -98,7 +99,3 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
   // or on a public path, or role check passes, render children
   return <>{children}</>;
 }
-
-// Helper (could be in a different file or here for simplicity)
-// This is a client-side toast function, ensure your ToastProvider is set up
-import { toast } from '@/hooks/use-toast';
