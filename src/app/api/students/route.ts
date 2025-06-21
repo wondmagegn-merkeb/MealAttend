@@ -5,10 +5,7 @@ import type { Student } from '@prisma/client'; // Import Prisma's generated Stud
 
 async function generateAderaStudentId(): Promise<string> {
   const currentYear = new Date().getFullYear();
-  // This is a simplified serial number generation.
-  // For production, you'd want a more robust way to ensure uniqueness if many students are added concurrently.
-  // e.g., query the last serial for the year and increment, or use a dedicated sequence table.
-  const countForYear = await prisma.student.count({
+    const countForYear = await prisma.student.count({
     where: {
       studentId: {
         startsWith: `ADERA/STU/${currentYear}/`,

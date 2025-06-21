@@ -10,12 +10,12 @@ import { Label } from "@/components/ui/label";
 import { useToast } from '@/hooks/use-toast';
 import { KeyRound, Lock, CheckCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { logUserActivity } from '@/lib/activityLogger'; // Import the logger
+import { logUserActivity } from '@/lib/activityLogger';
 
 export default function ChangePasswordPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { currentUserId, clearPasswordChangeRequirement, isAuthenticated, isPasswordChangeRequired } = useAuth();
+  const { currentUserId, changePassword, isAuthenticated, isPasswordChangeRequired } = useAuth();
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -49,26 +49,19 @@ export default function ChangePasswordPage() {
       setIsLoading(false);
       return;
     }
+    
+    const success = await changePassword(newPassword);
 
-    setTimeout(() => {
-      if (currentUserId) {
-        clearPasswordChangeRequirement();
-        logUserActivity(currentUserId, "PASSWORD_CHANGE_SUCCESS"); // Log password change
+    if (success) {
+        logUserActivity(currentUserId, "PASSWORD_CHANGE_SUCCESS");
         toast({
-          title: "Password Changed (Simulated)",
+          title: "Password Changed",
           description: "Your password has been successfully updated. You can now access the system.",
         });
         router.push('/admin');
-      } else {
-         logUserActivity(null, "PASSWORD_CHANGE_FAILURE", "User ID not found during password change attempt.");
-         toast({
-          title: "Error",
-          description: "Could not identify user to update password.",
-          variant: "destructive",
-        });
-      }
-      setIsLoading(false);
-    }, 1000);
+    }
+    // Errors are handled within the changePassword function, so no need for an else block here.
+    setIsLoading(false);
   };
   
   if (isAuthenticated === null) {

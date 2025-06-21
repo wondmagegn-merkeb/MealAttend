@@ -309,31 +309,24 @@ var { g: global, __dirname } = __turbopack_context__;
 __turbopack_context__.s({
     "logUserActivity": (()=>logUserActivity)
 });
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/constants.ts [app-ssr] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$formatISO$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/formatISO.mjs [app-ssr] (ecmascript)");
-;
-;
-const MAX_LOGS = 500; // Limit the number of logs to prevent localStorage bloat
-function logUserActivity(userId, action, details) {
-    const effectiveUserId = userId || 'unknown_user'; // Use 'unknown_user' if userId is null
+async function logUserActivity(userIdentifier, action, details) {
+    const effectiveUserId = userIdentifier || 'unknown_user';
+    const logData = {
+        userIdentifier: effectiveUserId,
+        action,
+        details: details || null,
+        activityTimestamp: new Date()
+    };
     try {
-        const newLog = {
-            id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-            userId: effectiveUserId,
-            timestamp: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$formatISO$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["formatISO"])(new Date()),
-            action,
-            details
-        };
-        const storedLogsRaw = localStorage.getItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["USER_ACTIVITY_LOG_KEY"]);
-        let logs = storedLogsRaw ? JSON.parse(storedLogsRaw) : [];
-        logs.unshift(newLog); // Add new log to the beginning
-        if (logs.length > MAX_LOGS) {
-            logs = logs.slice(0, MAX_LOGS);
-        }
-        localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["USER_ACTIVITY_LOG_KEY"], JSON.stringify(logs));
+        await fetch('/api/activity-logs', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(logData)
+        });
     } catch (error) {
-        console.error("Failed to log user activity:", error);
-    // Optionally, add a toast notification here if logging fails, though it might be too noisy.
+        console.error("Failed to log user activity to API:", error);
     }
 }
 }}),
@@ -356,39 +349,15 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger
 ;
 ;
 ;
-const MOCK_DEFAULT_PASSWORD = "password123";
-const MOCK_DEFAULT_ADMIN_USER = {
-    id: 'usr_smp_001_fallback',
-    userId: 'ADERA/USR/2024/00001',
-    fullName: 'Alice Admin (Fallback)',
-    department: 'Administration',
-    email: 'alice.admin@example.com',
-    role: 'Admin',
-    profileImageURL: 'https://placehold.co/100x100.png?text=AA',
-    createdAt: new Date('2023-01-10T10:00:00Z').toISOString(),
-    updatedAt: new Date('2023-01-10T10:00:00Z').toISOString()
-};
 function useAuth() {
     const [isAuthenticated, setIsAuthenticated] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const [currentUser, setCurrentUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const [isPasswordChangeRequired, setIsPasswordChangeRequired] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRouter"])();
+    const pathname = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["usePathname"])();
     const { toast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useToast"])();
     const currentUserRole = currentUser?.role || null;
     const currentUserId = currentUser?.userId || null;
-    const checkPasswordChangeStatus = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])((userIdToCheck)=>{
-        if (!userIdToCheck) {
-            setIsPasswordChangeRequired(false);
-            return;
-        }
-        try {
-            const changeRequired = localStorage.getItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["PASSWORD_CHANGE_REQUIRED_KEY_PREFIX"] + userIdToCheck);
-            setIsPasswordChangeRequired(changeRequired === 'true');
-        } catch (e) {
-            console.error("localStorage access error for password change status:", e);
-            setIsPasswordChangeRequired(false);
-        }
-    }, []);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         try {
             const token = localStorage.getItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["AUTH_TOKEN_KEY"]);
@@ -397,7 +366,7 @@ function useAuth() {
                 const storedUser = JSON.parse(storedUserDetailsRaw);
                 setIsAuthenticated(true);
                 setCurrentUser(storedUser);
-                checkPasswordChangeStatus(storedUser.userId);
+                setIsPasswordChangeRequired(storedUser.passwordChangeRequired);
             } else {
                 setIsAuthenticated(false);
                 setCurrentUser(null);
@@ -409,81 +378,64 @@ function useAuth() {
             setCurrentUser(null);
             setIsPasswordChangeRequired(false);
         }
-    }, [
-        checkPasswordChangeStatus
-    ]);
+    }, []);
     const login = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(async (userIdInput, password)=>{
-        return new Promise((resolve)=>{
-            setTimeout(()=>{
-                try {
-                    const storedUsersRaw = localStorage.getItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["USERS_STORAGE_KEY"]);
-                    let usersToSearch = [];
-                    if (storedUsersRaw) {
-                        try {
-                            usersToSearch = JSON.parse(storedUsersRaw);
-                        } catch (parseError) {
-                            console.error("Failed to parse users from localStorage", parseError);
-                            usersToSearch = [];
-                        }
-                    }
-                    const adminExistsInStorage = usersToSearch.some((u)=>u.userId === MOCK_DEFAULT_ADMIN_USER.userId);
-                    if (!adminExistsInStorage && MOCK_DEFAULT_ADMIN_USER.userId === userIdInput) {
-                        usersToSearch.push(MOCK_DEFAULT_ADMIN_USER);
-                    }
-                    const user = usersToSearch.find((u)=>u.userId === userIdInput);
-                    if (user && password === MOCK_DEFAULT_PASSWORD) {
-                        localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["AUTH_TOKEN_KEY"], `mock-jwt-token-for-${user.userId}`);
-                        localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CURRENT_USER_DETAILS_KEY"], JSON.stringify(user));
-                        localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CURRENT_USER_ROLE_KEY"], user.role);
-                        localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CURRENT_USER_ID_KEY"], user.userId);
-                        setIsAuthenticated(true);
-                        setCurrentUser(user);
-                        const passwordChangeDismissedKey = __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["PASSWORD_CHANGE_REQUIRED_KEY_PREFIX"] + user.userId + "_dismissed";
-                        const passwordChangeRequiredKey = __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["PASSWORD_CHANGE_REQUIRED_KEY_PREFIX"] + user.userId;
-                        const passwordChangeDismissed = localStorage.getItem(passwordChangeDismissedKey);
-                        if (!passwordChangeDismissed) {
-                            localStorage.setItem(passwordChangeRequiredKey, 'true');
-                            setIsPasswordChangeRequired(true);
-                        } else {
-                            localStorage.removeItem(passwordChangeRequiredKey);
-                            setIsPasswordChangeRequired(false);
-                        }
-                        (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(user.userId, "LOGIN_SUCCESS");
-                        toast({
-                            title: "Login Successful",
-                            description: `Welcome back, ${user.fullName}!`
-                        });
-                        resolve(true);
-                    } else {
-                        (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(userIdInput || 'unknown_user', "LOGIN_FAILURE", "Invalid User ID or password.");
-                        toast({
-                            title: "Login Failed",
-                            description: "Invalid User ID or password.",
-                            variant: "destructive"
-                        });
-                        resolve(false);
-                    }
-                } catch (e) {
-                    console.error("Login error:", e);
-                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(userIdInput || 'unknown_user', "LOGIN_ERROR", "An unexpected error occurred during login.");
-                    toast({
-                        title: "Login Error",
-                        description: "An unexpected error occurred.",
-                        variant: "destructive"
-                    });
-                    resolve(false);
-                }
-            }, 500);
-        });
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: userIdInput,
+                    password
+                })
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(userIdInput, "LOGIN_FAILURE", data.message || 'Invalid credentials');
+                toast({
+                    title: "Login Failed",
+                    description: data.message || "Invalid User ID or password.",
+                    variant: "destructive"
+                });
+                return false;
+            }
+            const user = data.user;
+            localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["AUTH_TOKEN_KEY"], `mock-jwt-for-${user.userId}`);
+            localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CURRENT_USER_DETAILS_KEY"], JSON.stringify(user));
+            setIsAuthenticated(true);
+            setCurrentUser(user);
+            setIsPasswordChangeRequired(user.passwordChangeRequired);
+            (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(user.userId, "LOGIN_SUCCESS");
+            toast({
+                title: "Login Successful",
+                description: `Welcome back, ${user.fullName}!`
+            });
+            if (user.passwordChangeRequired) {
+                router.push('/auth/change-password');
+            } else {
+                router.push('/admin');
+            }
+            return true;
+        } catch (error) {
+            console.error("Login API error:", error);
+            (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(userIdInput, "LOGIN_ERROR", error.message);
+            toast({
+                title: "Login Error",
+                description: "An unexpected error occurred.",
+                variant: "destructive"
+            });
+            return false;
+        }
     }, [
-        toast
+        toast,
+        router
     ]);
     const logout = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(()=>{
         const loggingOutUserId = currentUser?.userId || null;
         try {
             localStorage.removeItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["AUTH_TOKEN_KEY"]);
-            localStorage.removeItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CURRENT_USER_ROLE_KEY"]);
-            localStorage.removeItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CURRENT_USER_ID_KEY"]);
             localStorage.removeItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CURRENT_USER_DETAILS_KEY"]);
             setIsAuthenticated(false);
             setCurrentUser(null);
@@ -497,28 +449,31 @@ function useAuth() {
             });
             router.push('/auth/login');
         } catch (e) {
-            if (loggingOutUserId) {
-                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(loggingOutUserId, "LOGOUT_ERROR", "Failed to clear session.");
-            }
-            toast({
-                title: "Logout Error",
-                description: "Could not clear session.",
-                variant: "destructive"
-            });
+            console.error("Logout error:", e);
         }
     }, [
         router,
         toast,
         currentUser
     ]);
-    const clearPasswordChangeRequirement = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(()=>{
-        const uid = currentUser?.userId;
-        if (uid) {
+    const clearPasswordChangeRequirement = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(async ()=>{
+        if (currentUser) {
             try {
-                localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["PASSWORD_CHANGE_REQUIRED_KEY_PREFIX"] + uid + "_dismissed", 'true');
-                localStorage.removeItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["PASSWORD_CHANGE_REQUIRED_KEY_PREFIX"] + uid);
+                const response = await fetch(`/api/users/${currentUser.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        passwordChangeRequired: false
+                    })
+                });
+                if (!response.ok) throw new Error('Failed to update password status');
+                const updatedUser = await response.json();
+                setCurrentUser(updatedUser);
+                localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CURRENT_USER_DETAILS_KEY"], JSON.stringify(updatedUser));
                 setIsPasswordChangeRequired(false);
-                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(uid, "PASSWORD_CHANGE_FLAG_CLEARED");
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUser.userId, "PASSWORD_CHANGE_FLAG_CLEARED");
             } catch (e) {
                 console.error("Error clearing password change requirement flag:", e);
             }
@@ -526,49 +481,12 @@ function useAuth() {
     }, [
         currentUser
     ]);
-    const updateCurrentUserDetails = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])((updatedDetails)=>{
-        if (!currentUser) return;
-        const updatedUser = {
-            ...currentUser,
-            ...updatedDetails,
-            updatedAt: new Date().toISOString()
-        };
+    const updateAuthContextUser = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])((updatedUser)=>{
         setCurrentUser(updatedUser);
         localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CURRENT_USER_DETAILS_KEY"], JSON.stringify(updatedUser));
-        try {
-            const storedUsersRaw = localStorage.getItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["USERS_STORAGE_KEY"]);
-            let users = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
-            const userIndex = users.findIndex((u)=>u.id === updatedUser.id);
-            if (userIndex > -1) {
-                users[userIndex] = updatedUser;
-            } else {
-                users.push(updatedUser);
-            }
-            localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["USERS_STORAGE_KEY"], JSON.stringify(users));
-            window.dispatchEvent(new StorageEvent('storage', {
-                key: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["USERS_STORAGE_KEY"],
-                newValue: JSON.stringify(users)
-            }));
-            window.dispatchEvent(new StorageEvent('storage', {
-                key: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CURRENT_USER_DETAILS_KEY"],
-                newValue: JSON.stringify(updatedUser)
-            }));
-        } catch (error) {
-            console.error("Failed to update user details in USERS_STORAGE_KEY:", error);
-            toast({
-                title: "Storage Error",
-                description: "Could not update user in main list.",
-                variant: "destructive"
-            });
-        }
-        toast({
-            title: "Profile Updated",
-            description: "Your profile details have been saved."
-        });
-    }, [
-        currentUser,
-        toast
-    ]);
+    // This function is for context updates after an API call, e.g., profile edit.
+    // The API call itself is handled in the component.
+    }, []);
     return {
         isAuthenticated,
         currentUser,
@@ -579,7 +497,7 @@ function useAuth() {
         logout,
         clearPasswordChangeRequirement,
         setIsAuthenticated,
-        updateCurrentUserDetails
+        updateAuthContextUser
     };
 }
 }}),

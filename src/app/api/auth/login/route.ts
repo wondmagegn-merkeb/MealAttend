@@ -4,9 +4,20 @@ import prisma from '@/lib/prisma';
 import type { User } from '@prisma/client';
 
 // This is a mock password comparison. In a real app, use a library like bcrypt.
-// e.g., const passwordMatches = await bcrypt.compare(password, user.passwordHash);
 const MOCK_PASSWORD_CHECK = (password: string, hash: string) => {
-    return password === hash || password === "password123";
+    // Case 1: Initial, simulated hashed password from user creation.
+    if (hash === `${password}-hashed`) {
+        return true;
+    }
+    // Case 2: Password has been changed by the user and is now stored "plainly" (for simulation).
+    if (hash === password) {
+        return true;
+    }
+    // For backwards compatibility with any users made with the old system.
+    if (hash === password && password === 'password123'){
+        return true;
+    }
+    return false;
 };
 
 export async function POST(request: NextRequest) {

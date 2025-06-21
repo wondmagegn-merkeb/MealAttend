@@ -21,7 +21,7 @@ interface AuthContextType {
   isPasswordChangeRequired: boolean;
   login: (userIdInput: string, password?: string) => Promise<boolean>;
   logout: () => void;
-  clearPasswordChangeRequirement: () => void;
+  changePassword: (newPassword: string) => Promise<boolean>;
   setIsAuthenticated: Dispatch<SetStateAction<boolean | null>>;
   updateAuthContextUser: (updatedUser: UserWithDepartment) => void;
 }
@@ -122,26 +122,39 @@ export function useAuth(): AuthContextType {
     }
   }, [router, toast, currentUser]);
 
-  const clearPasswordChangeRequirement = useCallback(async () => {
-    if (currentUser) {
-      try {
-        const response = await fetch(`/api/users/${currentUser.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ passwordChangeRequired: false }),
-        });
-        if (!response.ok) throw new Error('Failed to update password status');
-        
-        const updatedUser = await response.json();
-        setCurrentUser(updatedUser);
-        localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(updatedUser));
-        setIsPasswordChangeRequired(false);
-        logUserActivity(currentUser.userId, "PASSWORD_CHANGE_FLAG_CLEARED");
-      } catch (e) {
-        console.error("Error clearing password change requirement flag:", e);
-      }
+  const changePassword = useCallback(async (newPassword: string): Promise<boolean> => {
+    if (!currentUser) {
+      toast({ title: "Error", description: "No active user session found.", variant: "destructive" });
+      return false;
     }
-  }, [currentUser]);
+
+    try {
+      const response = await fetch(`/api/users/${currentUser.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: newPassword, passwordChangeRequired: false }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update password.');
+      }
+      
+      const updatedUser = await response.json();
+      setCurrentUser(updatedUser);
+      localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(updatedUser));
+      setIsPasswordChangeRequired(false);
+      logUserActivity(currentUser.userId, "PASSWORD_CHANGE_API_SUCCESS");
+      return true;
+
+    } catch (e) {
+      const error = e as Error;
+      console.error("Error changing password:", error);
+      toast({ title: "Update Failed", description: error.message, variant: "destructive" });
+      logUserActivity(currentUser.userId, "PASSWORD_CHANGE_FAILURE", error.message);
+      return false;
+    }
+  }, [currentUser, toast]);
 
   const updateAuthContextUser = useCallback((updatedUser: UserWithDepartment) => {
     setCurrentUser(updatedUser);
@@ -158,7 +171,7 @@ export function useAuth(): AuthContextType {
     isPasswordChangeRequired, 
     login, 
     logout, 
-    clearPasswordChangeRequirement, 
+    changePassword, 
     setIsAuthenticated,
     updateAuthContextUser
   };

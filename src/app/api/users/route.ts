@@ -2,7 +2,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import type { User } from '@prisma/client';
-import { randomBytes } from 'crypto';
 import { generateWelcomeEmail } from '@/ai/flows/send-welcome-email-flow';
 import { Resend } from 'resend';
 
@@ -42,21 +41,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Missing required fields: fullName, email, and role are required.' }, { status: 400 });
     }
 
-    const generatedUserId = await generateAderaUserId();
-    const tempPassword = randomBytes(4).toString('hex'); // e.g., 'a1b2c3d4'
-    
-    // !! IMPORTANT: Hash the password before saving in a real app!!
+    // Fetch department name to create password
+    const department = departmentId ? await prisma.department.findUnique({ where: { id: departmentId } }) : null;
+    if (departmentId && !department) {
+        return NextResponse.json({ message: `Department with ID ${departmentId} not found.` }, { status: 400 });
+    }
+
+    // 1. Generate password based on role and department
+    const departmentNamePart = department ? department.name.toLowerCase().replace(/[^a-z0-9]/gi, '') : 'nodepartment';
+    const tempPassword = `${role.toLowerCase()}@${departmentNamePart}123`;
+
+    // 2. Hash the password for database storage
+    // !! IMPORTANT: In a real app, use a strong hashing algorithm like bcrypt.
     // Example: const passwordHash = await bcrypt.hash(tempPassword, 10);
-    const passwordHash = tempPassword; // Replace with actual hashing
+    const passwordHash = `${tempPassword}-hashed`; // This is for simulation ONLY.
+
+    const generatedUserId = await generateAderaUserId();
 
     const dataToCreate: any = {
       userId: generatedUserId,
       fullName,
       email,
-      passwordHash,
+      passwordHash, // Use the hashed password
       role,
       profileImageURL,
-      passwordChangeRequired: true, // Force password change on first login
+      passwordChangeRequired: true,
     };
 
     if (departmentId) {
@@ -68,42 +77,40 @@ export async function POST(request: NextRequest) {
       include: { department: true },
     });
 
-    // Generate and send welcome email after user is created
+    // 3. Send the plain-text temporary password via email
     try {
       const emailContent = await generateWelcomeEmail({
         userName: newUser.fullName,
         userEmail: newUser.email,
-        tempPassword: tempPassword,
-        loginUrl: new URL('/auth/login', request.url).toString(), // Construct login URL
+        tempPassword: tempPassword, // Use the plain-text password for the email
+        loginUrl: new URL('/auth/login', request.url).toString(),
       });
 
       if (process.env.RESEND_API_KEY) {
         const resend = new Resend(process.env.RESEND_API_KEY);
         await resend.emails.send({
-          from: 'onboarding@resend.dev', // Required: A verified domain on Resend
+          from: 'onboarding@resend.dev',
           to: newUser.email,
           subject: emailContent.subject,
           text: emailContent.body,
         });
         console.log(`Welcome email sent to ${newUser.email} via Resend.`);
       } else {
-        // Fallback to console logging if API key is not set
         console.warn("RESEND_API_KEY not set. Simulating email sending by logging to console.");
         console.log("------- WELCOME EMAIL (SIMULATED) -------");
         console.log(`To: ${newUser.email}`);
         console.log(`Subject: ${emailContent.subject}`);
-        console.log("Body:");
-        console.log(emailContent.body);
+        console.log(`Body:\n${emailContent.body}`);
         console.log("-----------------------------------------");
       }
     } catch (emailError) {
       console.error("Failed to generate or send welcome email:", emailError);
-      // Don't fail the whole request if email generation/sending fails, but log it.
+      // Note: User is created even if email fails. You might want to handle this differently.
     }
-
 
     const { passwordHash: _, ...userWithoutPassword } = newUser;
     return NextResponse.json(userWithoutPassword, { status: 201 });
+
   } catch (error) {
     console.error('Error creating user:', error);
     if ((error as any).code === 'P2002') {
