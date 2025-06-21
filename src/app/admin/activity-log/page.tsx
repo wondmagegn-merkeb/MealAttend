@@ -4,14 +4,14 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, ChevronLeft, ChevronRight, History, ListChecks } from "lucide-react";
+import { Loader2, Search, ChevronLeft, ChevronRight, History, ListChecks, AlertTriangle } from "lucide-react";
 import { ActivityLogTable } from "@/components/admin/activity/ActivityLogTable";
-import type { UserActivityLog } from "@/types/activity";
-import { USER_ACTIVITY_LOG_KEY } from '@/lib/constants';
+import type { UserActivityLog } from "@prisma/client";
 import { Button } from '@/components/ui/button';
 import { AuthGuard } from '@/components/auth/AuthGuard';
+import { useQuery } from '@tanstack/react-query';
 
-type SortableActivityLogKeys = 'timestamp' | 'userId' | 'action';
+type SortableActivityLogKeys = 'activityTimestamp' | 'userIdentifier' | 'action';
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -21,30 +21,23 @@ interface SortConfig {
 
 const ITEMS_PER_PAGE = 10;
 
+async function fetchActivityLogs(): Promise<UserActivityLog[]> {
+  const response = await fetch('/api/activity-logs');
+  if (!response.ok) {
+    throw new Error('Failed to fetch activity logs');
+  }
+  return response.json();
+}
+
 export default function ActivityLogPage() {
-  const [logs, setLogs] = useState<UserActivityLog[]>([]);
-  const [isMounted, setIsMounted] = useState(false);
-  const [isLoadingTable, setIsLoadingTable] = useState(true); // Start true to show loader initially
-
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'timestamp', direction: 'descending' });
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'activityTimestamp', direction: 'descending' });
   const [currentPage, setCurrentPage] = useState(1);
-
-  useEffect(() => {
-    setIsMounted(true);
-    setIsLoadingTable(true);
-    try {
-      const storedLogsRaw = localStorage.getItem(USER_ACTIVITY_LOG_KEY);
-      if (storedLogsRaw) {
-        setLogs(JSON.parse(storedLogsRaw));
-      }
-    } catch (error) {
-      console.error("Failed to load activity logs from localStorage", error);
-      // Optionally, show a toast error
-    } finally {
-      setIsLoadingTable(false);
-    }
-  }, []);
+  
+  const { data: logs = [], isLoading: isLoadingLogs, error: logsError } = useQuery<UserActivityLog[]>({
+    queryKey: ['activityLogs'],
+    queryFn: fetchActivityLogs,
+  });
 
   const handleSort = (key: SortableActivityLogKeys) => {
     let direction: SortDirection = 'ascending';
@@ -66,7 +59,7 @@ export default function ActivityLogPage() {
     if (searchTerm) {
       const lowerSearchTerm = searchTerm.toLowerCase();
       processedLogs = processedLogs.filter(log =>
-        log.userId.toLowerCase().includes(lowerSearchTerm) ||
+        log.userIdentifier.toLowerCase().includes(lowerSearchTerm) ||
         log.action.toLowerCase().includes(lowerSearchTerm) ||
         (log.details && log.details.toLowerCase().includes(lowerSearchTerm))
       );
@@ -82,9 +75,9 @@ export default function ActivityLogPage() {
         else if (bValue === null || bValue === undefined) comparison = -1;
         else if (typeof aValue === 'string' && typeof bValue === 'string') {
           comparison = aValue.localeCompare(bValue);
-        } else if (typeof aValue === 'number' && typeof bValue === 'number') { // Should not happen for these keys
-          comparison = aValue - bValue;
-        } else { // Default to string comparison (e.g., for dates)
+        } else if (aValue instanceof Date && bValue instanceof Date) {
+          comparison = aValue.getTime() - bValue.getTime();
+        } else { // Default to string comparison
           comparison = String(aValue).localeCompare(String(bValue));
         }
         return sortConfig.direction === 'ascending' ? comparison : -comparison;
@@ -111,16 +104,6 @@ export default function ActivityLogPage() {
     }
   }, [currentPage, totalPages, filteredAndSortedLogs.length]);
 
-
-  if (!isMounted) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2">Loading activity log...</p>
-      </div>
-    );
-  }
-
   return (
     <AuthGuard requiredRole="Admin">
       <div className="space-y-6">
@@ -136,7 +119,7 @@ export default function ActivityLogPage() {
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle>Activity Records</CardTitle>
-            <CardDescription>Browse user activity logs. Data is stored in your browser's local storage.</CardDescription>
+            <CardDescription>Browse user activity logs from the database.</CardDescription>
             <div className="mt-4 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -149,10 +132,15 @@ export default function ActivityLogPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {isLoadingTable ? (
+            {isLoadingLogs ? (
               <div className="flex justify-center items-center py-4">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 <span className="ml-2">Loading logs...</span>
+              </div>
+            ) : logsError ? (
+               <div className="text-center py-10 text-destructive">
+                  <AlertTriangle className="mx-auto h-8 w-8 mb-2" />
+                  <p>Error loading activity logs: {(logsError as Error).message}</p>
               </div>
             ) : (
               <ActivityLogTable 
@@ -161,7 +149,7 @@ export default function ActivityLogPage() {
                 onSort={handleSort}
               />
             )}
-            {filteredAndSortedLogs.length > ITEMS_PER_PAGE && !isLoadingTable && (
+            {filteredAndSortedLogs.length > ITEMS_PER_PAGE && !isLoadingLogs && !logsError && (
               <div className="flex items-center justify-between pt-4 mt-4 border-t">
                 <p className="text-sm text-muted-foreground">
                   Page {currentPage} of {totalPages} ({filteredAndSortedLogs.length} logs)
@@ -188,8 +176,8 @@ export default function ActivityLogPage() {
                 </div>
               </div>
             )}
-            {filteredAndSortedLogs.length === 0 && !isLoadingTable && (
-              <p className="text-center text-muted-foreground py-4">No activity logs match your current search criteria or no logs found.</p>
+            {filteredAndSortedLogs.length === 0 && !isLoadingLogs && !logsError && (
+              <p className="text-center text-muted-foreground py-4">No activity logs match your current search criteria or no logs found in the database.</p>
             )}
           </CardContent>
         </Card>

@@ -10,11 +10,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ChevronsUpDown, ArrowUp, ArrowDown } from "lucide-react";
-import type { UserActivityLog } from "@/types/activity";
+import type { UserActivityLog } from "@prisma/client";
 import { format, parseISO } from 'date-fns';
 import { cn } from "@/lib/utils";
 
-type SortableActivityLogKeys = 'timestamp' | 'userId' | 'action';
+type SortableActivityLogKeys = 'activityTimestamp' | 'userIdentifier' | 'action';
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -62,8 +62,8 @@ export function ActivityLogTable({ logs, sortConfig, onSort }: ActivityLogTableP
       <Table>
         <TableHeader>
           <TableRow>
-            <SortableTableHead columnKey="timestamp" className="w-[200px]">Timestamp</SortableTableHead>
-            <SortableTableHead columnKey="userId" className="w-[250px]">User ID</SortableTableHead>
+            <SortableTableHead columnKey="activityTimestamp" className="w-[200px]">Timestamp</SortableTableHead>
+            <SortableTableHead columnKey="userIdentifier" className="w-[250px]">User ID</SortableTableHead>
             <SortableTableHead columnKey="action">Action</SortableTableHead>
             <TableHead>Details</TableHead>
           </TableRow>
@@ -72,9 +72,9 @@ export function ActivityLogTable({ logs, sortConfig, onSort }: ActivityLogTableP
           {logs.map((log) => (
             <TableRow key={log.id}>
               <TableCell className="font-mono text-xs">
-                {format(parseISO(log.timestamp), "MMM dd, yyyy, hh:mm:ss a")}
+                {format(parseISO(log.activityTimestamp as unknown as string), "MMM dd, yyyy, hh:mm:ss a")}
               </TableCell>
-              <TableCell className="font-medium">{log.userId}</TableCell>
+              <TableCell className="font-medium">{log.userIdentifier}</TableCell>
               <TableCell>{log.action}</TableCell>
               <TableCell className="text-sm text-muted-foreground">{log.details || 'N/A'}</TableCell>
             </TableRow>

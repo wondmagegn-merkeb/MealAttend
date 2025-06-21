@@ -1,7 +1,7 @@
 
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
-import type { User, Role } from '@prisma/client';
+import type { User } from '@prisma/client';
 
 interface RouteParams {
   params: {
@@ -20,7 +20,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
-    return NextResponse.json(user, { status: 200 });
+    const { passwordHash, ...userWithoutPassword } = user;
+    return NextResponse.json(userWithoutPassword, { status: 200 });
   } catch (error) {
     console.error(`Error fetching user with id ${id}:`, error);
     return NextResponse.json({ message: 'Failed to fetch user', error: (error as Error).message }, { status: 500 });
@@ -31,17 +32,15 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   const { id } = params;
   try {
-    const body = await request.json() as Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt' | 'passwordHash'> & { password?: string }>;
-    const { userId, fullName, email, password, role, profileImageURL, departmentId, passwordChangeRequired } = body;
+    const body = await request.json();
+    const { fullName, email, password, role, profileImageURL, departmentId, passwordChangeRequired } = body as Partial<User & { password?: string }>;
 
-    const dataToUpdate: any = {
-        userId,
-        fullName,
-        email,
-        role: role as Role,
-        profileImageURL,
-        passwordChangeRequired,
-    };
+    const dataToUpdate: any = {};
+    if (fullName) dataToUpdate.fullName = fullName;
+    if (email) dataToUpdate.email = email;
+    if (role) dataToUpdate.role = role;
+    if (profileImageURL !== undefined) dataToUpdate.profileImageURL = profileImageURL;
+    if (passwordChangeRequired !== undefined) dataToUpdate.passwordChangeRequired = passwordChangeRequired;
 
     if (password) {
       // !! IMPORTANT: Hash the password before saving !!
@@ -49,23 +48,21 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       dataToUpdate.passwordHash = password; // Replace with actual hashing
     }
 
-    if (departmentId === null) { // Explicitly setting department to null
-        dataToUpdate.department = {
-            disconnect: true,
-        };
-    } else if (departmentId) { // Connecting to a new or existing department
-        dataToUpdate.department = {
-            connect: { id: departmentId },
-        };
+    if (departmentId === null) {
+        dataToUpdate.department = { disconnect: true };
+    } else if (departmentId) {
+        dataToUpdate.department = { connect: { id: departmentId } };
     }
-    // If departmentId is undefined, we don't touch the relation.
 
     const updatedUser = await prisma.user.update({
       where: { id },
       data: dataToUpdate,
       include: { department: true },
     });
-    return NextResponse.json(updatedUser, { status: 200 });
+    
+    const { passwordHash, ...userWithoutPassword } = updatedUser;
+    return NextResponse.json(userWithoutPassword, { status: 200 });
+
   } catch (error) {
     console.error(`Error updating user with id ${id}:`, error);
     if ((error as any).code === 'P2025') {
@@ -73,12 +70,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
     if ((error as any).code === 'P2002') {
         const target = (error as any).meta?.target as string[] | undefined;
-        if (target?.includes('userId')) {
-            return NextResponse.json({ message: `User with User ID '${userId}' already exists.` }, { status: 409 });
-        }
-        if (target?.includes('email')) {
-             return NextResponse.json({ message: `User with email '${email}' already exists.` }, { status: 409 });
-        }
+        if (target?.includes('userId')) return NextResponse.json({ message: 'User ID already exists.' }, { status: 409 });
+        if (target?.includes('email')) return NextResponse.json({ message: 'Email already exists.' }, { status: 409 });
     }
     return NextResponse.json({ message: 'Failed to update user', error: (error as Error).message }, { status: 500 });
   }

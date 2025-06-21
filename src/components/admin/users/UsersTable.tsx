@@ -12,11 +12,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Edit, Trash2, ChevronsUpDown, ArrowUp, ArrowDown } from "lucide-react";
-import type { User } from "@/types/user";
+import type { User, Department } from "@prisma/client";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import React from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 
 type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'createdAt';
 type SortDirection = 'ascending' | 'descending';
@@ -26,8 +27,12 @@ interface SortConfig {
   direction: SortDirection;
 }
 
+interface UserWithDepartment extends User {
+  department: Department | null;
+}
+
 interface UsersTableProps {
-  users: User[];
+  users: UserWithDepartment[];
   onEdit: (user: User) => void;
   onDelete: (userId: string) => void;
   sortConfig: SortConfig;
@@ -101,7 +106,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
                   <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9">
                       <AvatarImage 
-                        src={user.profileImageURL || `https://placehold.co/40x40.png?text=${user.fullName.split(' ').map(n => n[0]).join('')}`} 
+                        src={user.profileImageURL || undefined} 
                         alt={user.fullName} 
                         data-ai-hint="user avatar"
                       />
@@ -110,14 +115,14 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
                     <span className="font-medium">{user.fullName}</span>
                   </div>
                 </TableCell>
-                <TableCell>{user.department}</TableCell>
+                <TableCell>{user.department?.name || 'N/A'}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
                   <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>
                     {user.role}
                   </Badge>
                 </TableCell>
-                <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell>{format(new Date(user.createdAt), "yyyy-MM-dd")}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end items-center gap-1">
                     <Tooltip>
@@ -127,9 +132,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
                           <span className="sr-only">Edit User</span>
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Edit User</p>
-                      </TooltipContent>
+                      <TooltipContent><p>Edit User</p></TooltipContent>
                     </Tooltip>
 
                     <Tooltip>
@@ -139,9 +142,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
                           <span className="sr-only">Delete User</span>
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Delete User</p>
-                      </TooltipContent>
+                      <TooltipContent><p>Delete User</p></TooltipContent>
                     </Tooltip>
                   </div>
                 </TableCell>

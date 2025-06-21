@@ -9,129 +9,102 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CheckCircle, AlertTriangle, Camera as CameraIcon, Loader2, Utensils, ScanLine } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import type { Student } from '@/types/student';
-import type { AttendanceRecord } from '@/components/admin/AttendanceTable';
-import { STUDENTS_STORAGE_KEY, ATTENDANCE_RECORDS_STORAGE_KEY } from '@/lib/constants';
 import { format } from 'date-fns';
 import jsQR from 'jsqr';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { logUserActivity } from '@/lib/activityLogger';
+import { useAuth } from '@/hooks/useAuth';
 
-type MealType = "Breakfast" | "Lunch" | "Dinner";
-const SCAN_COOLDOWN_MS = 5000; // Cooldown period of 5 seconds after a successful processing
+type MealType = "BREAKFAST" | "LUNCH" | "DINNER";
+const SCAN_COOLDOWN_MS = 3000; // Cooldown period of 3 seconds
+
+interface AttendancePayload {
+    qrCodeData: string;
+    mealType: MealType;
+}
+
+async function recordAttendance(payload: AttendancePayload): Promise<any> {
+    const response = await fetch('/api/attendance/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+    });
+
+    const responseData = await response.json();
+    if (!response.ok) {
+        throw new Error(responseData.message || `Error: ${response.status}`);
+    }
+    return responseData;
+}
+
 
 export function QrScannerClient() {
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedMealType, setSelectedMealType] = useState<MealType>("Lunch");
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { currentUserId } = useAuth();
+  
+  const [selectedMealType, setSelectedMealType] = useState<MealType>("LUNCH");
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameIdRef = useRef<number | null>(null);
   
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
-  const [lastProcessTime, setLastProcessTime] = useState<number>(0);
+  const [lastScanTime, setLastScanTime] = useState<number>(0);
 
-  const playSound = (type: 'success' | 'error' | 'notFound' | 'alreadyRecorded') => {
-    const soundFile = `/sounds/${type}.mp3`;
-    console.log(`Attempting to play sound: ${soundFile}`);
-    const audio = new Audio(soundFile);
-    audio.play().catch(e => {
-      console.error(`Error playing sound '${type}' (${soundFile}):`, e);
-      // Log the type as a fallback if actual sound fails
-      console.log(`Fallback sound log: ${type}`);
-      toast({
-        title: "Audio Playback Issue",
-        description: `Could not play sound for '${type}'. Check console and ensure '${type}.mp3' exists in public/sounds/.`,
-        variant: "default",
-        duration: 3000,
-      });
-    });
+  const playSound = (type: 'success' | 'error' | 'alreadyRecorded') => {
+    try {
+      const soundFile = `/sounds/${type}.mp3`;
+      const audio = new Audio(soundFile);
+      audio.play().catch(e => console.error(`Error playing sound '${type}':`, e));
+    } catch (e) {
+      console.error("Audio playback failed:", e);
+    }
   };
 
-  const processAttendance = useCallback(async (studentInternalId: string, mealType: MealType) => {
-    if (isProcessing) return;
-    setIsProcessing(true);
-    try {
-      const storedStudentsRaw = localStorage.getItem(STUDENTS_STORAGE_KEY);
-      const students: Student[] = storedStudentsRaw ? JSON.parse(storedStudentsRaw) : [];
-      
-      const student = students.find(s => s.id === studentInternalId || s.qrCodeData === studentInternalId);
-
-      if (student) {
-        const newAttendanceRecord: AttendanceRecord = {
-          id: `att_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-          studentId: student.studentId,
-          studentName: student.name,
-          studentAvatar: student.profileImageURL,
-          date: format(new Date(), 'yyyy-MM-dd'),
-          mealType: mealType,
-          scannedAt: format(new Date(), 'hh:mm a'),
-          status: 'Present',
-        };
-
-        const storedAttendanceRaw = localStorage.getItem(ATTENDANCE_RECORDS_STORAGE_KEY);
-        let attendanceRecords: AttendanceRecord[] = storedAttendanceRaw ? JSON.parse(storedAttendanceRaw) : [];
-        
-        const existingRecord = attendanceRecords.find(
-          r => r.studentId === newAttendanceRecord.studentId &&
-               r.date === newAttendanceRecord.date &&
-               r.mealType === newAttendanceRecord.mealType &&
-               r.status === 'Present'
-        );
-
-        if (existingRecord) {
-          toast({
-            title: "Already Recorded",
-            description: `${student.name} has already been marked present for ${mealType} today.`,
-            variant: "default",
-          });
-          playSound('alreadyRecorded');
-        } else {
-          attendanceRecords.unshift(newAttendanceRecord);
-          localStorage.setItem(ATTENDANCE_RECORDS_STORAGE_KEY, JSON.stringify(attendanceRecords));
-          window.dispatchEvent(new StorageEvent('storage', {
-            key: ATTENDANCE_RECORDS_STORAGE_KEY,
-            newValue: JSON.stringify(attendanceRecords),
-            oldValue: storedAttendanceRaw,
-            storageArea: localStorage,
-          }));
-          toast({
-            title: "Attendance Recorded!",
-            description: `${student.name} marked present for ${mealType}.`,
-            variant: "default",
-          });
-          playSound('success');
-        }
-      } else {
+  const attendanceMutation = useMutation({
+    mutationFn: recordAttendance,
+    onSuccess: (data) => {
+        playSound('success');
         toast({
-          title: "Student Not Found",
-          description: `Student with scanned QR ID '${studentInternalId}' not found. Please ensure the QR code is valid.`,
-          variant: "destructive",
+            title: "Attendance Recorded!",
+            description: `${data.studentName} marked present for ${data.mealType.toLowerCase()}.`,
+            variant: "default",
         });
-        playSound('notFound');
-      }
-    } catch (error) {
-      console.error("Error processing attendance:", error);
-      toast({
-        title: "Processing Error",
-        description: "An error occurred while processing attendance. Please try again.",
-        variant: "destructive",
-      });
-      playSound('error');
-    } finally {
-      setIsProcessing(false);
-      setLastProcessTime(Date.now());
-    }
-  }, [toast, isProcessing]);
+        queryClient.invalidateQueries({ queryKey: ['attendanceRecords'] });
+        logUserActivity(currentUserId, "ATTENDANCE_RECORD_SUCCESS", `Student: ${data.studentName}, Meal: ${data.mealType}`);
+    },
+    onError: (error: Error) => {
+        if (error.message.includes('already been recorded')) {
+            playSound('alreadyRecorded');
+            toast({ title: "Already Recorded", description: error.message, variant: "default" });
+        } else {
+            playSound('error');
+            toast({ title: "Scan Error", description: error.message, variant: "destructive" });
+        }
+        logUserActivity(currentUserId, "ATTENDANCE_RECORD_FAILURE", `Error: ${error.message}`);
+    },
+    onSettled: () => {
+        setLastScanTime(Date.now());
+    },
+  });
+
+  const processQrCode = useCallback((qrCodeData: string) => {
+    if (attendanceMutation.isPending) return;
+
+    attendanceMutation.mutate({ qrCodeData, mealType: selectedMealType });
+
+  }, [attendanceMutation, selectedMealType]);
 
   const attemptAutoScan = useCallback(() => {
-    if (!videoRef.current || !canvasRef.current || !hasCameraPermission || videoRef.current.paused || videoRef.current.ended || isProcessing) {
-      if (hasCameraPermission && videoRef.current && !videoRef.current.paused && !isProcessing) { 
+    if (!videoRef.current || !canvasRef.current || !hasCameraPermission || videoRef.current.paused || videoRef.current.ended || attendanceMutation.isPending) {
+      if (hasCameraPermission && videoRef.current && !videoRef.current.paused) { 
         animationFrameIdRef.current = requestAnimationFrame(attemptAutoScan);
       }
       return;
     }
 
     const now = Date.now();
-    if (now - lastProcessTime < SCAN_COOLDOWN_MS) {
+    if (now - lastScanTime < SCAN_COOLDOWN_MS) {
       animationFrameIdRef.current = requestAnimationFrame(attemptAutoScan);
       return;
     }
@@ -143,43 +116,21 @@ export function QrScannerClient() {
     if (context) {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      
-      if (canvas.width === 0 || canvas.height === 0) { 
-        animationFrameIdRef.current = requestAnimationFrame(attemptAutoScan);
-        return;
-      }
-      
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-      
-      try {
-        const code = jsQR(imageData.data, imageData.width, imageData.height, {
-          inversionAttempts: "dontInvert", 
-        });
-
+      if (canvas.width > 0 && canvas.height > 0) {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
         if (code && code.data) {
-          const scannedStudentId = code.data;
-          console.log("QR Detected:", scannedStudentId);
-          if (selectedMealType && !isProcessing) {
-            processAttendance(scannedStudentId, selectedMealType);
-          }
+          processQrCode(code.data);
         }
-      } catch (e) {
-        // console.warn("jsQR error during scan attempt (often benign if no QR in frame):", e); 
       }
     }
-    
     animationFrameIdRef.current = requestAnimationFrame(attemptAutoScan);
-  }, [hasCameraPermission, lastProcessTime, selectedMealType, processAttendance, isProcessing]);
+  }, [hasCameraPermission, lastScanTime, processQrCode, attendanceMutation.isPending]);
 
   useEffect(() => {
     const getCameraPermissionAndStart = async () => {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        toast({
-          variant: 'destructive',
-          title: 'Camera Not Supported',
-          description: 'Your browser does not support camera access. Please try a different browser.',
-        });
+      if (!navigator.mediaDevices?.getUserMedia) {
         setHasCameraPermission(false);
         return;
       }
@@ -191,133 +142,59 @@ export function QrScannerClient() {
           videoRef.current.play().catch(err => console.error("Error playing video:", err));
         }
       } catch (error) {
-        console.error('Error accessing camera:', error);
         setHasCameraPermission(false);
-        toast({
-          variant: 'destructive',
-          title: 'Camera Access Denied',
-          description: 'Please enable camera permissions in your browser settings to use the scanner.',
-        });
       }
     };
-
     getCameraPermissionAndStart();
-
     return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach(track => track.stop());
+      if (videoRef.current?.srcObject) {
+        (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
       }
-      if (animationFrameIdRef.current) {
-        cancelAnimationFrame(animationFrameIdRef.current);
-      }
+      if (animationFrameIdRef.current) cancelAnimationFrame(animationFrameIdRef.current);
     };
-  }, [toast]);
+  }, []);
 
   useEffect(() => {
-    if (hasCameraPermission && videoRef.current && !videoRef.current.paused && !isProcessing) {
+    if (hasCameraPermission && videoRef.current && !videoRef.current.paused) {
       animationFrameIdRef.current = requestAnimationFrame(attemptAutoScan);
-    } else if (animationFrameIdRef.current) {
-      cancelAnimationFrame(animationFrameIdRef.current);
-      animationFrameIdRef.current = null;
     }
     return () => {
-      if (animationFrameIdRef.current) {
-        cancelAnimationFrame(animationFrameIdRef.current);
-      }
+      if (animationFrameIdRef.current) cancelAnimationFrame(animationFrameIdRef.current);
     };
-  }, [hasCameraPermission, attemptAutoScan, isProcessing]);
+  }, [hasCameraPermission, attemptAutoScan]);
 
   return (
     <Card className="w-full max-w-md shadow-2xl">
       <CardHeader className="text-center">
-        <div className="flex justify-center mb-4">
-          <ScanLine className="h-12 w-12 text-primary animate-pulse" />
-        </div>
+        <div className="flex justify-center mb-4"><ScanLine className="h-12 w-12 text-primary animate-pulse" /></div>
         <CardTitle className="text-2xl">Scan Meal QR Code</CardTitle>
-        <CardDescription>
-          Select meal type. Auto-scanning will begin if camera is active.
-          <br />
-          <span className="text-xs text-muted-foreground">Ensure QR code is clear and well-lit.</span>
-        </CardDescription>
+        <CardDescription>Select meal type. Auto-scanning will begin if camera is active.<br /><span className="text-xs text-muted-foreground">Ensure QR code is clear and well-lit.</span></CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        
         <div className="space-y-2">
           <Label htmlFor="mealType" className="flex items-center gap-2"><Utensils className="h-4 w-4 text-muted-foreground" />Meal Type</Label>
-          <Select 
-            value={selectedMealType} 
-            onValueChange={(value) => setSelectedMealType(value as MealType)}
-            disabled={isProcessing}
-          >
-            <SelectTrigger id="mealType">
-              <SelectValue placeholder="Select meal type" />
-            </SelectTrigger>
+          <Select value={selectedMealType} onValueChange={(value) => setSelectedMealType(value as MealType)} disabled={attendanceMutation.isPending}>
+            <SelectTrigger id="mealType"><SelectValue placeholder="Select meal type" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="Breakfast">Breakfast</SelectItem>
-              <SelectItem value="Lunch">Lunch</SelectItem>
-              <SelectItem value="Dinner">Dinner</SelectItem>
+              <SelectItem value="BREAKFAST">Breakfast</SelectItem>
+              <SelectItem value="LUNCH">Lunch</SelectItem>
+              <SelectItem value="DINNER">Dinner</SelectItem>
             </SelectContent>
           </Select>
         </div>
-
-        <div 
-          className="aspect-video w-full bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-primary/50 overflow-hidden relative"
-          aria-label="QR Code scanner preview"
-        >
-          {hasCameraPermission === null && (
-            <div className="flex flex-col items-center text-muted-foreground p-4 text-center">
-              <Loader2 className="h-16 w-16 animate-spin mb-2" />
-              <p>Requesting camera access...</p>
-            </div>
-          )}
-          
-          <video 
-            ref={videoRef} 
-            className={`w-full h-full object-cover ${hasCameraPermission ? 'block' : 'hidden'}`} 
-            autoPlay 
-            playsInline 
-            muted 
-          />
+        <div className="aspect-video w-full bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-primary/50 overflow-hidden relative" aria-label="QR Code scanner preview">
+          {hasCameraPermission === null && (<div className="flex flex-col items-center text-muted-foreground p-4 text-center"><Loader2 className="h-16 w-16 animate-spin mb-2" /><p>Requesting camera access...</p></div>)}
+          <video ref={videoRef} className={`w-full h-full object-cover ${hasCameraPermission ? 'block' : 'hidden'}`} autoPlay playsInline muted />
           <canvas ref={canvasRef} style={{ display: 'none' }} />
-
-          {hasCameraPermission === true && videoRef.current && !videoRef.current.srcObject && (
-             <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground p-4 text-center bg-black/50">
-              <CameraIcon className="h-16 w-16 mb-2" />
-              <p>Initializing camera...</p>
-            </div>
-          )}
-
-          {hasCameraPermission === false && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-destructive p-4 text-center bg-black/50">
-              <AlertTriangle className="h-16 w-16 mb-2" />
-              <p>Camera access denied or unavailable.</p>
-              <p className="text-xs mt-1">Check browser settings.</p>
-            </div>
-          )}
+          {hasCameraPermission === false && (<div className="absolute inset-0 flex flex-col items-center justify-center text-destructive p-4 text-center bg-black/50"><AlertTriangle className="h-16 w-16 mb-2" /><p>Camera access denied or unavailable.</p><p className="text-xs mt-1">Check browser settings.</p></div>)}
         </div>
-
         {hasCameraPermission === false && (
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Camera Access Required</AlertTitle>
-              <AlertDescription>
-                Camera access was denied or is unavailable. Please enable camera permissions in your browser settings and refresh the page to use the scanner.
-              </AlertDescription>
-            </Alert>
+            <Alert variant="destructive"><AlertTriangle className="h-4 w-4" /><AlertTitle>Camera Access Required</AlertTitle><AlertDescription>Please enable camera permissions in your browser settings and refresh the page to use the scanner.</AlertDescription></Alert>
         )}
-        
       </CardContent>
       <CardFooter className="flex flex-col gap-3">
-        {isProcessing && (
-          <div className="flex items-center text-primary">
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            <span>Processing...</span>
-          </div>
-        )}
-         <p className="text-xs text-muted-foreground text-center">
-            {hasCameraPermission ? "Auto-scanning active. Point camera at QR code." : "Enable camera to start scanning."}
-         </p>
+        {attendanceMutation.isPending && (<div className="flex items-center text-primary"><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Processing...</span></div>)}
+        <p className="text-xs text-muted-foreground text-center">{hasCameraPermission ? "Auto-scanning active. Point camera at QR code." : "Enable camera to start scanning."}</p>
       </CardFooter>
     </Card>
   );

@@ -1,107 +1,99 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { UserForm, type UserFormData } from "@/components/admin/users/UserForm";
-import type { User } from "@/types/user";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
-import { USERS_STORAGE_KEY } from '@/lib/constants';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { User } from '@prisma/client';
+
+async function fetchUserById(id: string): Promise<User> {
+  const response = await fetch(`/api/users/${id}`);
+  if (!response.ok) {
+    if (response.status === 404) throw new Error('User not found');
+    throw new Error('Failed to fetch user');
+  }
+  return response.json();
+}
+
+type ApiUserUpdateData = {
+  fullName: string;
+  email: string;
+  role: 'Admin' | 'User';
+  departmentId: string | null;
+  profileImageURL?: string | null;
+};
+
+async function updateUserAPI({ id, data }: { id: string, data: ApiUserUpdateData }): Promise<User> {
+  const response = await fetch(`/api/users/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ message: 'Failed to update user' }));
+    throw new Error(errorData.message || 'Failed to update user');
+  }
+  return response.json();
+}
 
 export default function EditUserPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
-  const { currentUserId: actorUserId } = useAuth(); // Renamed to avoid conflict
+  const { currentUserId: actorUserId } = useAuth();
+  const queryClient = useQueryClient();
   
   const userIdParam = typeof params.id === 'string' ? params.id : undefined;
 
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const { data: user, isLoading: isFetchingUser, error: fetchError } = useQuery<User>({
+    queryKey: ['user', userIdParam],
+    queryFn: () => fetchUserById(userIdParam!),
+    enabled: !!userIdParam,
+  });
 
-  useEffect(() => {
-    if (userIdParam) {
-      setIsFetching(true);
-      try {
-        const storedUsersRaw = localStorage.getItem(USERS_STORAGE_KEY);
-        if (storedUsersRaw) {
-          const users: User[] = JSON.parse(storedUsersRaw);
-          const foundUser = users.find(u => u.id === userIdParam);
-          if (foundUser) {
-            setUser(foundUser);
-          } else {
-            setNotFound(true);
-          }
-        } else {
-          setNotFound(true); 
-        }
-      } catch (error) {
-        console.error("Failed to load user from localStorage", error);
-        setNotFound(true);
-         toast({
-          title: "Error",
-          description: "Failed to load user data.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsFetching(false);
-      }
-    } else {
-      setNotFound(true); 
-      setIsFetching(false);
-    }
-  }, [userIdParam, toast]);
+  const mutation = useMutation({
+    mutationFn: updateUserAPI,
+    onSuccess: (updatedUser) => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['user', updatedUser.id] });
+      logUserActivity(actorUserId, "USER_UPDATE_SUCCESS", `Updated user ID: ${updatedUser.userId}, Name: ${updatedUser.fullName}`);
+      toast({
+        title: "User Updated",
+        description: `${updatedUser.fullName}'s record has been updated.`,
+      });
+      router.push('/admin/users');
+    },
+    onError: (error: Error) => {
+      logUserActivity(actorUserId, "USER_UPDATE_FAILURE", `Attempted to update user ID: ${user?.userId}. Error: ${error.message}`);
+      toast({
+        title: "Error Updating User",
+        description: error.message || "Failed to update user. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleFormSubmit = (data: UserFormData) => {
-    if (!user) return;
-    setIsLoading(true);
+    if (!userIdParam) return;
 
-    setTimeout(() => {
-      const updatedUser: User = {
-        ...user,
-        fullName: data.fullName,
-        department: data.department,
-        email: data.email,
-        role: data.role,
-        profileImageURL: data.profileImageURL,
-        updatedAt: new Date().toISOString(),
-      };
-      
-      try {
-        const storedUsersRaw = localStorage.getItem(USERS_STORAGE_KEY);
-        let users: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
-        users = users.map(u => u.id === user.id ? updatedUser : u);
-        localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-
-        logUserActivity(actorUserId, "USER_UPDATE_SUCCESS", `Updated user ID: ${updatedUser.userId}, Name: ${updatedUser.fullName}`);
-        toast({
-          title: "User Updated",
-          description: `${data.fullName}'s record has been updated.`,
-        });
-        router.push('/admin/users');
-      } catch (error) {
-        console.error("Failed to update user in localStorage", error);
-        logUserActivity(actorUserId, "USER_UPDATE_FAILURE", `Attempted to update user ID: ${user.userId}. Error: ${error instanceof Error ? error.message : String(error)}`);
-        toast({
-          title: "Error",
-          description: "Failed to update user. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    }, 1000);
+    const apiData: ApiUserUpdateData = {
+      fullName: data.fullName,
+      email: data.email,
+      role: data.role,
+      departmentId: data.departmentId || null,
+      profileImageURL: data.profileImageURL || null,
+    };
+    mutation.mutate({ id: userIdParam, data: apiData });
   };
 
-  if (isFetching) {
+  if (isFetchingUser) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -110,21 +102,14 @@ export default function EditUserPage() {
     );
   }
 
-  if (notFound) {
+  if (fetchError) {
     return (
       <div className="space-y-6 max-w-2xl mx-auto text-center">
          <Card className="shadow-lg">
-            <CardHeader>
-                <CardTitle className="text-2xl text-destructive">User Not Found</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-2xl text-destructive flex items-center justify-center"><AlertTriangle className="mr-2 h-7 w-7" /> Error</CardTitle></CardHeader>
             <CardContent>
-                <p className="text-muted-foreground mb-4">The user record you are trying to edit could not be found.</p>
-                <Button variant="outline" asChild>
-                <Link href="/admin/users">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to User List
-                </Link>
-                </Button>
+                <p className="text-muted-foreground mb-4">{fetchError.message === 'User not found' ? 'The user record you are trying to edit could not be found.' : `Failed to load user data: ${fetchError.message}`}</p>
+                <Button variant="outline" asChild><Link href="/admin/users"><ArrowLeft className="mr-2 h-4 w-4" />Back to User List</Link></Button>
             </CardContent>
         </Card>
       </div>
@@ -138,18 +123,13 @@ export default function EditUserPage() {
           <h2 className="text-3xl font-semibold tracking-tight text-primary">Edit User</h2>
           <p className="text-muted-foreground">Update the details for {user?.fullName}.</p>
         </div>
-         <Button variant="outline" asChild>
-          <Link href="/admin/users">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to List
-          </Link>
-        </Button>
+         <Button variant="outline" asChild><Link href="/admin/users"><ArrowLeft className="mr-2 h-4 w-4" />Back to List</Link></Button>
       </div>
       {user && (
         <UserForm 
           onSubmit={handleFormSubmit} 
           initialData={user} 
-          isLoading={isLoading}
+          isLoading={mutation.isPending}
           submitButtonText="Save Changes"
         />
       )}
