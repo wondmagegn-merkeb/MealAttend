@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import type { User } from '@prisma/client';
 import { randomBytes } from 'crypto';
 import { generateWelcomeEmail } from '@/ai/flows/send-welcome-email-flow';
+import { Resend } from 'resend';
 
 async function generateAderaUserId(): Promise<string> {
   const currentYear = new Date().getFullYear();
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
       include: { department: true },
     });
 
-    // Generate and "send" welcome email after user is created
+    // Generate and send welcome email after user is created
     try {
       const emailContent = await generateWelcomeEmail({
         userName: newUser.fullName,
@@ -75,17 +76,29 @@ export async function POST(request: NextRequest) {
         tempPassword: tempPassword,
         loginUrl: new URL('/auth/login', request.url).toString(), // Construct login URL
       });
-      // In a real app, you would use a service like Nodemailer, Resend, or SendGrid here.
-      // For this simulation, we log the content to the server console.
-      console.log("------- WELCOME EMAIL (SIMULATED) -------");
-      console.log(`To: ${newUser.email}`);
-      console.log(`Subject: ${emailContent.subject}`);
-      console.log("Body:");
-      console.log(emailContent.body);
-      console.log("-----------------------------------------");
+
+      if (process.env.RESEND_API_KEY) {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        await resend.emails.send({
+          from: 'onboarding@resend.dev', // Required: A verified domain on Resend
+          to: newUser.email,
+          subject: emailContent.subject,
+          text: emailContent.body,
+        });
+        console.log(`Welcome email sent to ${newUser.email} via Resend.`);
+      } else {
+        // Fallback to console logging if API key is not set
+        console.warn("RESEND_API_KEY not set. Simulating email sending by logging to console.");
+        console.log("------- WELCOME EMAIL (SIMULATED) -------");
+        console.log(`To: ${newUser.email}`);
+        console.log(`Subject: ${emailContent.subject}`);
+        console.log("Body:");
+        console.log(emailContent.body);
+        console.log("-----------------------------------------");
+      }
     } catch (emailError) {
-      console.error("Failed to generate welcome email content:", emailError);
-      // Don't fail the whole request if email generation fails, but log it.
+      console.error("Failed to generate or send welcome email:", emailError);
+      // Don't fail the whole request if email generation/sending fails, but log it.
     }
 
 
