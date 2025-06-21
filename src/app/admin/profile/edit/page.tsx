@@ -4,7 +4,6 @@
 import { useRouter } from 'next/navigation';
 import { UserForm, type ProfileEditFormData } from "@/components/admin/users/UserForm";
 import { useAuth } from "@/hooks/useAuth";
-import type { User } from "@prisma/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, UserCog } from 'lucide-react';
@@ -13,32 +12,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { logUserActivity } from '@/lib/activityLogger';
 
-type ApiProfileUpdateData = Omit<ProfileEditFormData, 'departmentId' | 'role'>;
-
-async function updateUserProfileAPI({ id, data }: { id: string, data: ApiProfileUpdateData }): Promise<User> {
-  const response = await fetch(`/api/users/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'Failed to update profile' }));
-    throw new Error(errorData.message || 'Failed to update profile');
-  }
-  return response.json();
-}
-
 export default function EditProfilePage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { currentUser, updateAuthContextUser, isAuthenticated } = useAuth();
+  const { currentUser, isAuthenticated, updateProfile } = useAuth();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: updateUserProfileAPI,
+    mutationFn: updateProfile,
     onSuccess: (updatedUser) => {
-      updateAuthContextUser(updatedUser); 
       queryClient.invalidateQueries({ queryKey: ['users'] });
       logUserActivity(currentUser?.userId || null, "PROFILE_UPDATE_SUCCESS");
       toast({
@@ -47,12 +29,8 @@ export default function EditProfilePage() {
       });
     },
     onError: (error: Error) => {
+      // Toast is handled within the useAuth hook's updateProfile function
       logUserActivity(currentUser?.userId || null, "PROFILE_UPDATE_FAILURE", `Error: ${error.message}`);
-      toast({
-        title: "Error Updating Profile",
-        description: error.message || "Failed to update profile. Please try again.",
-        variant: "destructive",
-      });
     },
   });
 
@@ -62,7 +40,7 @@ export default function EditProfilePage() {
       logUserActivity(null, "PROFILE_UPDATE_FAILURE", "No user session found.");
       return;
     }
-    mutation.mutate({ id: currentUser.id, data });
+    mutation.mutate(data);
   };
   
   if (isAuthenticated === null) {

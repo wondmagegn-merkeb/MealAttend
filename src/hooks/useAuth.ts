@@ -8,6 +8,7 @@ import { AUTH_TOKEN_KEY, CURRENT_USER_DETAILS_KEY } from '@/lib/constants';
 import { useToast } from './use-toast';
 import type { User, Department } from '@prisma/client';
 import { logUserActivity } from '@/lib/activityLogger';
+import type { ProfileEditFormData } from '@/components/admin/users/UserForm';
 
 export interface UserWithDepartment extends User {
   department: Department | null;
@@ -21,9 +22,9 @@ interface AuthContextType {
   isPasswordChangeRequired: boolean;
   login: (userIdInput: string, password?: string) => Promise<boolean>;
   logout: () => void;
-  changePassword: (newPassword: string) => Promise<boolean>;
+  changePassword: (newPassword: string) => Promise<UserWithDepartment>;
+  updateProfile: (profileData: ProfileEditFormData) => Promise<UserWithDepartment>;
   setIsAuthenticated: Dispatch<SetStateAction<boolean | null>>;
-  updateAuthContextUser: (updatedUser: UserWithDepartment) => void;
 }
 
 export function useAuth(): AuthContextType {
@@ -122,10 +123,9 @@ export function useAuth(): AuthContextType {
     }
   }, [router, toast, currentUser]);
 
-  const changePassword = useCallback(async (newPassword: string): Promise<boolean> => {
+  const changePassword = useCallback(async (newPassword: string): Promise<UserWithDepartment> => {
     if (!currentUser) {
-      toast({ title: "Error", description: "No active user session found.", variant: "destructive" });
-      return false;
+      throw new Error("No active user session found.");
     }
 
     try {
@@ -145,23 +145,47 @@ export function useAuth(): AuthContextType {
       localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(updatedUser));
       setIsPasswordChangeRequired(false);
       logUserActivity(currentUser.userId, "PASSWORD_CHANGE_API_SUCCESS");
-      return true;
+      return updatedUser;
 
     } catch (e) {
       const error = e as Error;
       console.error("Error changing password:", error);
       toast({ title: "Update Failed", description: error.message, variant: "destructive" });
       logUserActivity(currentUser.userId, "PASSWORD_CHANGE_FAILURE", error.message);
-      return false;
+      throw error;
     }
   }, [currentUser, toast]);
 
-  const updateAuthContextUser = useCallback((updatedUser: UserWithDepartment) => {
-    setCurrentUser(updatedUser);
-    localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(updatedUser));
-    // This function is for context updates after an API call, e.g., profile edit.
-    // The API call itself is handled in the component.
-  }, []);
+  const updateProfile = useCallback(async (profileData: ProfileEditFormData): Promise<UserWithDepartment> => {
+    if (!currentUser) {
+        throw new Error("No active user session found.");
+    }
+
+    try {
+        const response = await fetch(`/api/users/${currentUser.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(profileData),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to update profile.');
+        }
+
+        const updatedUser = await response.json();
+        setCurrentUser(updatedUser);
+        localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(updatedUser));
+        logUserActivity(currentUser.userId, "PROFILE_UPDATE_API_SUCCESS");
+        return updatedUser;
+    } catch (e) {
+        const error = e as Error;
+        console.error("Error updating profile:", error);
+        toast({ title: "Update Failed", description: error.message, variant: "destructive" });
+        logUserActivity(currentUser.userId, "PROFILE_UPDATE_FAILURE", error.message);
+        throw error;
+    }
+  }, [currentUser, toast]);
 
   return { 
     isAuthenticated, 
@@ -172,7 +196,7 @@ export function useAuth(): AuthContextType {
     login, 
     logout, 
     changePassword, 
+    updateProfile,
     setIsAuthenticated,
-    updateAuthContextUser
   };
 }

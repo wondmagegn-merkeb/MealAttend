@@ -50,18 +50,20 @@ export default function ChangePasswordPage() {
       return;
     }
     
-    const success = await changePassword(newPassword);
-
-    if (success) {
-        logUserActivity(currentUserId, "PASSWORD_CHANGE_SUCCESS");
-        toast({
-          title: "Password Changed",
-          description: "Your password has been successfully updated. You can now access the system.",
-        });
-        router.push('/admin');
+    try {
+      await changePassword(newPassword);
+      logUserActivity(currentUserId, "PASSWORD_CHANGE_SUCCESS");
+      toast({
+        title: "Password Changed",
+        description: "Your password has been successfully updated. You can now access the system.",
+      });
+      router.push('/admin');
+    } catch (error) {
+      // Error toast is handled inside the useAuth hook, just need to catch it here.
+      console.error("Failed to change password:", error);
+    } finally {
+      setIsLoading(false);
     }
-    // Errors are handled within the changePassword function, so no need for an else block here.
-    setIsLoading(false);
   };
   
   if (isAuthenticated === null) {
