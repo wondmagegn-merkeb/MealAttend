@@ -86,7 +86,7 @@ export default function EditStudentPage() {
     
     const apiData: ApiStudentUpdateData = {
       name: data.name,
-      gender: data.gender || null,
+      gender: data.gender === 'unspecified' ? null : data.gender || null,
       classGrade: data.classGrade || null,
       profileImageURL: data.profileImageURL || null,
     };

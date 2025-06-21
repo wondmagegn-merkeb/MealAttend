@@ -1574,31 +1574,24 @@ var { g: global, __dirname, k: __turbopack_refresh__, m: module } = __turbopack_
 __turbopack_context__.s({
     "logUserActivity": (()=>logUserActivity)
 });
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/constants.ts [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$formatISO$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/formatISO.mjs [app-client] (ecmascript)");
-;
-;
-const MAX_LOGS = 500; // Limit the number of logs to prevent localStorage bloat
-function logUserActivity(userId, action, details) {
-    const effectiveUserId = userId || 'unknown_user'; // Use 'unknown_user' if userId is null
+async function logUserActivity(userIdentifier, action, details) {
+    const effectiveUserId = userIdentifier || 'unknown_user';
+    const logData = {
+        userIdentifier: effectiveUserId,
+        action,
+        details: details || null,
+        activityTimestamp: new Date()
+    };
     try {
-        const newLog = {
-            id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-            userId: effectiveUserId,
-            timestamp: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$formatISO$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["formatISO"])(new Date()),
-            action,
-            details
-        };
-        const storedLogsRaw = localStorage.getItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["USER_ACTIVITY_LOG_KEY"]);
-        let logs = storedLogsRaw ? JSON.parse(storedLogsRaw) : [];
-        logs.unshift(newLog); // Add new log to the beginning
-        if (logs.length > MAX_LOGS) {
-            logs = logs.slice(0, MAX_LOGS);
-        }
-        localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["USER_ACTIVITY_LOG_KEY"], JSON.stringify(logs));
+        await fetch('/api/activity-logs', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(logData)
+        });
     } catch (error) {
-        console.error("Failed to log user activity:", error);
-    // Optionally, add a toast notification here if logging fails, though it might be too noisy.
+        console.error("Failed to log user activity to API:", error);
     }
 }
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
@@ -1625,42 +1618,16 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
-const MOCK_DEFAULT_PASSWORD = "password123";
-const MOCK_DEFAULT_ADMIN_USER = {
-    id: 'usr_smp_001_fallback',
-    userId: 'ADERA/USR/2024/00001',
-    fullName: 'Alice Admin (Fallback)',
-    department: 'Administration',
-    email: 'alice.admin@example.com',
-    role: 'Admin',
-    profileImageURL: 'https://placehold.co/100x100.png?text=AA',
-    createdAt: new Date('2023-01-10T10:00:00Z').toISOString(),
-    updatedAt: new Date('2023-01-10T10:00:00Z').toISOString()
-};
 function useAuth() {
     _s();
     const [isAuthenticated, setIsAuthenticated] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [currentUser, setCurrentUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [isPasswordChangeRequired, setIsPasswordChangeRequired] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
+    const pathname = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["usePathname"])();
     const { toast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"])();
     const currentUserRole = currentUser?.role || null;
     const currentUserId = currentUser?.userId || null;
-    const checkPasswordChangeStatus = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
-        "useAuth.useCallback[checkPasswordChangeStatus]": (userIdToCheck)=>{
-            if (!userIdToCheck) {
-                setIsPasswordChangeRequired(false);
-                return;
-            }
-            try {
-                const changeRequired = localStorage.getItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PASSWORD_CHANGE_REQUIRED_KEY_PREFIX"] + userIdToCheck);
-                setIsPasswordChangeRequired(changeRequired === 'true');
-            } catch (e) {
-                console.error("localStorage access error for password change status:", e);
-                setIsPasswordChangeRequired(false);
-            }
-        }
-    }["useAuth.useCallback[checkPasswordChangeStatus]"], []);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "useAuth.useEffect": ()=>{
             try {
@@ -1670,7 +1637,7 @@ function useAuth() {
                     const storedUser = JSON.parse(storedUserDetailsRaw);
                     setIsAuthenticated(true);
                     setCurrentUser(storedUser);
-                    checkPasswordChangeStatus(storedUser.userId);
+                    setIsPasswordChangeRequired(storedUser.passwordChangeRequired);
                 } else {
                     setIsAuthenticated(false);
                     setCurrentUser(null);
@@ -1683,92 +1650,67 @@ function useAuth() {
                 setIsPasswordChangeRequired(false);
             }
         }
-    }["useAuth.useEffect"], [
-        checkPasswordChangeStatus
-    ]);
+    }["useAuth.useEffect"], []);
     const login = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
         "useAuth.useCallback[login]": async (userIdInput, password)=>{
-            return new Promise({
-                "useAuth.useCallback[login]": (resolve)=>{
-                    setTimeout({
-                        "useAuth.useCallback[login]": ()=>{
-                            try {
-                                const storedUsersRaw = localStorage.getItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["USERS_STORAGE_KEY"]);
-                                let usersToSearch = [];
-                                if (storedUsersRaw) {
-                                    try {
-                                        usersToSearch = JSON.parse(storedUsersRaw);
-                                    } catch (parseError) {
-                                        console.error("Failed to parse users from localStorage", parseError);
-                                        usersToSearch = [];
-                                    }
-                                }
-                                const adminExistsInStorage = usersToSearch.some({
-                                    "useAuth.useCallback[login].adminExistsInStorage": (u)=>u.userId === MOCK_DEFAULT_ADMIN_USER.userId
-                                }["useAuth.useCallback[login].adminExistsInStorage"]);
-                                if (!adminExistsInStorage && MOCK_DEFAULT_ADMIN_USER.userId === userIdInput) {
-                                    usersToSearch.push(MOCK_DEFAULT_ADMIN_USER);
-                                }
-                                const user = usersToSearch.find({
-                                    "useAuth.useCallback[login].user": (u)=>u.userId === userIdInput
-                                }["useAuth.useCallback[login].user"]);
-                                if (user && password === MOCK_DEFAULT_PASSWORD) {
-                                    localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AUTH_TOKEN_KEY"], `mock-jwt-token-for-${user.userId}`);
-                                    localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CURRENT_USER_DETAILS_KEY"], JSON.stringify(user));
-                                    localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CURRENT_USER_ROLE_KEY"], user.role);
-                                    localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CURRENT_USER_ID_KEY"], user.userId);
-                                    setIsAuthenticated(true);
-                                    setCurrentUser(user);
-                                    const passwordChangeDismissedKey = __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PASSWORD_CHANGE_REQUIRED_KEY_PREFIX"] + user.userId + "_dismissed";
-                                    const passwordChangeRequiredKey = __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PASSWORD_CHANGE_REQUIRED_KEY_PREFIX"] + user.userId;
-                                    const passwordChangeDismissed = localStorage.getItem(passwordChangeDismissedKey);
-                                    if (!passwordChangeDismissed) {
-                                        localStorage.setItem(passwordChangeRequiredKey, 'true');
-                                        setIsPasswordChangeRequired(true);
-                                    } else {
-                                        localStorage.removeItem(passwordChangeRequiredKey);
-                                        setIsPasswordChangeRequired(false);
-                                    }
-                                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(user.userId, "LOGIN_SUCCESS");
-                                    toast({
-                                        title: "Login Successful",
-                                        description: `Welcome back, ${user.fullName}!`
-                                    });
-                                    resolve(true);
-                                } else {
-                                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(userIdInput || 'unknown_user', "LOGIN_FAILURE", "Invalid User ID or password.");
-                                    toast({
-                                        title: "Login Failed",
-                                        description: "Invalid User ID or password.",
-                                        variant: "destructive"
-                                    });
-                                    resolve(false);
-                                }
-                            } catch (e) {
-                                console.error("Login error:", e);
-                                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(userIdInput || 'unknown_user', "LOGIN_ERROR", "An unexpected error occurred during login.");
-                                toast({
-                                    title: "Login Error",
-                                    description: "An unexpected error occurred.",
-                                    variant: "destructive"
-                                });
-                                resolve(false);
-                            }
-                        }
-                    }["useAuth.useCallback[login]"], 500);
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: userIdInput,
+                        password
+                    })
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(userIdInput, "LOGIN_FAILURE", data.message || 'Invalid credentials');
+                    toast({
+                        title: "Login Failed",
+                        description: data.message || "Invalid User ID or password.",
+                        variant: "destructive"
+                    });
+                    return false;
                 }
-            }["useAuth.useCallback[login]"]);
+                const user = data.user;
+                localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AUTH_TOKEN_KEY"], `mock-jwt-for-${user.userId}`);
+                localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CURRENT_USER_DETAILS_KEY"], JSON.stringify(user));
+                setIsAuthenticated(true);
+                setCurrentUser(user);
+                setIsPasswordChangeRequired(user.passwordChangeRequired);
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(user.userId, "LOGIN_SUCCESS");
+                toast({
+                    title: "Login Successful",
+                    description: `Welcome back, ${user.fullName}!`
+                });
+                if (user.passwordChangeRequired) {
+                    router.push('/auth/change-password');
+                } else {
+                    router.push('/admin');
+                }
+                return true;
+            } catch (error) {
+                console.error("Login API error:", error);
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(userIdInput, "LOGIN_ERROR", error.message);
+                toast({
+                    title: "Login Error",
+                    description: "An unexpected error occurred.",
+                    variant: "destructive"
+                });
+                return false;
+            }
         }
     }["useAuth.useCallback[login]"], [
-        toast
+        toast,
+        router
     ]);
     const logout = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
         "useAuth.useCallback[logout]": ()=>{
             const loggingOutUserId = currentUser?.userId || null;
             try {
                 localStorage.removeItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AUTH_TOKEN_KEY"]);
-                localStorage.removeItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CURRENT_USER_ROLE_KEY"]);
-                localStorage.removeItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CURRENT_USER_ID_KEY"]);
                 localStorage.removeItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CURRENT_USER_DETAILS_KEY"]);
                 setIsAuthenticated(false);
                 setCurrentUser(null);
@@ -1782,14 +1724,7 @@ function useAuth() {
                 });
                 router.push('/auth/login');
             } catch (e) {
-                if (loggingOutUserId) {
-                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(loggingOutUserId, "LOGOUT_ERROR", "Failed to clear session.");
-                }
-                toast({
-                    title: "Logout Error",
-                    description: "Could not clear session.",
-                    variant: "destructive"
-                });
+                console.error("Logout error:", e);
             }
         }
     }["useAuth.useCallback[logout]"], [
@@ -1798,14 +1733,24 @@ function useAuth() {
         currentUser
     ]);
     const clearPasswordChangeRequirement = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
-        "useAuth.useCallback[clearPasswordChangeRequirement]": ()=>{
-            const uid = currentUser?.userId;
-            if (uid) {
+        "useAuth.useCallback[clearPasswordChangeRequirement]": async ()=>{
+            if (currentUser) {
                 try {
-                    localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PASSWORD_CHANGE_REQUIRED_KEY_PREFIX"] + uid + "_dismissed", 'true');
-                    localStorage.removeItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PASSWORD_CHANGE_REQUIRED_KEY_PREFIX"] + uid);
+                    const response = await fetch(`/api/users/${currentUser.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            passwordChangeRequired: false
+                        })
+                    });
+                    if (!response.ok) throw new Error('Failed to update password status');
+                    const updatedUser = await response.json();
+                    setCurrentUser(updatedUser);
+                    localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CURRENT_USER_DETAILS_KEY"], JSON.stringify(updatedUser));
                     setIsPasswordChangeRequired(false);
-                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(uid, "PASSWORD_CHANGE_FLAG_CLEARED");
+                    (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUser.userId, "PASSWORD_CHANGE_FLAG_CLEARED");
                 } catch (e) {
                     console.error("Error clearing password change requirement flag:", e);
                 }
@@ -1814,53 +1759,14 @@ function useAuth() {
     }["useAuth.useCallback[clearPasswordChangeRequirement]"], [
         currentUser
     ]);
-    const updateCurrentUserDetails = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
-        "useAuth.useCallback[updateCurrentUserDetails]": (updatedDetails)=>{
-            if (!currentUser) return;
-            const updatedUser = {
-                ...currentUser,
-                ...updatedDetails,
-                updatedAt: new Date().toISOString()
-            };
+    const updateAuthContextUser = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
+        "useAuth.useCallback[updateAuthContextUser]": (updatedUser)=>{
             setCurrentUser(updatedUser);
             localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CURRENT_USER_DETAILS_KEY"], JSON.stringify(updatedUser));
-            try {
-                const storedUsersRaw = localStorage.getItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["USERS_STORAGE_KEY"]);
-                let users = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
-                const userIndex = users.findIndex({
-                    "useAuth.useCallback[updateCurrentUserDetails].userIndex": (u)=>u.id === updatedUser.id
-                }["useAuth.useCallback[updateCurrentUserDetails].userIndex"]);
-                if (userIndex > -1) {
-                    users[userIndex] = updatedUser;
-                } else {
-                    users.push(updatedUser);
-                }
-                localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["USERS_STORAGE_KEY"], JSON.stringify(users));
-                window.dispatchEvent(new StorageEvent('storage', {
-                    key: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["USERS_STORAGE_KEY"],
-                    newValue: JSON.stringify(users)
-                }));
-                window.dispatchEvent(new StorageEvent('storage', {
-                    key: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CURRENT_USER_DETAILS_KEY"],
-                    newValue: JSON.stringify(updatedUser)
-                }));
-            } catch (error) {
-                console.error("Failed to update user details in USERS_STORAGE_KEY:", error);
-                toast({
-                    title: "Storage Error",
-                    description: "Could not update user in main list.",
-                    variant: "destructive"
-                });
-            }
-            toast({
-                title: "Profile Updated",
-                description: "Your profile details have been saved."
-            });
+        // This function is for context updates after an API call, e.g., profile edit.
+        // The API call itself is handled in the component.
         }
-    }["useAuth.useCallback[updateCurrentUserDetails]"], [
-        currentUser,
-        toast
-    ]);
+    }["useAuth.useCallback[updateAuthContextUser]"], []);
     return {
         isAuthenticated,
         currentUser,
@@ -1871,12 +1777,13 @@ function useAuth() {
         logout,
         clearPasswordChangeRequirement,
         setIsAuthenticated,
-        updateCurrentUserDetails
+        updateAuthContextUser
     };
 }
-_s(useAuth, "mr5e7MNrv/0kGXigvozaiFVtwOc=", false, function() {
+_s(useAuth, "V0UKiMTuVmXr55aCQPcXNALos7U=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"],
+        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["usePathname"],
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"]
     ];
 });
@@ -2444,12 +2351,11 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useAuth$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/hooks/useAuth.ts [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$loader$2d$circle$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Loader2$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/loader-circle.js [app-client] (ecmascript) <export default as Loader2>");
-// Helper (could be in a different file or here for simplicity)
-// This is a client-side toast function, ensure your ToastProvider is set up
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/hooks/use-toast.ts [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
+;
 ;
 ;
 ;
@@ -2516,7 +2422,7 @@ function AuthGuard({ children, requiredRole }) {
                     className: "h-12 w-12 animate-spin text-primary mb-4"
                 }, void 0, false, {
                     fileName: "[project]/src/components/auth/AuthGuard.tsx",
-                    lineNumber: 70,
+                    lineNumber: 71,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2524,13 +2430,13 @@ function AuthGuard({ children, requiredRole }) {
                     children: "Verifying access..."
                 }, void 0, false, {
                     fileName: "[project]/src/components/auth/AuthGuard.tsx",
-                    lineNumber: 71,
+                    lineNumber: 72,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/auth/AuthGuard.tsx",
-            lineNumber: 69,
+            lineNumber: 70,
             columnNumber: 7
         }, this);
     }
@@ -2543,7 +2449,7 @@ function AuthGuard({ children, requiredRole }) {
                     className: "h-12 w-12 animate-spin text-primary mb-4"
                 }, void 0, false, {
                     fileName: "[project]/src/components/auth/AuthGuard.tsx",
-                    lineNumber: 80,
+                    lineNumber: 81,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2551,13 +2457,13 @@ function AuthGuard({ children, requiredRole }) {
                     children: "Redirecting to update password..."
                 }, void 0, false, {
                     fileName: "[project]/src/components/auth/AuthGuard.tsx",
-                    lineNumber: 81,
+                    lineNumber: 82,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/auth/AuthGuard.tsx",
-            lineNumber: 79,
+            lineNumber: 80,
             columnNumber: 7
         }, this);
     }
@@ -2570,7 +2476,7 @@ function AuthGuard({ children, requiredRole }) {
                     className: "h-12 w-12 animate-spin text-primary mb-4"
                 }, void 0, false, {
                     fileName: "[project]/src/components/auth/AuthGuard.tsx",
-                    lineNumber: 90,
+                    lineNumber: 91,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2578,13 +2484,13 @@ function AuthGuard({ children, requiredRole }) {
                     children: "Checking permissions..."
                 }, void 0, false, {
                     fileName: "[project]/src/components/auth/AuthGuard.tsx",
-                    lineNumber: 91,
+                    lineNumber: 92,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/auth/AuthGuard.tsx",
-            lineNumber: 89,
+            lineNumber: 90,
             columnNumber: 7
         }, this);
     }
@@ -2602,7 +2508,6 @@ _s(AuthGuard, "2AxmAouB/FOrxGbW598A9J8sR/4=", false, function() {
     ];
 });
 _c = AuthGuard;
-;
 var _c;
 __turbopack_context__.k.register(_c, "AuthGuard");
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {

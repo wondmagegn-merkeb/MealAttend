@@ -114,7 +114,7 @@ export function StudentForm({
       });
       setImagePreview(null);
     }
-  }, [initialData, form]); // Changed form.reset to form
+  }, [initialData, form]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -135,13 +135,17 @@ export function StudentForm({
 
   const onFormSubmit = (data: StudentFormData) => {
     const { classNumber, classAlphabet, ...restOfData } = data;
+
+    const finalClassNumber = classNumber === 'na' ? '' : classNumber;
+    const finalClassAlphabet = classAlphabet === 'na' ? '' : classAlphabet;
+    
     let classGrade: string | null = null;
-    if (classNumber && classAlphabet) {
-      classGrade = `${classNumber}${classAlphabet}`;
-    } else if (classNumber) {
-      classGrade = classNumber;
-    } else if (classAlphabet) { // Only alphabet part, store it as is or handle as per requirements
-      classGrade = classAlphabet;
+    if (finalClassNumber && finalClassAlphabet) {
+      classGrade = `${finalClassNumber}${finalClassAlphabet}`;
+    } else if (finalClassNumber) {
+      classGrade = finalClassNumber;
+    } else if (finalClassAlphabet) {
+      classGrade = finalClassAlphabet;
     }
     // If both are empty, classGrade remains null
 
@@ -196,7 +200,7 @@ export function StudentForm({
                       <SelectItem value="Male">Male</SelectItem>
                       <SelectItem value="Female">Female</SelectItem>
                       <SelectItem value="Other">Other</SelectItem>
-                      <SelectItem value="">Prefer not to say / N/A</SelectItem>
+                      <SelectItem value="unspecified">Prefer not to say / N/A</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -218,7 +222,7 @@ export function StudentForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">N/A</SelectItem>
+                        <SelectItem value="na">N/A</SelectItem>
                         {classNumberOptions.map((option) => (
                           <SelectItem key={option} value={option}>
                             {option}
@@ -245,13 +249,11 @@ export function StudentForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">N/A</SelectItem>
+                        <SelectItem value="na">N/A</SelectItem>
                         {gradeAlphabetOptions.map((option) => (
-                          option !== '' && ( // Corrected: removed erroneous curly braces
-                            <SelectItem key={option} value={option}>
+                           <SelectItem key={option} value={option}>
                               {option}
                             </SelectItem>
-                          )
                         ))}
                       </SelectContent>
                     </Select>

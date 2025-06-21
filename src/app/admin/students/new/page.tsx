@@ -60,10 +60,10 @@ export default function NewStudentPage() {
     },
   });
 
-  const handleFormSubmit = (data: Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string }) => {
+  const handleFormSubmit = (data: Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string | null }) => {
     const apiData: ApiStudentCreateData = {
       name: data.name,
-      gender: data.gender || null, // Ensure null if empty string
+      gender: data.gender === 'unspecified' ? null : data.gender || null,
       classGrade: data.classGrade || null, // Ensure null if empty or undefined
       profileImageURL: data.profileImageURL || null, // Ensure null if empty string
     };
