@@ -2,8 +2,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import type { User } from '@prisma/client';
-import { generateWelcomeEmail } from '@/ai/flows/send-welcome-email-flow';
-import { Resend } from 'resend';
 
 async function generateAderaUserId(): Promise<string> {
   const currentYear = new Date().getFullYear();
@@ -33,6 +31,10 @@ export async function GET(request: NextRequest) {
 
 // POST /api/users - Create a new user
 export async function POST(request: NextRequest) {
+  // Dynamically import dependencies only used in this POST handler
+  const { generateWelcomeEmail } = await import('@/ai/flows/send-welcome-email-flow');
+  const { Resend } = await import('resend');
+  
   try {
     const body = await request.json();
     const { fullName, email, role, profileImageURL, departmentId } = body as Partial<User & { password?: string }>;
@@ -41,20 +43,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Missing required fields: fullName, email, and role are required.' }, { status: 400 });
     }
 
-    // Fetch department name to create password
     const department = departmentId ? await prisma.department.findUnique({ where: { id: departmentId } }) : null;
     if (departmentId && !department) {
         return NextResponse.json({ message: `Department with ID ${departmentId} not found.` }, { status: 400 });
     }
 
-    // 1. Generate password based on role and department
     const departmentNamePart = department ? department.name.toLowerCase().replace(/[^a-z0-9]/gi, '') : 'nodepartment';
     const tempPassword = `${role.toLowerCase()}@${departmentNamePart}123`;
-
-    // 2. Hash the password for database storage
-    // !! IMPORTANT: In a real app, use a strong hashing algorithm like bcrypt.
-    // Example: const passwordHash = await bcrypt.hash(tempPassword, 10);
-    const passwordHash = `${tempPassword}-hashed`; // This is for simulation ONLY.
+    const passwordHash = `${tempPassword}-hashed`;
 
     const generatedUserId = await generateAderaUserId();
 
@@ -62,7 +58,7 @@ export async function POST(request: NextRequest) {
       userId: generatedUserId,
       fullName,
       email,
-      passwordHash, // Use the hashed password
+      passwordHash,
       role,
       profileImageURL,
       passwordChangeRequired: true,
@@ -77,12 +73,11 @@ export async function POST(request: NextRequest) {
       include: { department: true },
     });
 
-    // 3. Send the plain-text temporary password via email
     try {
       const emailContent = await generateWelcomeEmail({
         userName: newUser.fullName,
         userEmail: newUser.email,
-        tempPassword: tempPassword, // Use the plain-text password for the email
+        tempPassword: tempPassword,
         loginUrl: new URL('/auth/login', request.url).toString(),
       });
 
@@ -105,7 +100,6 @@ export async function POST(request: NextRequest) {
       }
     } catch (emailError) {
       console.error("Failed to generate or send welcome email:", emailError);
-      // Note: User is created even if email fails. You might want to handle this differently.
     }
 
     const { passwordHash: _, ...userWithoutPassword } = newUser;

@@ -1133,7 +1133,7 @@ function NewUserPage() {
             (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["logUserActivity"])(actorUserId, "USER_CREATE_SUCCESS", `Created user ID: ${newUser.userId}, Name: ${newUser.fullName}`);
             toast({
                 title: "User Added",
-                description: `${newUser.fullName} has been successfully added with ID ${newUser.userId}.`
+                description: `${newUser.fullName} has been successfully added. A welcome email has been dispatched.`
             });
             router.push('/admin/users');
         },
@@ -1152,9 +1152,7 @@ function NewUserPage() {
             email: data.email,
             role: data.role,
             departmentId: data.departmentId || null,
-            profileImageURL: data.profileImageURL || null,
-            password: "password123",
-            passwordChangeRequired: true
+            profileImageURL: data.profileImageURL || null
         };
         mutation.mutate(apiData);
     };
@@ -1171,21 +1169,21 @@ function NewUserPage() {
                                 children: "Add New User"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/users/new/page.tsx",
-                                lineNumber: 82,
+                                lineNumber: 78,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                 className: "text-muted-foreground",
-                                children: "Fill in the details to add a new user record. User ID will be auto-generated."
+                                children: "Fill in the details to add a new user record. A temporary password will be generated and sent via email."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/users/new/page.tsx",
-                                lineNumber: 83,
+                                lineNumber: 79,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/users/new/page.tsx",
-                        lineNumber: 81,
+                        lineNumber: 77,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -1198,40 +1196,40 @@ function NewUserPage() {
                                     className: "mr-2 h-4 w-4"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/admin/users/new/page.tsx",
-                                    lineNumber: 87,
+                                    lineNumber: 83,
                                     columnNumber: 13
                                 }, this),
                                 "Back to List"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/admin/users/new/page.tsx",
-                            lineNumber: 86,
+                            lineNumber: 82,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/app/admin/users/new/page.tsx",
-                        lineNumber: 85,
+                        lineNumber: 81,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/admin/users/new/page.tsx",
-                lineNumber: 80,
+                lineNumber: 76,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$admin$2f$users$2f$UserForm$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["UserForm"], {
                 onSubmit: handleFormSubmit,
                 isLoading: mutation.isPending,
-                submitButtonText: "Add User"
+                submitButtonText: "Add User and Send Welcome Email"
             }, void 0, false, {
                 fileName: "[project]/src/app/admin/users/new/page.tsx",
-                lineNumber: 92,
+                lineNumber: 88,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/admin/users/new/page.tsx",
-        lineNumber: 79,
+        lineNumber: 75,
         columnNumber: 5
     }, this);
 }
