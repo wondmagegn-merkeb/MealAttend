@@ -1735,12 +1735,7 @@ function useAuth() {
     const changePassword = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
         "useAuth.useCallback[changePassword]": async (newPassword)=>{
             if (!currentUser) {
-                toast({
-                    title: "Error",
-                    description: "No active user session found.",
-                    variant: "destructive"
-                });
-                return false;
+                throw new Error("No active user session found.");
             }
             try {
                 const response = await fetch(`/api/users/${currentUser.id}`, {
@@ -1762,7 +1757,7 @@ function useAuth() {
                 localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CURRENT_USER_DETAILS_KEY"], JSON.stringify(updatedUser));
                 setIsPasswordChangeRequired(false);
                 (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUser.userId, "PASSWORD_CHANGE_API_SUCCESS");
-                return true;
+                return updatedUser;
             } catch (e) {
                 const error = e;
                 console.error("Error changing password:", error);
@@ -1772,21 +1767,51 @@ function useAuth() {
                     variant: "destructive"
                 });
                 (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUser.userId, "PASSWORD_CHANGE_FAILURE", error.message);
-                return false;
+                throw error;
             }
         }
     }["useAuth.useCallback[changePassword]"], [
         currentUser,
         toast
     ]);
-    const updateAuthContextUser = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
-        "useAuth.useCallback[updateAuthContextUser]": (updatedUser)=>{
-            setCurrentUser(updatedUser);
-            localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CURRENT_USER_DETAILS_KEY"], JSON.stringify(updatedUser));
-        // This function is for context updates after an API call, e.g., profile edit.
-        // The API call itself is handled in the component.
+    const updateProfile = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
+        "useAuth.useCallback[updateProfile]": async (profileData)=>{
+            if (!currentUser) {
+                throw new Error("No active user session found.");
+            }
+            try {
+                const response = await fetch(`/api/users/${currentUser.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(profileData)
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to update profile.');
+                }
+                const updatedUser = await response.json();
+                setCurrentUser(updatedUser);
+                localStorage.setItem(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$constants$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CURRENT_USER_DETAILS_KEY"], JSON.stringify(updatedUser));
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUser.userId, "PROFILE_UPDATE_API_SUCCESS");
+                return updatedUser;
+            } catch (e) {
+                const error = e;
+                console.error("Error updating profile:", error);
+                toast({
+                    title: "Update Failed",
+                    description: error.message,
+                    variant: "destructive"
+                });
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$activityLogger$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logUserActivity"])(currentUser.userId, "PROFILE_UPDATE_FAILURE", error.message);
+                throw error;
+            }
         }
-    }["useAuth.useCallback[updateAuthContextUser]"], []);
+    }["useAuth.useCallback[updateProfile]"], [
+        currentUser,
+        toast
+    ]);
     return {
         isAuthenticated,
         currentUser,
@@ -1796,11 +1821,11 @@ function useAuth() {
         login,
         logout,
         changePassword,
-        setIsAuthenticated,
-        updateAuthContextUser
+        updateProfile,
+        setIsAuthenticated
     };
 }
-_s(useAuth, "C+1Q/+mNZ4zeu8Ay5VJgYRhQalg=", false, function() {
+_s(useAuth, "52yuKqREd5bIlIrJkKZF2OhG3AY=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"],
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["usePathname"],

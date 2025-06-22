@@ -11,7 +11,7 @@ import Link from 'next/link';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Department } from '@/types/department'; // For response type if needed
+import type { Department } from '@prisma/client';
 
 async function createDepartmentAPI(data: DepartmentFormData): Promise<Department> {
   const response = await fetch('/api/departments', {

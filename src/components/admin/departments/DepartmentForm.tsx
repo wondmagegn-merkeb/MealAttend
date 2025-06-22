@@ -4,7 +4,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import type { Department } from "@/types/department";
+import type { Department } from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
 import {

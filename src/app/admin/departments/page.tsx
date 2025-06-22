@@ -9,11 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { PlusCircle, Building2 as DepartmentIcon, Loader2, Search, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react";
 import { DepartmentsTable } from "@/components/admin/departments/DepartmentsTable";
-import type { Department } from "@/types/department";
 import { useToast } from "@/hooks/use-toast";
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Department } from '@prisma/client';
 
 type SortableDepartmentKeys = 'id' | 'name';
 type SortDirection = 'ascending' | 'descending';
@@ -27,6 +27,7 @@ const ITEMS_PER_PAGE = 5;
 
 async function fetchDepartments(): Promise<Department[]> {
   const response = await fetch('/api/departments');
+  console.log(response )
   if (!response.ok) {
     throw new Error('Failed to fetch departments');
   }

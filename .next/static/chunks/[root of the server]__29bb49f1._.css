@@ -621,10 +621,6 @@ body {
   top: .5rem;
 }
 
-.top-3 {
-  top: .75rem;
-}
-
 .top-3\.5 {
   top: .875rem;
 }
@@ -701,10 +697,6 @@ body {
 
 .mb-6 {
   margin-bottom: 1.5rem;
-}
-
-.mb-8 {
-  margin-bottom: 2rem;
 }
 
 .ml-1 {
@@ -830,10 +822,6 @@ body {
 
 .h-3\.5 {
   height: .875rem;
-}
-
-.h-32 {
-  height: 8rem;
 }
 
 .h-4 {
@@ -1558,10 +1546,6 @@ body {
   background-color: hsl(var(--destructive));
 }
 
-.bg-green-500\/10 {
-  background-color: #22c55e1a;
-}
-
 .bg-green-500\/20 {
   background-color: #22c55e33;
 }
@@ -1584,10 +1568,6 @@ body {
 
 .bg-primary {
   background-color: hsl(var(--primary));
-}
-
-.bg-primary\/10 {
-  background-color: hsl(var(--primary) / .1);
 }
 
 .bg-red-500\/20 {
@@ -1629,10 +1609,6 @@ body {
 .bg-white {
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
-}
-
-.bg-yellow-500\/10 {
-  background-color: #eab3081a;
 }
 
 .bg-gradient-to-br {
@@ -2025,11 +2001,6 @@ body {
   color: hsl(var(--foreground) / .5);
 }
 
-.text-green-500 {
-  --tw-text-opacity: 1;
-  color: rgb(34 197 94 / var(--tw-text-opacity, 1));
-}
-
 .text-green-700 {
   --tw-text-opacity: 1;
   color: rgb(21 128 61 / var(--tw-text-opacity, 1));
@@ -2092,11 +2063,6 @@ body {
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
-}
-
-.text-yellow-500 {
-  --tw-text-opacity: 1;
-  color: rgb(234 179 8 / var(--tw-text-opacity, 1));
 }
 
 .underline-offset-4 {
@@ -2267,10 +2233,6 @@ body {
   transition-duration: .2s;
 }
 
-.duration-300 {
-  transition-duration: .3s;
-}
-
 .ease-in-out {
   transition-timing-function: cubic-bezier(.4, 0, .2, 1);
 }
@@ -2313,10 +2275,6 @@ body {
 
 .duration-200 {
   animation-duration: .2s;
-}
-
-.duration-300 {
-  animation-duration: .3s;
 }
 
 .ease-in-out {
@@ -2537,12 +2495,6 @@ body {
 .hover\:shadow-lg:hover {
   --tw-shadow: 0 10px 15px -3px #0000001a, 0 4px 6px -4px #0000001a;
   --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-}
-
-.hover\:shadow-xl:hover {
-  --tw-shadow: 0 20px 25px -5px #0000001a, 0 8px 10px -6px #0000001a;
-  --tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
@@ -3430,10 +3382,6 @@ body {
 
   .lg\:grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .lg\:grid-cols-4 {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .lg\:text-2xl {

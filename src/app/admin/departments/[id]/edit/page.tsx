@@ -4,7 +4,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { DepartmentForm, type DepartmentFormData } from "@/components/admin/departments/DepartmentForm";
-import type { Department } from "@/types/department";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, AlertTriangle } from 'lucide-react';
@@ -13,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Department } from '@prisma/client';
 
 async function fetchDepartmentById(id: string): Promise<Department> {
   const response = await fetch(`/api/departments/${id}`);

@@ -11,11 +11,11 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, ChevronsUpDown, ArrowUp, ArrowDown } from "lucide-react";
-import type { Department } from "@/types/department";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import React from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import type { Department } from "@prisma/client";
 
 type SortableDepartmentKeys = 'id' | 'name'; 
 type SortDirection = 'ascending' | 'descending';
@@ -146,4 +146,3 @@ export function DepartmentsTable({ departments, onEdit, onDelete, sortConfig, on
     </TooltipProvider>
   );
 }
-
