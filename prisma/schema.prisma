@@ -1,36 +1,11 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
-}
-
-model Department {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  users     User[]
-}
-
-model User {
-  id                     String    @id @default(cuid())
-  userId                 String    @unique
-  fullName               String
-  email                  String    @unique
-  passwordHash           String
-  role                   Role      @default(User)
-  profileImageURL        String?   @db.Text
-  passwordChangeRequired Boolean   @default(false)
-  departmentId           String?
-  department             Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @updatedAt
 }
 
 model Student {
@@ -40,33 +15,55 @@ model Student {
   gender            String?
   classGrade        String?
   profileImageURL   String?            @db.Text
-  qrCodeData        String?            @unique
+  qrCodeData        String?            @db.Text
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   attendanceRecords AttendanceRecord[]
 }
 
+model User {
+  id                     String    @id @default(cuid())
+  userId                 String    @unique
+  fullName               String
+  email                  String    @unique
+  passwordHash           String
+  passwordChangeRequired Boolean   @default(true)
+  role                   Role      @default(User)
+  profileImageURL        String?   @db.Text
+  departmentId           String?
+  department             Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+}
+
+model Department {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  users     User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model AttendanceRecord {
   id                 String           @id @default(cuid())
   studentInternalId  String
+  student            Student          @relation(fields: [studentInternalId], references: [id], onDelete: Cascade)
   recordDate         DateTime         @db.Date
   mealType           MealType
-  scannedAtTimestamp DateTime?
   status             AttendanceStatus
+  scannedAtTimestamp DateTime?
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
-  student            Student          @relation(fields: [studentInternalId], references: [id], onDelete: Cascade)
 
-  @@unique([studentInternalId, recordDate, mealType], name: "unique_attendance_constraint")
+  @@unique([studentInternalId, recordDate, mealType])
 }
 
 model UserActivityLog {
   id                String   @id @default(cuid())
   userIdentifier    String
-  activityTimestamp DateTime
   action            String
   details           String?  @db.Text
-  createdAt         DateTime @default(now())
+  activityTimestamp DateTime @default(now())
 }
 
 enum Role {
