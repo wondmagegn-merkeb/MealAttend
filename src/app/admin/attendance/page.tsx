@@ -52,6 +52,19 @@ async function fetchStudents(): Promise<Student[]> {
   return response.json();
 }
 
+const parseClass = (classStr: string | null | undefined): { number: number; letter: string } => {
+  if (!classStr) return { number: Infinity, letter: '' };
+  const match = classStr.match(/^(\d+)([A-Za-z]*)$/);
+  if (match) {
+    return { number: parseInt(match[1], 10), letter: match[2].toUpperCase() };
+  }
+  const numericMatch = classStr.match(/^(\d+)$/);
+  if (numericMatch) {
+     return { number: parseInt(numericMatch[1], 10), letter: '' };
+  }
+  return { number: Infinity, letter: classStr.toUpperCase() };
+};
+
 const transformAttendanceForExport = (records: AttendanceRecordWithStudent[]): ExportAttendanceRecord[] => {
   const groupedRecords: Record<string, Partial<ExportAttendanceRecord> & { studentName?: string }> = {};
 
@@ -106,6 +119,7 @@ export default function AttendancePage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const [reportStudentId, setReportStudentId] = useState<string | undefined>(undefined);
+  const [reportSelectedClass, setReportSelectedClass] = useState<string | undefined>(undefined);
   const [reportDateRange, setReportDateRange] = useState<DateRange | undefined>(undefined);
   const [selectedMealTypes, setSelectedMealTypes] = useState<Set<MealType>>(new Set(ALL_MEAL_TYPES));
   const [isReportView, setIsReportView] = useState(false);
@@ -119,6 +133,20 @@ export default function AttendancePage() {
     queryKey: ['students'],
     queryFn: fetchStudents,
   });
+
+  const uniqueClasses = useMemo(() => {
+    if (!students.length) return [];
+    const classSet = new Set<string>();
+    students.forEach(student => {
+        if (student.classGrade) classSet.add(student.classGrade);
+    });
+    return Array.from(classSet).sort((a, b) => {
+        const classA = parseClass(a);
+        const classB = parseClass(b);
+        if (classA.number !== classB.number) return classA.number - classB.number;
+        return classA.letter.localeCompare(classB.letter);
+    });
+  }, [students]);
 
   const handleSort = (key: SortableAttendanceKeys) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -151,10 +179,10 @@ export default function AttendancePage() {
   };
   
   const handleGenerateReport = () => {
-    if (!reportStudentId && !reportDateRange?.from && selectedMealTypes.size === 0) { 
+    if (!reportStudentId && !reportSelectedClass && !reportDateRange?.from && selectedMealTypes.size === 0) { 
         toast({
           title: "Filter Required",
-          description: "Please select a student, date range, or at least one meal type to generate a report.",
+          description: "Please select a student, class, date range, or at least one meal type to generate a report.",
           variant: "default"
         });
         return;
@@ -165,6 +193,7 @@ export default function AttendancePage() {
 
   const clearReportFilters = () => {
     setReportStudentId(undefined);
+    setReportSelectedClass(undefined);
     setReportDateRange(undefined);
     setIsReportView(false);
     setCurrentPage(1);
@@ -176,6 +205,9 @@ export default function AttendancePage() {
     if (isReportView) {
       if (reportStudentId && reportStudentId !== 'all_students') { 
         recordsToProcess = recordsToProcess.filter(record => record.student.studentId === reportStudentId);
+      }
+      if (reportSelectedClass) {
+        recordsToProcess = recordsToProcess.filter(record => record.student.classGrade === reportSelectedClass);
       }
       if (reportDateRange?.from) {
         recordsToProcess = recordsToProcess.filter(record => {
@@ -222,14 +254,16 @@ export default function AttendancePage() {
       });
     }
     return recordsToProcess;
-  }, [allAttendanceRecords, searchTerm, sortConfig, isReportView, reportStudentId, reportDateRange, selectedMealTypes]);
+  }, [allAttendanceRecords, searchTerm, sortConfig, isReportView, reportStudentId, reportSelectedClass, reportDateRange, selectedMealTypes]);
   
   const reportContext = useMemo(() => {
     let studentNameForTitle = "All Students";
     if (reportStudentId && reportStudentId !== 'all_students') {
         studentNameForTitle = students.find(s => s.studentId === reportStudentId)?.name || reportStudentId;
     }
-    // ... rest of report context logic is fine ...
+    const classInfoForTitle = reportSelectedClass ? `Class ${reportSelectedClass}` : "All Classes";
+    const classInfoForFile = reportSelectedClass ? `Class_${reportSelectedClass.replace(/\s+/g, '_')}` : "All_Classes";
+    
     let dateInfoForTitle = "All Dates";
     let dateInfoForFile = "All_Dates";
     if (reportDateRange?.from) {
@@ -257,10 +291,11 @@ export default function AttendancePage() {
 
     if (isReportView) {
         const studentPart = (reportStudentId && reportStudentId !== 'all_students') ? studentNameForTitle.replace(/\s+/g, '_') : "All_Students";
+        const classPart = classInfoForFile;
         const datePart = reportDateRange?.from ? dateInfoForFile.replace(/\s+/g, '_').replace(/-/g,'') : "All_Dates";
         const mealPart = mealTypeInfoForFile;
-        dynamicFileName = `${baseFileName}_${studentPart}_${datePart}_${mealPart}`;
-        dynamicDocTitle = `Attendance Report: ${studentNameForTitle} (${dateInfoForTitle}) - Meals: ${mealTypeInfoForTitle}`;
+        dynamicFileName = `${baseFileName}_${studentPart}_${classPart}_${datePart}_${mealPart}`;
+        dynamicDocTitle = `Attendance Report: ${studentNameForTitle}, ${classInfoForTitle}, (${dateInfoForTitle}) - Meals: ${mealTypeInfoForTitle}`;
     } else if (searchTerm) {
         const mealPart = (selectedMealTypes.size > 0 && selectedMealTypes.size < ALL_MEAL_TYPES.length) ? mealTypeInfoForFile : "All_Meals";
         dynamicFileName = `Attendance_Search_${searchTerm.replace(/\s+/g, '_')}_${mealPart}`;
@@ -271,7 +306,7 @@ export default function AttendancePage() {
         dynamicDocTitle = `All Attendance Records (Meals: ${mealTypeInfoForTitle})`;
     }
     return { fileNameBase: dynamicFileName, docTitle: dynamicDocTitle };
-  }, [isReportView, reportStudentId, students, reportDateRange, searchTerm, selectedMealTypes]);
+  }, [isReportView, reportStudentId, students, reportSelectedClass, reportDateRange, searchTerm, selectedMealTypes]);
 
   const handleExportPDF = useCallback(() => {
     const recordsForExport = transformAttendanceForExport(processedRecords);
@@ -375,9 +410,9 @@ export default function AttendancePage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><BookCopy className="h-5 w-5" /> Attendance Report Filters</CardTitle>
-          <CardDescription>Filter attendance records by student, date range. Meal type filters below are always active.</CardDescription>
+          <CardDescription>Filter attendance records by student, class, and date range. Meal type filters below are always active.</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-end">
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
           <div>
             <Label htmlFor="student-select" className="mb-1 block text-sm font-medium">Student</Label>
             <Select value={reportStudentId} onValueChange={(value) => setReportStudentId(value === 'all_students' ? undefined : value)}>
@@ -392,6 +427,23 @@ export default function AttendancePage() {
                   </SelectItem>
                 ))}
               </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="class-select" className="mb-1 block text-sm font-medium">Class/Grade</Label>
+            <Select value={reportSelectedClass} onValueChange={(value) => setReportSelectedClass(value === 'all_classes' ? undefined : value)}>
+                <SelectTrigger id="class-select">
+                    <SelectValue placeholder="Select a class" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all_classes">All Classes</SelectItem>
+                    {uniqueClasses.map(cls => (
+                        <SelectItem key={cls} value={cls}>
+                            {cls}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
             </Select>
           </div>
           
@@ -410,9 +462,9 @@ export default function AttendancePage() {
             </Popover>
           </div>
           
-          <div className="md:col-span-2 lg:col-span-3 flex flex-col sm:flex-row gap-2 pt-2">
+          <div className="md:col-span-2 lg:col-span-4 flex flex-col sm:flex-row gap-2 pt-2">
             <Button onClick={handleGenerateReport} className="w-full sm:w-auto">Generate Report View</Button>
-             <Button onClick={clearReportFilters} variant="outline" className="w-full sm:w-auto" disabled={!isReportView && !reportStudentId && !reportDateRange?.from}>
+             <Button onClick={clearReportFilters} variant="outline" className="w-full sm:w-auto" disabled={!isReportView && !reportStudentId && !reportSelectedClass && !reportDateRange?.from}>
                 <FilterX className="mr-2 h-4 w-4" /> Clear Report Filters
             </Button>
           </div>
@@ -427,7 +479,7 @@ export default function AttendancePage() {
                     <CardDescription>
                       {isLoadingAttendance ? "Loading records..." : (
                         isReportView 
-                        ? `Report for ${reportStudentId && reportStudentId !== 'all_students' ? (students.find(s => s.studentId === reportStudentId)?.name || 'selected student') : 'all students'}${reportDateRange?.from ? ` from ${format(reportDateRange.from, "LLL dd, y")}` : ''}${reportDateRange?.to ? ` to ${format(reportDateRange.to, "LLL dd, y")}` : reportDateRange?.from ? '' : ''}. Meals: ${selectedMealTypes.size === ALL_MEAL_TYPES.length ? 'All' : Array.from(selectedMealTypes).map(m => m.charAt(0) + m.slice(1).toLowerCase()).join(', ') || 'None'}. Found ${processedRecords.length} record(s).`
+                        ? `Report for ${reportStudentId && reportStudentId !== 'all_students' ? (students.find(s => s.studentId === reportStudentId)?.name || 'selected student') : 'all students'}${reportSelectedClass ? `, Class: ${reportSelectedClass}` : ''}${reportDateRange?.from ? ` from ${format(reportDateRange.from, "LLL dd, y")}` : ''}${reportDateRange?.to ? ` to ${format(reportDateRange.to, "LLL dd, y")}` : reportDateRange?.from ? '' : ''}. Meals: ${selectedMealTypes.size === ALL_MEAL_TYPES.length ? 'All' : Array.from(selectedMealTypes).map(m => m.charAt(0) + m.slice(1).toLowerCase()).join(', ') || 'None'}. Found ${processedRecords.length} record(s).`
                         : `Displaying records. Meals: ${selectedMealTypes.size === ALL_MEAL_TYPES.length ? 'All' : Array.from(selectedMealTypes).map(m => m.charAt(0) + m.slice(1).toLowerCase()).join(', ') || 'None'}. ${searchTerm ? `Search: "${searchTerm}".` : ''} Found ${processedRecords.length} record(s).`
                       )}
                     </CardDescription>
