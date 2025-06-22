@@ -14,7 +14,6 @@ import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { User, Department } from '@prisma/client';
-import { UserStatus } from '@prisma/client';
 type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'createdAt';
 type SortDirection = 'ascending' | 'descending';
 
