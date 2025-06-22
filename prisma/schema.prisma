@@ -1,3 +1,5 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
@@ -15,10 +17,24 @@ model Student {
   gender            String?
   classGrade        String?
   profileImageURL   String?
-  qrCodeData        String?
+  qrCodeData        String?            @unique
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   attendanceRecords AttendanceRecord[]
+}
+
+model AttendanceRecord {
+  id                 String           @id @default(cuid())
+  studentInternalId  String
+  student            Student          @relation(fields: [studentInternalId], references: [id], onDelete: Cascade)
+  recordDate         DateTime
+  mealType           MealType
+  status             AttendanceStatus
+  scannedAtTimestamp DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@unique([studentInternalId, recordDate, mealType], name: "unique_attendance_constraint")
 }
 
 model User {
@@ -27,9 +43,9 @@ model User {
   fullName               String
   email                  String    @unique
   passwordHash           String
-  passwordChangeRequired Boolean   @default(true)
-  role                   String      @default("User")
+  role                   UserRole
   profileImageURL        String?
+  passwordChangeRequired Boolean   @default(false)
   departmentId           String?
   department             Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   createdAt              DateTime  @default(now())
@@ -44,22 +60,26 @@ model Department {
   updatedAt DateTime @updatedAt
 }
 
-model AttendanceRecord {
-  id                 String           @id @default(cuid())
-  studentInternalId  String
-  student            Student          @relation(fields: [studentInternalId], references: [id], onDelete: Cascade)
-  recordDate         DateTime
-  mealType           String
-  status             String
-  scannedAtTimestamp DateTime?
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-
-  @@unique([studentInternalId, recordDate, mealType])
-}
-
 model UserActivityLog {
   id                String   @id @default(cuid())
   userIdentifier    String
+  action            String
+  details           String?
   activityTimestamp DateTime @default(now())
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+}
+
+enum UserRole {
+  Admin
+  User
 }
