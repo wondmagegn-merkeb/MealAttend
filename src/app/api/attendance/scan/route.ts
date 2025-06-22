@@ -37,7 +37,12 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingRecord) {
-      return NextResponse.json({ message: `${student.name} has already been recorded for ${mealType.toLowerCase()} today.` }, { status: 409 });
+      return NextResponse.json({
+          message: `${student.name} has already been recorded for ${mealType.toLowerCase()} today.`,
+          status: 'already_recorded',
+          student: student,
+          record: existingRecord
+      }, { status: 200 });
     }
 
     const newRecord = await prisma.attendanceRecord.create({
@@ -52,8 +57,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: 'Attendance recorded successfully',
-      studentName: student.name,
-      mealType: newRecord.mealType,
+      status: 'new_record',
+      student: student,
+      record: newRecord,
     }, { status: 201 });
 
   } catch (error) {

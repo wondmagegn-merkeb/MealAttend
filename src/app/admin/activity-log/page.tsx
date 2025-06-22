@@ -4,11 +4,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, ChevronLeft, ChevronRight, History, ListChecks, AlertTriangle } from "lucide-react";
+import { Loader2, Search, ChevronLeft, ChevronRight, ListChecks, AlertTriangle } from "lucide-react";
 import { ActivityLogTable } from "@/components/admin/activity/ActivityLogTable";
 import type { UserActivityLog } from "@prisma/client";
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/hooks/useAuth';
 
 type SortableActivityLogKeys = 'activityTimestamp' | 'userIdentifier' | 'action';
 type SortDirection = 'ascending' | 'descending';
@@ -32,6 +33,7 @@ export default function ActivityLogPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'activityTimestamp', direction: 'descending' });
   const [currentPage, setCurrentPage] = useState(1);
+  const { currentUser } = useAuth();
   
   const { data: logs = [], isLoading: isLoadingLogs, error: logsError } = useQuery<UserActivityLog[]>({
     queryKey: ['activityLogs'],
@@ -54,6 +56,11 @@ export default function ActivityLogPage() {
 
   const filteredAndSortedLogs = useMemo(() => {
     let processedLogs = [...logs];
+
+    // Implement role-based filtering
+    if (currentUser?.role === 'User') {
+        processedLogs = processedLogs.filter(log => log.userIdentifier === currentUser.userId);
+    }
 
     if (searchTerm) {
       const lowerSearchTerm = searchTerm.toLowerCase();
@@ -83,7 +90,7 @@ export default function ActivityLogPage() {
       });
     }
     return processedLogs;
-  }, [logs, searchTerm, sortConfig]);
+  }, [logs, searchTerm, sortConfig, currentUser]);
 
   const totalPages = Math.max(1, Math.ceil(filteredAndSortedLogs.length / ITEMS_PER_PAGE));
   
@@ -108,21 +115,26 @@ export default function ActivityLogPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-3xl font-semibold tracking-tight text-primary flex items-center">
-            <ListChecks className="mr-3 h-8 w-8" /> User Activity Log
+            <ListChecks className="mr-3 h-8 w-8" /> 
+            {currentUser?.role === 'Admin' ? 'User Activity Log' : 'My Activity Log'}
           </h2>
-          <p className="text-muted-foreground">View recorded user actions within the application.</p>
+          <p className="text-muted-foreground">
+            {currentUser?.role === 'Admin' 
+              ? 'View recorded user actions within the application.' 
+              : 'A record of your actions within the application.'}
+          </p>
         </div>
       </div>
 
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Activity Records</CardTitle>
-          <CardDescription>Browse user activity logs from the database.</CardDescription>
+          <CardDescription>Browse activity logs from the database.</CardDescription>
           <div className="mt-4 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search by User ID, Action, or Details..."
+              placeholder={currentUser?.role === 'Admin' ? "Search by User ID, Action, or Details..." : "Search your actions or details..."}
               value={searchTerm}
               onChange={handleSearchChange}
               className="pl-10 w-full sm:w-1/2 md:w-1/3"
