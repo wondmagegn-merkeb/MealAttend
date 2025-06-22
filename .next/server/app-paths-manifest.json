@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "/admin/attendance/page": "app/admin/attendance/page.js",
   "/admin/page": "app/admin/page.js",
   "/api/activity-logs/route": "app/api/activity-logs/route.js",
@@ -8,4 +9,8 @@
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/page": "app/page.js",
   "/scan/page": "app/scan/page.js"
+=======
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/page": "app/page.js"
+>>>>>>> 41ccbe0e10a411b865c8b236ea96ee73f52550c1
 }
