@@ -1,11 +1,13 @@
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model Department {
@@ -17,52 +19,68 @@ model Department {
 }
 
 model User {
-  id                       String     @id @default(cuid())
-  userId                   String     @unique // ADERA/USR/YYYY/SERIAL
-  fullName                 String
-  departmentId             String?
-  email                    String     @unique
-  passwordHash             String // Store hashed passwords only
-  role                     String // Was Role enum, now String. API should handle 'Admin', 'User'
-  profileImageURL          String?
-  passwordChangeRequired   Boolean    @default(false)
-  createdAt                DateTime   @default(now())
-  updatedAt                DateTime   @updatedAt
-  department               Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  id                     String    @id @default(cuid())
+  userId                 String    @unique
+  fullName               String
+  email                  String    @unique
+  passwordHash           String
+  role                   Role      @default(User)
+  profileImageURL        String?   @db.Text
+  passwordChangeRequired Boolean   @default(false)
+  departmentId           String?
+  department             Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 }
 
 model Student {
-  id                String   @id @default(cuid())
-  studentId         String   @unique // "ADERA/STU/YYYY/NNNNN" - Will be auto-generated
+  id                String             @id @default(cuid())
+  studentId         String             @unique
   name              String
-  gender            String?  // 'Male', 'Female', 'Other', ''
-  classGrade        String?  // e.g., "10A"
-  profileImageURL   String?
-  qrCodeData        String?  @unique // Should match 'id' after creation
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  gender            String?
+  classGrade        String?
+  profileImageURL   String?            @db.Text
+  qrCodeData        String?            @unique
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
   attendanceRecords AttendanceRecord[]
 }
 
 model AttendanceRecord {
-  id                  String   @id @default(cuid())
-  studentInternalId   String   // References students.id
-  recordDate          DateTime // YYYY-MM-DD (stored as DateTime, but only date part is relevant for uniqueness)
-  mealType            String   // Was MealType enum, now String. API should handle 'Breakfast', 'Lunch', 'Dinner'
-  scannedAtTimestamp  DateTime? // Full timestamp of scan
-  status              String   // Was AttendanceStatus enum, now String. API should handle 'Present', 'Absent'
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  student             Student  @relation(fields: [studentInternalId], references: [id], onDelete: Cascade)
+  id                 String           @id @default(cuid())
+  studentInternalId  String
+  recordDate         DateTime         @db.Date
+  mealType           MealType
+  scannedAtTimestamp DateTime?
+  status             AttendanceStatus
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  student            Student          @relation(fields: [studentInternalId], references: [id], onDelete: Cascade)
 
   @@unique([studentInternalId, recordDate, mealType], name: "unique_attendance_constraint")
 }
 
 model UserActivityLog {
   id                String   @id @default(cuid())
-  userIdentifier    String   // Can be ADERA User ID or special values like system/unknown_user
+  userIdentifier    String
   activityTimestamp DateTime
   action            String
-  details           String?
+  details           String?  @db.Text
   createdAt         DateTime @default(now())
+}
+
+enum Role {
+  Admin
+  User
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
 }
