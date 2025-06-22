@@ -3,6 +3,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import type { User } from '@prisma/client';
 
+export const dynamic = 'force-dynamic';
+
 async function generateAderaUserId(): Promise<string> {
   const currentYear = new Date().getFullYear();
   const countForYear = await prisma.user.count({

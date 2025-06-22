@@ -4,6 +4,7 @@
   "/admin/page": "app/admin/page.js",
   "/admin/profile/edit/page": "app/admin/profile/edit/page.js",
   "/admin/settings/page": "app/admin/settings/page.js",
+  "/admin/students/page": "app/admin/students/page.js",
   "/admin/users/page": "app/admin/users/page.js",
   "/api/activity-logs/route": "app/api/activity-logs/route.js",
   "/api/attendance/route": "app/api/attendance/route.js",

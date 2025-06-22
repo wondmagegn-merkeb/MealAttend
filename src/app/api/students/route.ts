@@ -3,6 +3,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import type { Student } from '@prisma/client'; // Import Prisma's generated Student type
 
+export const dynamic = 'force-dynamic';
+
 async function generateAderaStudentId(): Promise<string> {
   const currentYear = new Date().getFullYear();
     const countForYear = await prisma.student.count({

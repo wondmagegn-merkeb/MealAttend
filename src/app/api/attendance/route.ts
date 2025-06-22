@@ -3,6 +3,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import type { AttendanceRecord, MealType, AttendanceStatus } from '@prisma/client';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/attendance - Fetch all attendance records
 export async function GET(request: NextRequest) {
   try {

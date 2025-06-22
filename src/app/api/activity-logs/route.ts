@@ -3,6 +3,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import type { UserActivityLog } from '@prisma/client';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/activity-logs - Fetch all activity logs
 export async function GET(request: NextRequest) {
   try {
