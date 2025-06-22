@@ -1,12 +1,12 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -38,19 +38,19 @@ model AttendanceRecord {
 }
 
 model User {
-  id                     String    @id @default(cuid())
-  userId                 String    @unique
+  id                     String      @id @default(cuid())
+  userId                 String      @unique
   fullName               String
-  email                  String    @unique
+  email                  String      @unique
   passwordHash           String
   role                   UserRole
   profileImageURL        String?
-  passwordChangeRequired Boolean   @default(false)
+  passwordChangeRequired Boolean     @default(false)
   departmentId           String?
-  department             Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull) 
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @updatedAt
-  status                 String? @default("active")
+  department             Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+  status                 String?     @default("active")
 }
 
 model Department {
@@ -62,7 +62,7 @@ model Department {
 }
 
 model UserActivityLog {
-  id                String   @id @default(cuoid())
+  id                String   @id @default(cuid()) // ✅ FIXED HERE
   userIdentifier    String
   action            String
   details           String?
