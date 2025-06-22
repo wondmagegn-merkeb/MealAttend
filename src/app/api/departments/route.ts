@@ -6,6 +6,7 @@ import type { Department } from '@prisma/client';
 // GET /api/departments - Fetch all departments
 export async function GET(request: NextRequest) {
   try {
+    console.log('fetching ')
     const departments = await prisma.department.findMany({
       orderBy: {
         name: 'asc',
