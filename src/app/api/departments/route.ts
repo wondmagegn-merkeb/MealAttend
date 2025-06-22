@@ -3,10 +3,11 @@ import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import type { Department } from '@prisma/client';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/departments - Fetch all departments
 export async function GET(request: NextRequest) {
   try {
-    console.log('fetching ')
     const departments = await prisma.department.findMany({
       orderBy: {
         name: 'asc',

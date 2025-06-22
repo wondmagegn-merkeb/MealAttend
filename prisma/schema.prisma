@@ -14,8 +14,8 @@ model Student {
   name              String
   gender            String?
   classGrade        String?
-  profileImageURL   String?            @db.Text
-  qrCodeData        String?            @db.Text
+  profileImageURL   String?
+  qrCodeData        String?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   attendanceRecords AttendanceRecord[]
@@ -28,8 +28,8 @@ model User {
   email                  String    @unique
   passwordHash           String
   passwordChangeRequired Boolean   @default(true)
-  role                   Role      @default(User)
-  profileImageURL        String?   @db.Text
+  role                   String      @default("User")
+  profileImageURL        String?
   departmentId           String?
   department             Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   createdAt              DateTime  @default(now())
@@ -48,9 +48,9 @@ model AttendanceRecord {
   id                 String           @id @default(cuid())
   studentInternalId  String
   student            Student          @relation(fields: [studentInternalId], references: [id], onDelete: Cascade)
-  recordDate         DateTime         @db.Date
-  mealType           MealType
-  status             AttendanceStatus
+  recordDate         DateTime
+  mealType           String
+  status             String
   scannedAtTimestamp DateTime?
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
@@ -61,23 +61,5 @@ model AttendanceRecord {
 model UserActivityLog {
   id                String   @id @default(cuid())
   userIdentifier    String
-  action            String
-  details           String?  @db.Text
   activityTimestamp DateTime @default(now())
-}
-
-enum Role {
-  Admin
-  User
-}
-
-enum MealType {
-  BREAKFAST
-  LUNCH
-  DINNER
-}
-
-enum AttendanceStatus {
-  PRESENT
-  ABSENT
 }
