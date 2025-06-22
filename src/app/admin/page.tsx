@@ -6,16 +6,19 @@ import { WelcomeBanner } from "@/components/admin/WelcomeBanner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Loader2, Users, CalendarDays, LineChart as LineChartIcon, FileDown, PieChart as PieChartLucideIcon, UserCheck, AlertTriangle } from "lucide-react";
+import { Loader2, Users, CalendarDays, LineChart as LineChartIcon, FileDown, PieChart as PieChartLucideIcon, UserCheck, AlertTriangle, History, ArrowRight } from "lucide-react";
 import { LineChart, Line, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip as RechartsTooltip, Legend as RechartsLegend, PieChart, Pie, Cell } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, type ChartConfig } from "@/components/ui/chart";
-import { format, getDaysInMonth, getMonth, getYear, parseISO } from 'date-fns';
+import { format, formatDistanceToNow, getDaysInMonth, getMonth, getYear, parseISO } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { useQuery } from '@tanstack/react-query';
-import type { Student, User, AttendanceRecord } from '@prisma/client';
+import type { Student, User, AttendanceRecord, UserActivityLog } from '@prisma/client';
+import { useAuth } from '@/hooks/useAuth';
+import Link from 'next/link';
+import { QuickActions } from '@/components/admin/QuickActions';
 
 const CURRENT_GREGORIAN_YEAR = new Date().getFullYear();
 const CURRENT_GREGORIAN_MONTH = new Date().getMonth(); // 0-indexed (January is 0)
@@ -49,18 +52,32 @@ async function fetchAttendance(): Promise<AttendanceRecord[]> {
   if (!res.ok) throw new Error('Failed to fetch attendance');
   return res.json();
 }
+async function fetchActivityLogs(): Promise<UserActivityLog[]> {
+    const res = await fetch('/api/activity-logs');
+    if (!res.ok) throw new Error('Failed to fetch activity logs');
+    return res.json();
+}
 
 export default function AdminDashboardPage() {
   const [selectedYear, setSelectedYear] = useState<string>(String(CURRENT_GREGORIAN_YEAR));
   const [selectedMonth, setSelectedMonth] = useState<number>(CURRENT_GREGORIAN_MONTH); 
   const { toast } = useToast();
+  const { currentUser } = useAuth();
 
   const { data: allStudents = [], isLoading: isLoadingStudents, error: studentsError } = useQuery<Student[]>({ queryKey: ['students'], queryFn: fetchStudents });
   const { data: allUsers = [], isLoading: isLoadingUsers, error: usersError } = useQuery<User[]>({ queryKey: ['users'], queryFn: fetchUsers });
   const { data: allAttendanceRecords = [], isLoading: isLoadingAttendance, error: attendanceError } = useQuery<AttendanceRecord[]>({ queryKey: ['attendanceRecords'], queryFn: fetchAttendance });
+  const { data: allActivityLogs = [], isLoading: isLoadingLogs, error: logsError } = useQuery<UserActivityLog[]>({ queryKey: ['activityLogs'], queryFn: fetchActivityLogs });
   
-  const isLoading = isLoadingStudents || isLoadingUsers || isLoadingAttendance;
-  const dataError = studentsError || usersError || attendanceError;
+  const isLoading = isLoadingStudents || isLoadingUsers || isLoadingAttendance || isLoadingLogs;
+  const dataError = studentsError || usersError || attendanceError || logsError;
+  
+  const userActivity = useMemo(() => {
+    if (!currentUser || !allActivityLogs.length) return [];
+    return allActivityLogs
+      .filter(log => log.userIdentifier === currentUser.userId)
+      .slice(0, 5);
+  }, [currentUser, allActivityLogs]);
 
   const uniqueAdmissionYears = useMemo(() => {
     if (!allStudents.length) return [String(CURRENT_GREGORIAN_YEAR)];
@@ -135,7 +152,6 @@ export default function AdminDashboardPage() {
 
   const attendanceChartConfig = { count: { label: "Attendance", color: "hsl(var(--primary))" } } satisfies ChartConfig;
   
-  // ... Chart config logic remains the same
   const gradeChartConfig = useMemo(() => {
     const config: ChartConfig = {};
     studentGradeDistributionData.forEach((item, index) => {
@@ -251,21 +267,53 @@ export default function AdminDashboardPage() {
         </div>
       </div>
       
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Students ({selectedYear === 'all_years' ? 'All Time' : `Admission Year: ${selectedYear}`})</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader>
-            <CardContent><div className="text-2xl font-bold">{totalStudentsInSelectedYear}</div><p className="text-xs text-muted-foreground">{selectedYear === 'all_years' ? 'Overall student count' : `Students admitted in ${selectedYear}`}</p></CardContent>
-        </Card>
-        <Card className="shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Registered Users</CardTitle><UserCheck className="h-4 w-4 text-muted-foreground" /></CardHeader>
-            <CardContent><div className="text-2xl font-bold">{allUsers.length}</div><p className="text-xs text-muted-foreground">Across all departments and roles.</p></CardContent>
-        </Card>
-        <Card className="shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Attendance Records</CardTitle><CalendarDays className="h-4 w-4 text-muted-foreground" /></CardHeader>
-            <CardContent><div className="text-2xl font-bold">{allAttendanceRecords.length}</div><p className="text-xs text-muted-foreground">Overall meal scan entries.</p></CardContent>
-        </Card>
+      <div className="grid gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-8 space-y-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <Card className="shadow-lg">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Students ({selectedYear === 'all_years' ? 'All Time' : `Adm. Year: ${selectedYear}`})</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader>
+                    <CardContent><div className="text-2xl font-bold">{totalStudentsInSelectedYear}</div><p className="text-xs text-muted-foreground">{selectedYear === 'all_years' ? 'Overall student count' : `Students admitted in ${selectedYear}`}</p></CardContent>
+                </Card>
+                <Card className="shadow-lg">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Registered Users</CardTitle><UserCheck className="h-4 w-4 text-muted-foreground" /></CardHeader>
+                    <CardContent><div className="text-2xl font-bold">{allUsers.length}</div><p className="text-xs text-muted-foreground">Across all departments and roles.</p></CardContent>
+                </Card>
+                <Card className="shadow-lg">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Attendance Records</CardTitle><CalendarDays className="h-4 w-4 text-muted-foreground" /></CardHeader>
+                    <CardContent><div className="text-2xl font-bold">{allAttendanceRecords.length}</div><p className="text-xs text-muted-foreground">Overall meal scan entries.</p></CardContent>
+                </Card>
+            </div>
+            <QuickActions />
+        </div>
+        <div className="lg:col-span-4">
+             <Card className="shadow-lg h-full">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><History className="h-5 w-5 text-primary"/> Your Recent Activity</CardTitle>
+                    <CardDescription>Your last 5 actions in the system.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {userActivity.length > 0 ? (
+                        <ul className="space-y-4">
+                            {userActivity.map(log => (
+                                <li key={log.id} className="flex items-start gap-3">
+                                    <div className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-primary/80" />
+                                    <div className="flex-grow">
+                                        <p className="text-sm font-medium leading-tight">{log.action.replace(/_/g, ' ')}</p>
+                                        <p className="text-xs text-muted-foreground truncate" title={log.details || undefined}>{log.details || 'No additional details'}</p>
+                                        <p className="text-xs text-muted-foreground/80">{formatDistanceToNow(parseISO(log.activityTimestamp as unknown as string), { addSuffix: true })}</p>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (<p className="text-center text-sm text-muted-foreground py-10">No recent activity found.</p>)}
+                     <Button variant="link" asChild className="p-0 h-auto mt-4 text-sm">
+                        <Link href="/admin/activity-log">View All Activity <ArrowRight className="ml-1 h-4 w-4"/></Link>
+                    </Button>
+                </CardContent>
+            </Card>
+        </div>
       </div>
-
+      
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
         <Card className="shadow-lg">
           <CardHeader><CardTitle className="flex items-center gap-2"><CalendarDays className="h-5 w-5 text-primary" />Daily Attendance: {monthNames[selectedMonth]} {yearForCharts}</CardTitle><CardDescription>Daily meal attendance (Line Chart) for {monthNames[selectedMonth]}, {yearForCharts}.</CardDescription></CardHeader>

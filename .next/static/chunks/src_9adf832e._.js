@@ -1107,6 +1107,30 @@ async function fetchStudents() {
     if (!response.ok) throw new Error('Failed to fetch students');
     return response.json();
 }
+const parseClass = (classStr)=>{
+    if (!classStr) return {
+        number: Infinity,
+        letter: ''
+    };
+    const match = classStr.match(/^(\d+)([A-Za-z]*)$/);
+    if (match) {
+        return {
+            number: parseInt(match[1], 10),
+            letter: match[2].toUpperCase()
+        };
+    }
+    const numericMatch = classStr.match(/^(\d+)$/);
+    if (numericMatch) {
+        return {
+            number: parseInt(numericMatch[1], 10),
+            letter: ''
+        };
+    }
+    return {
+        number: Infinity,
+        letter: classStr.toUpperCase()
+    };
+};
 const transformAttendanceForExport = (records)=>{
     const groupedRecords = {};
     records.forEach((record)=>{
@@ -1156,6 +1180,7 @@ function AttendancePage() {
     });
     const [currentPage, setCurrentPage] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(1);
     const [reportStudentId, setReportStudentId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(undefined);
+    const [reportSelectedClass, setReportSelectedClass] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(undefined);
     const [reportDateRange, setReportDateRange] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(undefined);
     const [selectedMealTypes, setSelectedMealTypes] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(new Set(ALL_MEAL_TYPES));
     const [isReportView, setIsReportView] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
@@ -1171,6 +1196,27 @@ function AttendancePage() {
         ],
         queryFn: fetchStudents
     });
+    const uniqueClasses = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
+        "AttendancePage.useMemo[uniqueClasses]": ()=>{
+            if (!students.length) return [];
+            const classSet = new Set();
+            students.forEach({
+                "AttendancePage.useMemo[uniqueClasses]": (student)=>{
+                    if (student.classGrade) classSet.add(student.classGrade);
+                }
+            }["AttendancePage.useMemo[uniqueClasses]"]);
+            return Array.from(classSet).sort({
+                "AttendancePage.useMemo[uniqueClasses]": (a, b)=>{
+                    const classA = parseClass(a);
+                    const classB = parseClass(b);
+                    if (classA.number !== classB.number) return classA.number - classB.number;
+                    return classA.letter.localeCompare(classB.letter);
+                }
+            }["AttendancePage.useMemo[uniqueClasses]"]);
+        }
+    }["AttendancePage.useMemo[uniqueClasses]"], [
+        students
+    ]);
     const handleSort = (key)=>{
         let direction = 'ascending';
         if (sortConfig.key === key && sortConfig.direction === 'ascending') {
@@ -1202,10 +1248,10 @@ function AttendancePage() {
         }
     };
     const handleGenerateReport = ()=>{
-        if (!reportStudentId && !reportDateRange?.from && selectedMealTypes.size === 0) {
+        if (!reportStudentId && !reportSelectedClass && !reportDateRange?.from && selectedMealTypes.size === 0) {
             toast({
                 title: "Filter Required",
-                description: "Please select a student, date range, or at least one meal type to generate a report.",
+                description: "Please select a student, class, date range, or at least one meal type to generate a report.",
                 variant: "default"
             });
             return;
@@ -1215,6 +1261,7 @@ function AttendancePage() {
     };
     const clearReportFilters = ()=>{
         setReportStudentId(undefined);
+        setReportSelectedClass(undefined);
         setReportDateRange(undefined);
         setIsReportView(false);
         setCurrentPage(1);
@@ -1228,6 +1275,11 @@ function AttendancePage() {
                 if (reportStudentId && reportStudentId !== 'all_students') {
                     recordsToProcess = recordsToProcess.filter({
                         "AttendancePage.useMemo[processedRecords]": (record)=>record.student.studentId === reportStudentId
+                    }["AttendancePage.useMemo[processedRecords]"]);
+                }
+                if (reportSelectedClass) {
+                    recordsToProcess = recordsToProcess.filter({
+                        "AttendancePage.useMemo[processedRecords]": (record)=>record.student.classGrade === reportSelectedClass
                     }["AttendancePage.useMemo[processedRecords]"]);
                 }
                 if (reportDateRange?.from) {
@@ -1288,6 +1340,7 @@ function AttendancePage() {
         sortConfig,
         isReportView,
         reportStudentId,
+        reportSelectedClass,
         reportDateRange,
         selectedMealTypes
     ]);
@@ -1299,7 +1352,8 @@ function AttendancePage() {
                     "AttendancePage.useMemo[reportContext]": (s)=>s.studentId === reportStudentId
                 }["AttendancePage.useMemo[reportContext]"])?.name || reportStudentId;
             }
-            // ... rest of report context logic is fine ...
+            const classInfoForTitle = reportSelectedClass ? `Class ${reportSelectedClass}` : "All Classes";
+            const classInfoForFile = reportSelectedClass ? `Class_${reportSelectedClass.replace(/\s+/g, '_')}` : "All_Classes";
             let dateInfoForTitle = "All Dates";
             let dateInfoForFile = "All_Dates";
             if (reportDateRange?.from) {
@@ -1326,10 +1380,11 @@ function AttendancePage() {
             let dynamicDocTitle = "Attendance Report";
             if (isReportView) {
                 const studentPart = reportStudentId && reportStudentId !== 'all_students' ? studentNameForTitle.replace(/\s+/g, '_') : "All_Students";
+                const classPart = classInfoForFile;
                 const datePart = reportDateRange?.from ? dateInfoForFile.replace(/\s+/g, '_').replace(/-/g, '') : "All_Dates";
                 const mealPart = mealTypeInfoForFile;
-                dynamicFileName = `${baseFileName}_${studentPart}_${datePart}_${mealPart}`;
-                dynamicDocTitle = `Attendance Report: ${studentNameForTitle} (${dateInfoForTitle}) - Meals: ${mealTypeInfoForTitle}`;
+                dynamicFileName = `${baseFileName}_${studentPart}_${classPart}_${datePart}_${mealPart}`;
+                dynamicDocTitle = `Attendance Report: ${studentNameForTitle}, ${classInfoForTitle}, (${dateInfoForTitle}) - Meals: ${mealTypeInfoForTitle}`;
             } else if (searchTerm) {
                 const mealPart = selectedMealTypes.size > 0 && selectedMealTypes.size < ALL_MEAL_TYPES.length ? mealTypeInfoForFile : "All_Meals";
                 dynamicFileName = `Attendance_Search_${searchTerm.replace(/\s+/g, '_')}_${mealPart}`;
@@ -1348,6 +1403,7 @@ function AttendancePage() {
         isReportView,
         reportStudentId,
         students,
+        reportSelectedClass,
         reportDateRange,
         searchTerm,
         selectedMealTypes
@@ -1547,7 +1603,7 @@ function AttendancePage() {
                             children: "Attendance Records"
                         }, void 0, false, {
                             fileName: "[project]/src/app/admin/attendance/page.tsx",
-                            lineNumber: 370,
+                            lineNumber: 405,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1555,18 +1611,18 @@ function AttendancePage() {
                             children: "View and manage all meal attendance records."
                         }, void 0, false, {
                             fileName: "[project]/src/app/admin/attendance/page.tsx",
-                            lineNumber: 371,
+                            lineNumber: 406,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/admin/attendance/page.tsx",
-                    lineNumber: 369,
+                    lineNumber: 404,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                lineNumber: 368,
+                lineNumber: 403,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
@@ -1581,31 +1637,31 @@ function AttendancePage() {
                                         className: "h-5 w-5"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                        lineNumber: 377,
+                                        lineNumber: 412,
                                         columnNumber: 58
                                     }, this),
                                     " Attendance Report Filters"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                lineNumber: 377,
+                                lineNumber: 412,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardDescription"], {
-                                children: "Filter attendance records by student, date range. Meal type filters below are always active."
+                                children: "Filter attendance records by student, class, and date range. Meal type filters below are always active."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                lineNumber: 378,
+                                lineNumber: 413,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                        lineNumber: 376,
+                        lineNumber: 411,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
-                        className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-end",
+                        className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 children: [
@@ -1615,7 +1671,7 @@ function AttendancePage() {
                                         children: "Student"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                        lineNumber: 382,
+                                        lineNumber: 417,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Select"], {
@@ -1628,12 +1684,12 @@ function AttendancePage() {
                                                     placeholder: isLoadingStudents ? "Loading..." : "Select a student"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                    lineNumber: 385,
+                                                    lineNumber: 420,
                                                     columnNumber: 17
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                lineNumber: 384,
+                                                lineNumber: 419,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectContent"], {
@@ -1643,7 +1699,7 @@ function AttendancePage() {
                                                         children: "All Students"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                        lineNumber: 388,
+                                                        lineNumber: 423,
                                                         columnNumber: 17
                                                     }, this),
                                                     students.map((student)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
@@ -1656,25 +1712,90 @@ function AttendancePage() {
                                                             ]
                                                         }, student.id, true, {
                                                             fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                            lineNumber: 390,
+                                                            lineNumber: 425,
                                                             columnNumber: 19
                                                         }, this))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                lineNumber: 387,
+                                                lineNumber: 422,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                        lineNumber: 383,
+                                        lineNumber: 418,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                lineNumber: 381,
+                                lineNumber: 416,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
+                                        htmlFor: "class-select",
+                                        className: "mb-1 block text-sm font-medium",
+                                        children: "Class/Grade"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/admin/attendance/page.tsx",
+                                        lineNumber: 434,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Select"], {
+                                        value: reportSelectedClass,
+                                        onValueChange: (value)=>setReportSelectedClass(value === 'all_classes' ? undefined : value),
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectTrigger"], {
+                                                id: "class-select",
+                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectValue"], {
+                                                    placeholder: "Select a class"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/app/admin/attendance/page.tsx",
+                                                    lineNumber: 437,
+                                                    columnNumber: 21
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/app/admin/attendance/page.tsx",
+                                                lineNumber: 436,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectContent"], {
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
+                                                        value: "all_classes",
+                                                        children: "All Classes"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/app/admin/attendance/page.tsx",
+                                                        lineNumber: 440,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    uniqueClasses.map((cls)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
+                                                            value: cls,
+                                                            children: cls
+                                                        }, cls, false, {
+                                                            fileName: "[project]/src/app/admin/attendance/page.tsx",
+                                                            lineNumber: 442,
+                                                            columnNumber: 25
+                                                        }, this))
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/app/admin/attendance/page.tsx",
+                                                lineNumber: 439,
+                                                columnNumber: 17
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/app/admin/attendance/page.tsx",
+                                        lineNumber: 435,
+                                        columnNumber: 13
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/app/admin/attendance/page.tsx",
+                                lineNumber: 433,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1685,7 +1806,7 @@ function AttendancePage() {
                                         children: "Date Range"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                        lineNumber: 399,
+                                        lineNumber: 451,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$popover$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Popover"], {
@@ -1701,7 +1822,7 @@ function AttendancePage() {
                                                             className: "mr-2 h-4 w-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                            lineNumber: 403,
+                                                            lineNumber: 455,
                                                             columnNumber: 19
                                                         }, this),
                                                         reportDateRange?.from ? reportDateRange.to ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -1714,18 +1835,18 @@ function AttendancePage() {
                                                             children: "Pick a date range"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                            lineNumber: 404,
+                                                            lineNumber: 456,
                                                             columnNumber: 211
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                    lineNumber: 402,
+                                                    lineNumber: 454,
                                                     columnNumber: 17
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                lineNumber: 401,
+                                                lineNumber: 453,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$popover$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PopoverContent"], {
@@ -1740,28 +1861,28 @@ function AttendancePage() {
                                                     numberOfMonths: 2
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                    lineNumber: 408,
+                                                    lineNumber: 460,
                                                     columnNumber: 17
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                lineNumber: 407,
+                                                lineNumber: 459,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                        lineNumber: 400,
+                                        lineNumber: 452,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                lineNumber: 398,
+                                lineNumber: 450,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "md:col-span-2 lg:col-span-3 flex flex-col sm:flex-row gap-2 pt-2",
+                                className: "md:col-span-2 lg:col-span-4 flex flex-col sm:flex-row gap-2 pt-2",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
                                         onClick: handleGenerateReport,
@@ -1769,45 +1890,45 @@ function AttendancePage() {
                                         children: "Generate Report View"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                        lineNumber: 414,
+                                        lineNumber: 466,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
                                         onClick: clearReportFilters,
                                         variant: "outline",
                                         className: "w-full sm:w-auto",
-                                        disabled: !isReportView && !reportStudentId && !reportDateRange?.from,
+                                        disabled: !isReportView && !reportStudentId && !reportSelectedClass && !reportDateRange?.from,
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$filter$2d$x$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__FilterX$3e$__["FilterX"], {
                                                 className: "mr-2 h-4 w-4"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                lineNumber: 416,
+                                                lineNumber: 468,
                                                 columnNumber: 17
                                             }, this),
                                             " Clear Report Filters"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                        lineNumber: 415,
+                                        lineNumber: 467,
                                         columnNumber: 14
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                lineNumber: 413,
+                                lineNumber: 465,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                        lineNumber: 380,
+                        lineNumber: 415,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                lineNumber: 375,
+                lineNumber: 410,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
@@ -1824,20 +1945,20 @@ function AttendancePage() {
                                                 children: isReportView ? "Report Results" : "Filtered Records"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                lineNumber: 426,
+                                                lineNumber: 478,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardDescription"], {
-                                                children: isLoadingAttendance ? "Loading records..." : isReportView ? `Report for ${reportStudentId && reportStudentId !== 'all_students' ? students.find((s)=>s.studentId === reportStudentId)?.name || 'selected student' : 'all students'}${reportDateRange?.from ? ` from ${(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])(reportDateRange.from, "LLL dd, y")}` : ''}${reportDateRange?.to ? ` to ${(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])(reportDateRange.to, "LLL dd, y")}` : reportDateRange?.from ? '' : ''}. Meals: ${selectedMealTypes.size === ALL_MEAL_TYPES.length ? 'All' : Array.from(selectedMealTypes).map((m)=>m.charAt(0) + m.slice(1).toLowerCase()).join(', ') || 'None'}. Found ${processedRecords.length} record(s).` : `Displaying records. Meals: ${selectedMealTypes.size === ALL_MEAL_TYPES.length ? 'All' : Array.from(selectedMealTypes).map((m)=>m.charAt(0) + m.slice(1).toLowerCase()).join(', ') || 'None'}. ${searchTerm ? `Search: "${searchTerm}".` : ''} Found ${processedRecords.length} record(s).`
+                                                children: isLoadingAttendance ? "Loading records..." : isReportView ? `Report for ${reportStudentId && reportStudentId !== 'all_students' ? students.find((s)=>s.studentId === reportStudentId)?.name || 'selected student' : 'all students'}${reportSelectedClass ? `, Class: ${reportSelectedClass}` : ''}${reportDateRange?.from ? ` from ${(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])(reportDateRange.from, "LLL dd, y")}` : ''}${reportDateRange?.to ? ` to ${(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])(reportDateRange.to, "LLL dd, y")}` : reportDateRange?.from ? '' : ''}. Meals: ${selectedMealTypes.size === ALL_MEAL_TYPES.length ? 'All' : Array.from(selectedMealTypes).map((m)=>m.charAt(0) + m.slice(1).toLowerCase()).join(', ') || 'None'}. Found ${processedRecords.length} record(s).` : `Displaying records. Meals: ${selectedMealTypes.size === ALL_MEAL_TYPES.length ? 'All' : Array.from(selectedMealTypes).map((m)=>m.charAt(0) + m.slice(1).toLowerCase()).join(', ') || 'None'}. ${searchTerm ? `Search: "${searchTerm}".` : ''} Found ${processedRecords.length} record(s).`
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                lineNumber: 427,
+                                                lineNumber: 479,
                                                 columnNumber: 21
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                        lineNumber: 425,
+                                        lineNumber: 477,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1853,14 +1974,14 @@ function AttendancePage() {
                                                         className: "mr-2 h-4 w-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                        lineNumber: 437,
+                                                        lineNumber: 489,
                                                         columnNumber: 25
                                                     }, this),
                                                     " Export PDF"
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                lineNumber: 436,
+                                                lineNumber: 488,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -1873,26 +1994,26 @@ function AttendancePage() {
                                                         className: "mr-2 h-4 w-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                        lineNumber: 440,
+                                                        lineNumber: 492,
                                                         columnNumber: 25
                                                     }, this),
                                                     " Export Excel"
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                lineNumber: 439,
+                                                lineNumber: 491,
                                                 columnNumber: 21
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                        lineNumber: 435,
+                                        lineNumber: 487,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                lineNumber: 424,
+                                lineNumber: 476,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1905,7 +2026,7 @@ function AttendancePage() {
                                                 className: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                lineNumber: 447,
+                                                lineNumber: 499,
                                                 columnNumber: 25
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -1916,13 +2037,13 @@ function AttendancePage() {
                                                 className: "pl-10 w-full"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                lineNumber: 448,
+                                                lineNumber: 500,
                                                 columnNumber: 25
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                        lineNumber: 446,
+                                        lineNumber: 498,
                                         columnNumber: 21
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1935,14 +2056,14 @@ function AttendancePage() {
                                                         className: "h-4 w-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                        lineNumber: 452,
+                                                        lineNumber: 504,
                                                         columnNumber: 95
                                                     }, this),
                                                     "Global Meal Type Filters"
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                lineNumber: 452,
+                                                lineNumber: 504,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1956,7 +2077,7 @@ function AttendancePage() {
                                                                 onCheckedChange: (checked)=>handleMealTypeChange(mealType, !!checked)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                                lineNumber: 456,
+                                                                lineNumber: 508,
                                                                 columnNumber: 25
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
@@ -1965,36 +2086,36 @@ function AttendancePage() {
                                                                 children: mealType.charAt(0) + mealType.slice(1).toLowerCase()
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                                lineNumber: 457,
+                                                                lineNumber: 509,
                                                                 columnNumber: 25
                                                             }, this)
                                                         ]
                                                     }, mealType, true, {
                                                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                        lineNumber: 455,
+                                                        lineNumber: 507,
                                                         columnNumber: 25
                                                     }, this))
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                lineNumber: 453,
+                                                lineNumber: 505,
                                                 columnNumber: 21
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                        lineNumber: 451,
+                                        lineNumber: 503,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                lineNumber: 444,
+                                lineNumber: 496,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                        lineNumber: 423,
+                        lineNumber: 475,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -2005,7 +2126,7 @@ function AttendancePage() {
                                     className: "h-8 w-8 animate-spin text-primary"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                    lineNumber: 468,
+                                    lineNumber: 520,
                                     columnNumber: 73
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2013,13 +2134,13 @@ function AttendancePage() {
                                     children: "Loading attendance..."
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                    lineNumber: 468,
+                                    lineNumber: 520,
                                     columnNumber: 130
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/admin/attendance/page.tsx",
-                            lineNumber: 468,
+                            lineNumber: 520,
                             columnNumber: 17
                         }, this) : attendanceError ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "text-center py-10 text-destructive",
@@ -2028,7 +2149,7 @@ function AttendancePage() {
                                     className: "mx-auto h-8 w-8 mb-2"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                    lineNumber: 470,
+                                    lineNumber: 522,
                                     columnNumber: 69
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2038,20 +2159,20 @@ function AttendancePage() {
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                    lineNumber: 470,
+                                    lineNumber: 522,
                                     columnNumber: 119
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/admin/attendance/page.tsx",
-                            lineNumber: 470,
+                            lineNumber: 522,
                             columnNumber: 17
                         }, this) : processedRecords.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                             className: "text-center py-4 text-muted-foreground",
                             children: isReportView ? "No records match your report criteria." : "No attendance records found for the current filters."
                         }, void 0, false, {
                             fileName: "[project]/src/app/admin/attendance/page.tsx",
-                            lineNumber: 472,
+                            lineNumber: 524,
                             columnNumber: 17
                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
                             children: [
@@ -2061,7 +2182,7 @@ function AttendancePage() {
                                     onSort: handleSort
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                    lineNumber: 475,
+                                    lineNumber: 527,
                                     columnNumber: 21
                                 }, this),
                                 processedRecords.length > ITEMS_PER_PAGE && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2080,7 +2201,7 @@ function AttendancePage() {
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                            lineNumber: 478,
+                                            lineNumber: 530,
                                             columnNumber: 25
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2096,14 +2217,14 @@ function AttendancePage() {
                                                             className: "mr-1 h-4 w-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                            lineNumber: 480,
+                                                            lineNumber: 532,
                                                             columnNumber: 156
                                                         }, this),
                                                         "Previous"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                    lineNumber: 480,
+                                                    lineNumber: 532,
                                                     columnNumber: 29
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2117,48 +2238,48 @@ function AttendancePage() {
                                                             className: "ml-1 h-4 w-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                            lineNumber: 481,
+                                                            lineNumber: 533,
                                                             columnNumber: 178
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                                    lineNumber: 481,
+                                                    lineNumber: 533,
                                                     columnNumber: 29
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                            lineNumber: 479,
+                                            lineNumber: 531,
                                             columnNumber: 25
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/admin/attendance/page.tsx",
-                                    lineNumber: 477,
+                                    lineNumber: 529,
                                     columnNumber: 25
                                 }, this)
                             ]
                         }, void 0, true)
                     }, void 0, false, {
                         fileName: "[project]/src/app/admin/attendance/page.tsx",
-                        lineNumber: 466,
+                        lineNumber: 518,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/admin/attendance/page.tsx",
-                lineNumber: 422,
+                lineNumber: 474,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/admin/attendance/page.tsx",
-        lineNumber: 367,
+        lineNumber: 402,
         columnNumber: 5
     }, this);
 }
-_s(AttendancePage, "4Qq3T9OXYxi74qVorTauiUzHG+g=", false, function() {
+_s(AttendancePage, "A85qEjPL4xj0DbHbkOzYbZlG4po=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"],
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useQuery$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useQuery"],

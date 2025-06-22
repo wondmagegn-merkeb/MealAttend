@@ -9,9 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { AttendanceTable, type SortConfig, type SortableAttendanceKeys } from "@/components/admin/AttendanceTable";
-import { Search, BookCopy, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FilterX, FileText, FileSpreadsheet, Utensils, AlertTriangle, Loader2 } from "lucide-react";
+import { Search, BookCopy, Calendar as CalendarIcon, ChevronLeft, ChevronRight, FilterX, FileText, FileSpreadsheet, Utensils, AlertTriangle, Loader2, ChevronsUpDown, Check } from "lucide-react";
 import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
@@ -22,7 +22,7 @@ import * as XLSX from 'xlsx';
 import { useQuery } from '@tanstack/react-query';
 import type { AttendanceRecord, Student } from '@prisma/client';
 
-type MealType = "BREAKFAST" | "LUNCH" | "DINNER"; // Aligned with Prisma Enum
+type MealType = "BREAKFAST" | "LUNCH" | "DINNER";
 
 const ALL_MEAL_TYPES: MealType[] = ["BREAKFAST", "LUNCH", "DINNER"];
 const ITEMS_PER_PAGE = 10;
@@ -123,6 +123,12 @@ export default function AttendancePage() {
   const [reportDateRange, setReportDateRange] = useState<DateRange | undefined>(undefined);
   const [selectedMealTypes, setSelectedMealTypes] = useState<Set<MealType>>(new Set(ALL_MEAL_TYPES));
   const [isReportView, setIsReportView] = useState(false);
+
+  // States for combobox functionality
+  const [studentSearch, setStudentSearch] = useState('');
+  const [isStudentPopoverOpen, setStudentPopoverOpen] = useState(false);
+  const [classSearch, setClassSearch] = useState('');
+  const [isClassPopoverOpen, setClassPopoverOpen] = useState(false);
   
   const { data: allAttendanceRecords = [], isLoading: isLoadingAttendance, error: attendanceError } = useQuery<AttendanceRecordWithStudent[]>({
     queryKey: ['attendanceRecords'],
@@ -397,6 +403,18 @@ export default function AttendancePage() {
         setCurrentPage(1);
     }
   }, [currentPage, totalPages, processedRecords.length]);
+  
+  const filteredStudents = useMemo(() => {
+    if (!students) return [];
+    if (!studentSearch) return students;
+    return students.filter(s => s.name.toLowerCase().includes(studentSearch.toLowerCase()));
+  }, [students, studentSearch]);
+
+  const filteredClasses = useMemo(() => {
+    if (!uniqueClasses) return [];
+    if (!classSearch) return uniqueClasses;
+    return uniqueClasses.filter(c => c.toLowerCase().includes(classSearch.toLowerCase()));
+  }, [uniqueClasses, classSearch]);
 
   return (
     <div className="space-y-6">
@@ -415,36 +433,86 @@ export default function AttendancePage() {
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
           <div>
             <Label htmlFor="student-select" className="mb-1 block text-sm font-medium">Student</Label>
-            <Select value={reportStudentId} onValueChange={(value) => setReportStudentId(value === 'all_students' ? undefined : value)}>
-              <SelectTrigger id="student-select">
-                <SelectValue placeholder={isLoadingStudents ? "Loading..." : "Select a student"} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all_students">All Students</SelectItem>
-                {students.map(student => (
-                  <SelectItem key={student.id} value={student.studentId}>
-                    {student.name} ({student.studentId})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={isStudentPopoverOpen} onOpenChange={setStudentPopoverOpen}>
+              <PopoverTrigger asChild>
+                 <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={isStudentPopoverOpen}
+                    className="w-full justify-between"
+                  >
+                   <span className="truncate">
+                    {reportStudentId
+                      ? students.find((s) => s.studentId === reportStudentId)?.name
+                      : "Select a student"}
+                   </span>
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                  <Input 
+                      placeholder="Search student..."
+                      value={studentSearch}
+                      onChange={(e) => setStudentSearch(e.target.value)}
+                      className="m-1 w-[calc(100%-0.5rem)] border-0 shadow-none focus-visible:ring-0"
+                  />
+                  <ScrollArea className="h-48">
+                    <div 
+                      onClick={() => { setReportStudentId(undefined); setStudentPopoverOpen(false); }}
+                      className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent"
+                    >
+                      All Students
+                    </div>
+                    {filteredStudents.map(student => (
+                      <div 
+                        key={student.id} 
+                        onClick={() => { setReportStudentId(student.studentId); setStudentPopoverOpen(false); }}
+                        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent"
+                      >
+                         <Check className={cn("mr-2 h-4 w-4", reportStudentId === student.studentId ? "opacity-100" : "opacity-0")} />
+                         {student.name} ({student.studentId})
+                      </div>
+                    ))}
+                    {filteredStudents.length === 0 && <p className="p-2 text-center text-sm text-muted-foreground">No students found.</p>}
+                  </ScrollArea>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div>
             <Label htmlFor="class-select" className="mb-1 block text-sm font-medium">Class/Grade</Label>
-            <Select value={reportSelectedClass} onValueChange={(value) => setReportSelectedClass(value === 'all_classes' ? undefined : value)}>
-                <SelectTrigger id="class-select">
-                    <SelectValue placeholder="Select a class" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all_classes">All Classes</SelectItem>
-                    {uniqueClasses.map(cls => (
-                        <SelectItem key={cls} value={cls}>
+            <Popover open={isClassPopoverOpen} onOpenChange={setClassPopoverOpen}>
+               <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" aria-expanded={isClassPopoverOpen} className="w-full justify-between">
+                     <span className="truncate">
+                      {reportSelectedClass
+                        ? `Class ${reportSelectedClass}`
+                        : "Select a class"}
+                     </span>
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                    <Input 
+                        placeholder="Search class..."
+                        value={classSearch}
+                        onChange={(e) => setClassSearch(e.target.value)}
+                        className="m-1 w-[calc(100%-0.5rem)] border-0 shadow-none focus-visible:ring-0"
+                    />
+                    <ScrollArea className="h-48">
+                        <div onClick={() => { setReportSelectedClass(undefined); setClassPopoverOpen(false); }} className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent">
+                          All Classes
+                        </div>
+                        {filteredClasses.map(cls => (
+                           <div key={cls} onClick={() => { setReportSelectedClass(cls); setClassPopoverOpen(false); }} className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent">
+                            <Check className={cn("mr-2 h-4 w-4", reportSelectedClass === cls ? "opacity-100" : "opacity-0")} />
                             {cls}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
+                           </div>
+                        ))}
+                        {filteredClasses.length === 0 && <p className="p-2 text-center text-sm text-muted-foreground">No classes found.</p>}
+                    </ScrollArea>
+                </PopoverContent>
+            </Popover>
           </div>
           
           <div>
@@ -541,3 +609,5 @@ export default function AttendancePage() {
     </div>
   );
 }
+
+    
