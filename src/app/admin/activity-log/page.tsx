@@ -8,7 +8,6 @@ import { Loader2, Search, ChevronLeft, ChevronRight, History, ListChecks, AlertT
 import { ActivityLogTable } from "@/components/admin/activity/ActivityLogTable";
 import type { UserActivityLog } from "@prisma/client";
 import { Button } from '@/components/ui/button';
-import { AuthGuard } from '@/components/auth/AuthGuard';
 import { useQuery } from '@tanstack/react-query';
 
 type SortableActivityLogKeys = 'activityTimestamp' | 'userIdentifier' | 'action';
@@ -105,83 +104,81 @@ export default function ActivityLogPage() {
   }, [currentPage, totalPages, filteredAndSortedLogs.length]);
 
   return (
-    <AuthGuard requiredRole="Admin">
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h2 className="text-3xl font-semibold tracking-tight text-primary flex items-center">
-              <ListChecks className="mr-3 h-8 w-8" /> User Activity Log
-            </h2>
-            <p className="text-muted-foreground">View recorded user actions within the application.</p>
-          </div>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-3xl font-semibold tracking-tight text-primary flex items-center">
+            <ListChecks className="mr-3 h-8 w-8" /> User Activity Log
+          </h2>
+          <p className="text-muted-foreground">View recorded user actions within the application.</p>
         </div>
-
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle>Activity Records</CardTitle>
-            <CardDescription>Browse user activity logs from the database.</CardDescription>
-            <div className="mt-4 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search by User ID, Action, or Details..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-                className="pl-10 w-full sm:w-1/2 md:w-1/3"
-              />
-            </div>
-          </CardHeader>
-          <CardContent>
-            {isLoadingLogs ? (
-              <div className="flex justify-center items-center py-4">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                <span className="ml-2">Loading logs...</span>
-              </div>
-            ) : logsError ? (
-               <div className="text-center py-10 text-destructive">
-                  <AlertTriangle className="mx-auto h-8 w-8 mb-2" />
-                  <p>Error loading activity logs: {(logsError as Error).message}</p>
-              </div>
-            ) : (
-              <ActivityLogTable 
-                logs={currentTableData} 
-                sortConfig={sortConfig}
-                onSort={handleSort}
-              />
-            )}
-            {filteredAndSortedLogs.length > ITEMS_PER_PAGE && !isLoadingLogs && !logsError && (
-              <div className="flex items-center justify-between pt-4 mt-4 border-t">
-                <p className="text-sm text-muted-foreground">
-                  Page {currentPage} of {totalPages} ({filteredAndSortedLogs.length} logs)
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    <ChevronLeft className="mr-1 h-4 w-4" />
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                    <ChevronRight className="ml-1 h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-            {filteredAndSortedLogs.length === 0 && !isLoadingLogs && !logsError && (
-              <p className="text-center text-muted-foreground py-4">No activity logs match your current search criteria or no logs found in the database.</p>
-            )}
-          </CardContent>
-        </Card>
       </div>
-    </AuthGuard>
+
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle>Activity Records</CardTitle>
+          <CardDescription>Browse user activity logs from the database.</CardDescription>
+          <div className="mt-4 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search by User ID, Action, or Details..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="pl-10 w-full sm:w-1/2 md:w-1/3"
+            />
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isLoadingLogs ? (
+            <div className="flex justify-center items-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <span className="ml-2">Loading logs...</span>
+            </div>
+          ) : logsError ? (
+             <div className="text-center py-10 text-destructive">
+                <AlertTriangle className="mx-auto h-8 w-8 mb-2" />
+                <p>Error loading activity logs: {(logsError as Error).message}</p>
+            </div>
+          ) : (
+            <ActivityLogTable 
+              logs={currentTableData} 
+              sortConfig={sortConfig}
+              onSort={handleSort}
+            />
+          )}
+          {filteredAndSortedLogs.length > ITEMS_PER_PAGE && !isLoadingLogs && !logsError && (
+            <div className="flex items-center justify-between pt-4 mt-4 border-t">
+              <p className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages} ({filteredAndSortedLogs.length} logs)
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="mr-1 h-4 w-4" />
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                  <ChevronRight className="ml-1 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+          {filteredAndSortedLogs.length === 0 && !isLoadingLogs && !logsError && (
+            <p className="text-center text-muted-foreground py-4">No activity logs match your current search criteria or no logs found in the database.</p>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, BookUser, Settings, QrCode, UsersRound, Users as UsersIcon, Building2 as DepartmentIcon, History } from 'lucide-react'; // Added History
+import { LayoutDashboard, BookUser, Settings, QrCode, UsersRound, Users as UsersIcon, Building2 as DepartmentIcon, History } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   SidebarContent as ShadSidebarContent,
@@ -27,7 +27,7 @@ const navItemsBase = [
 const adminOnlyNavItems = [
   { href: '/admin/users', label: 'Users', icon: UsersIcon, tooltip: 'Manage Users (Admin)' },
   { href: '/admin/departments', label: 'Departments', icon: DepartmentIcon, tooltip: 'Manage Departments (Admin)' },
-  { href: '/admin/activity-log', label: 'Activity Log', icon: History, tooltip: 'View User Activity (Admin)' }, // Added Activity Log
+  { href: '/admin/activity-log', label: 'Activity Log', icon: History, tooltip: 'View User Activity (Admin)' },
 ];
 
 const navItemsSettings = [
@@ -40,9 +40,9 @@ export function AdminSidebar() {
 
   let navItems = [...navItemsBase];
   if (currentUserRole === 'Admin') {
-    navItems = [...navItems, ...adminOnlyNavItems];
+    navItems.push(...adminOnlyNavItems);
   }
-  navItems = [...navItems, ...navItemsSettings];
+  navItems.push(...navItemsSettings);
 
 
   return (
