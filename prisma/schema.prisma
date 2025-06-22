@@ -47,9 +47,10 @@ model User {
   profileImageURL        String?
   passwordChangeRequired Boolean   @default(false)
   departmentId           String?
-  department             Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  department             Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull) 
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
+  status                 String? @default("active")
 }
 
 model Department {
@@ -61,7 +62,7 @@ model Department {
 }
 
 model UserActivityLog {
-  id                String   @id @default(cuid())
+  id                String   @id @default(cuoid())
   userIdentifier    String
   action            String
   details           String?
@@ -82,4 +83,10 @@ enum AttendanceStatus {
 enum UserRole {
   Admin
   User
+}
+
+enum UserStatus {
+  active
+  inactive
+  suspended
 }

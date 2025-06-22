@@ -14,7 +14,7 @@ import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { User, Department } from '@prisma/client';
-
+import { UserStatus } from '@prisma/client';
 type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'createdAt';
 type SortDirection = 'ascending' | 'descending';
 
@@ -161,7 +161,7 @@ export default function UsersPage() {
           ) : usersError ? (
             <div className="text-center py-10 text-destructive"><AlertTriangle className="mx-auto h-8 w-8 mb-2" /><p>Error loading users: {(usersError as Error).message}</p></div>
           ) : (
-            <UsersTable users={currentTableData} onEdit={handleEditUser} onDelete={handleDeleteUser} sortConfig={sortConfig} onSort={handleSort} />
+ <UsersTable users={currentTableData} onEdit={handleEditUser} onDelete={handleDeleteUser} sortConfig={sortConfig} onSort={handleSort} />
           )}
           
           {!isLoadingUsers && !usersError && filteredAndSortedUsers.length > ITEMS_PER_PAGE && (
