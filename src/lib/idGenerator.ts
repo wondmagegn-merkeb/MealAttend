@@ -3,12 +3,14 @@
 
 import prisma from '@/lib/prisma';
 
-type IdType = 'STUDENT' | 'USER' | 'DEPARTMENT';
+type IdType = 'STUDENT' | 'USER' | 'DEPARTMENT' | 'ATTENDANCE' | 'ACTIVITY_LOG';
 
 const typeToPrefixMap: Record<IdType, string> = {
   STUDENT: 'STU',
   USER: 'USR',
   DEPARTMENT: 'DEP',
+  ATTENDANCE: 'ATT',
+  ACTIVITY_LOG: 'LOG',
 };
 
 /**

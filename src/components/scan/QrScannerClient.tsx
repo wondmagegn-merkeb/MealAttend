@@ -11,12 +11,12 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CheckCircle, AlertTriangle, Info, Loader2, Utensils, ScanLine, Search } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { format, parseISO, startOfToday } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import jsQR from 'jsqr';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
-import { mockStudents, mockAttendanceRecords } from '@/lib/demo-data';
 import type { Student, AttendanceRecord, MealType } from "@/types";
+import { checkAndRecordAttendance } from '@/actions/attendanceActions';
 
 const SCAN_COOLDOWN_MS = 3000;
 
@@ -42,81 +42,29 @@ export function QrScannerClient() {
   const [lastResult, setLastResult] = useState<ResultState | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // In-memory state for demo data
-  const [students, setStudents] = useState<Student[]>(mockStudents);
-  const [attendance, setAttendance] = useState<AttendanceRecord[]>(mockAttendanceRecords);
-
-  const playSound = (type: 'success' | 'error' | 'alreadyRecorded') => {
-    try {
-      const audio = new Audio(`/sounds/${type}.mp3`);
-      audio.play().catch(e => console.error(`Error playing sound '${type}':`, e));
-    } catch (e) { console.error("Audio playback failed:", e); }
-  };
-
   const processScanOrCheck = useCallback(async (identifier: { qrCodeData?: string; studentId?: string }) => {
     setIsProcessing(true);
     setLastScanTime(Date.now());
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const result = await checkAndRecordAttendance(identifier, selectedMealType);
 
-    const student = identifier.qrCodeData
-      ? students.find(s => s.qrCodeData === identifier.qrCodeData)
-      : students.find(s => s.studentId === identifier.studentId);
-
-    if (!student) {
-        const errorMessage = `Student not found.`;
-        playSound('error');
-        setLastResult({ student: null, record: null, message: errorMessage, type: 'error' });
-        toast({ title: "Scan/Search Error", description: errorMessage, variant: "destructive" });
-        logUserActivity(currentUserId, "ATTENDANCE_FAILURE", `Identifier: ${identifier.qrCodeData || identifier.studentId}. Error: ${errorMessage}`);
-        setIsProcessing(false);
-        return;
-    }
-
-    const today = startOfToday();
-    const existingRecord = attendance.find(r => 
-        r.studentId === student.studentId && 
-        r.mealType === selectedMealType &&
-        startOfToday().getTime() === parseISO(r.recordDate).getTime()
-    );
-
-    // If it's a manual check (not a scan)
-    if (identifier.studentId && !identifier.qrCodeData) {
-        if (existingRecord) {
-            setLastResult({ student, record: existingRecord, message: `${student.name} has already been recorded for this meal today.`, type: 'already_recorded' });
-        } else {
-            setLastResult({ student, record: null, message: `${student.name} has not yet been recorded for this meal.`, type: 'info' });
+    if (result.success) {
+        if (result.type === 'success') {
+            toast({ title: "Attendance Recorded!", description: `${result.student?.name} marked as present for ${selectedMealType}.` });
+            logUserActivity(currentUserId, "ATTENDANCE_RECORD_SUCCESS", `Student: ${result.student?.name}, Meal: ${selectedMealType}`);
+        } else if (result.type === 'already_recorded') {
+             toast({ title: "Already Recorded", description: `${result.student?.name} has already been recorded.` });
         }
-        setIsProcessing(false);
-        return;
-    }
-
-    // If it's a scan
-    if (existingRecord) {
-        playSound('alreadyRecorded');
-        setLastResult({ student, record: existingRecord, message: `Already recorded for ${selectedMealType} at ${format(parseISO(existingRecord.scannedAtTimestamp), 'hh:mm a')}.`, type: 'already_recorded' });
-        toast({ title: "Already Recorded", description: `${student.name} has already been recorded.` });
-    } else {
-        playSound('success');
-        const newRecord: AttendanceRecord = {
-            id: `att_${Date.now()}`,
-            studentId: student.studentId,
-            mealType: selectedMealType,
-            status: 'PRESENT',
-            recordDate: today.toISOString(),
-            scannedAtTimestamp: new Date().toISOString(),
-            student: student,
-        };
-        setAttendance(prev => [...prev, newRecord]);
-        setLastResult({ student, record: newRecord, message: `Successfully recorded attendance for ${student.name}.`, type: 'success' });
-        toast({ title: "Attendance Recorded!", description: `${student.name} marked as present for ${selectedMealType}.` });
-        logUserActivity(currentUserId, "ATTENDANCE_RECORD_SUCCESS", `Student: ${student.name}, Meal: ${selectedMealType}`);
+        setLastResult({ student: result.student || null, record: result.record || null, message: result.message, type: result.type });
+    } else { // Error case
+        toast({ title: "Scan/Search Error", description: result.message, variant: "destructive" });
+        logUserActivity(currentUserId, "ATTENDANCE_FAILURE", `Identifier: ${identifier.qrCodeData || identifier.studentId}. Error: ${result.message}`);
+        setLastResult({ student: null, record: null, message: result.message, type: 'error' });
     }
 
     setIsProcessing(false);
 
-  }, [students, attendance, selectedMealType, toast, currentUserId]);
+  }, [selectedMealType, toast, currentUserId]);
 
   const processQrCode = useCallback((qrCodeData: string) => {
     if (isProcessing) return;
