@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { UserForm, type UserFormData } from "@/components/admin/users/UserForm";
 import { useToast } from "@/hooks/use-toast";
@@ -10,90 +11,56 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { User } from '@prisma/client';
-
-async function fetchUserById(id: string): Promise<User> {
-  const response = await fetch(`/api/users/${id}`);
-  if (!response.ok) {
-    if (response.status === 404) throw new Error('User not found');
-    throw new Error('Failed to fetch user');
-  }
-  return response.json();
-}
-
-type ApiUserUpdateData = {
-  fullName: string;
-  email: string;
-  role: 'Admin' | 'User';
-  departmentId: string | null;
-  profileImageURL?: string | null;
-};
-
-async function updateUserAPI({ id, data }: { id: string, data: ApiUserUpdateData }): Promise<User> {
-  const response = await fetch(`/api/users/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'Failed to update user' }));
-    throw new Error(errorData.message || 'Failed to update user');
-  }
-  return response.json();
-}
+import { mockUsers } from '@/lib/demo-data';
+import type { UserWithDepartment } from '@/types';
 
 export default function EditUserPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
   const { currentUserId: actorUserId } = useAuth();
-  const queryClient = useQueryClient();
   
   const userIdParam = typeof params.id === 'string' ? params.id : undefined;
 
-  const { data: user, isLoading: isFetchingUser, error: fetchError } = useQuery<User>({
-    queryKey: ['user', userIdParam],
-    queryFn: () => fetchUserById(userIdParam!),
-    enabled: !!userIdParam,
-  });
+  const [user, setUser] = useState<UserWithDepartment | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  const mutation = useMutation({
-    mutationFn: updateUserAPI,
-    onSuccess: (updatedUser) => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      queryClient.invalidateQueries({ queryKey: ['user', updatedUser.id] });
-      logUserActivity(actorUserId, "USER_UPDATE_SUCCESS", `Updated user ID: ${updatedUser.userId}, Name: ${updatedUser.fullName}`);
-      toast({
-        title: "User Updated",
-        description: `${updatedUser.fullName}'s record has been updated.`,
-      });
-      router.push('/admin/users');
-    },
-    onError: (error: Error) => {
-      logUserActivity(actorUserId, "USER_UPDATE_FAILURE", `Attempted to update user ID: ${user?.userId}. Error: ${error.message}`);
-      toast({
-        title: "Error Updating User",
-        description: error.message || "Failed to update user. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  useEffect(() => {
+    setIsLoading(true);
+    if (userIdParam) {
+      setTimeout(() => {
+        const foundUser = mockUsers.find(u => u.id === userIdParam);
+        if (foundUser) {
+          setUser(foundUser);
+        } else {
+          setError(new Error('User not found'));
+        }
+        setIsLoading(false);
+      }, 500);
+    } else {
+      setError(new Error('No user ID provided'));
+      setIsLoading(false);
+    }
+  }, [userIdParam]);
 
   const handleFormSubmit = (data: UserFormData) => {
     if (!userIdParam) return;
+    setIsSubmitting(true);
 
-    const apiData: ApiUserUpdateData = {
-      fullName: data.fullName,
-      email: data.email,
-      role: data.role,
-      departmentId: data.departmentId || null,
-      profileImageURL: data.profileImageURL || null,
-    };
-    mutation.mutate({ id: userIdParam, data: apiData });
+    setTimeout(() => {
+      logUserActivity(actorUserId, "USER_UPDATE_SUCCESS", `Updated user ID: ${user?.userId}, Name: ${data.fullName}`);
+      toast({
+        title: "User Updated (Demo)",
+        description: `${data.fullName}'s record has been updated.`,
+      });
+      router.push('/admin/users');
+      setIsSubmitting(false);
+    }, 1000);
   };
 
-  if (isFetchingUser) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -102,13 +69,13 @@ export default function EditUserPage() {
     );
   }
 
-  if (fetchError) {
+  if (error) {
     return (
       <div className="space-y-6 max-w-2xl mx-auto text-center">
          <Card className="shadow-lg">
             <CardHeader><CardTitle className="text-2xl text-destructive flex items-center justify-center"><AlertTriangle className="mr-2 h-7 w-7" /> Error</CardTitle></CardHeader>
             <CardContent>
-                <p className="text-muted-foreground mb-4">{fetchError.message === 'User not found' ? 'The user record you are trying to edit could not be found.' : `Failed to load user data: ${fetchError.message}`}</p>
+                <p className="text-muted-foreground mb-4">{error.message === 'User not found' ? 'The user record you are trying to edit could not be found.' : `Failed to load user data: ${error.message}`}</p>
                 <Button variant="outline" asChild><Link href="/admin/users"><ArrowLeft className="mr-2 h-4 w-4" />Back to User List</Link></Button>
             </CardContent>
         </Card>
@@ -129,7 +96,7 @@ export default function EditUserPage() {
         <UserForm 
           onSubmit={handleFormSubmit} 
           initialData={user} 
-          isLoading={mutation.isPending}
+          isLoading={isSubmitting}
           submitButtonText="Save Changes"
         />
       )}

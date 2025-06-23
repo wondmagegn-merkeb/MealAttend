@@ -6,13 +6,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { AUTH_TOKEN_KEY, CURRENT_USER_DETAILS_KEY } from '@/lib/constants';
 import { useToast } from './use-toast';
-import type { User, Department } from '@prisma/client';
 import { logUserActivity } from '@/lib/activityLogger';
-import type { ProfileEditFormData } from '@/components/admin/users/UserForm';
-
-export interface UserWithDepartment extends User {
-  department: Department | null;
-}
+import type { UserFormData, ProfileEditFormData } from '@/components/admin/users/UserForm';
+import { mockUsers } from '@/lib/demo-data';
+import type { UserWithDepartment, User } from '@/types';
 
 interface AuthContextType {
   isAuthenticated: boolean | null;
@@ -62,22 +59,13 @@ export function useAuth(): AuthContextType {
   }, []);
 
   const login = useCallback(async (userIdInput: string, password?: string): Promise<boolean> => {
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: userIdInput, password }),
-      });
-console.log("Login API response:", response)
-      const data = await response.json();
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-      if (!response.ok) {
-        logUserActivity(userIdInput, "LOGIN_FAILURE", data.message || 'Invalid credentials');
-        toast({ title: "Login Failed", description: data.message || "Invalid User ID or password.", variant: "destructive" });
-        return false;
-      }
+    const user = mockUsers.find(u => u.userId === userIdInput);
 
-      const user: UserWithDepartment = data.user;
+    // For demo purposes, any password is valid for a found user, but 'password' is required for the user who needs to change it.
+    if (user && (user.passwordChangeRequired ? password === 'password' : true)) {
       localStorage.setItem(AUTH_TOKEN_KEY, `mock-jwt-for-${user.userId}`);
       localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(user));
       
@@ -94,11 +82,10 @@ console.log("Login API response:", response)
         router.push('/admin');
       }
       return true;
-
-    } catch (error) {
-      console.error("Login API error:", error);
-      logUserActivity(userIdInput, "LOGIN_ERROR", (error as Error).message);
-      toast({ title: "Login Error", description: "An unexpected error occurred.", variant: "destructive" });
+    } else {
+      const message = "Invalid User ID or password.";
+      logUserActivity(userIdInput, "LOGIN_FAILURE", message);
+      toast({ title: "Login Failed", description: message, variant: "destructive" });
       return false;
     }
   }, [toast, router]); 
@@ -128,64 +115,37 @@ console.log("Login API response:", response)
       throw new Error("No active user session found.");
     }
 
-    try {
-      const response = await fetch(`/api/users/${currentUser.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: newPassword, passwordChangeRequired: false }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update password.');
-      }
-      
-      const updatedUser = await response.json();
-      setCurrentUser(updatedUser);
-      localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(updatedUser));
-      setIsPasswordChangeRequired(false);
-      logUserActivity(currentUser.userId, "PASSWORD_CHANGE_API_SUCCESS");
-      return updatedUser;
-
-    } catch (e) {
-      const error = e as Error;
-      console.error("Error changing password:", error);
-      toast({ title: "Update Failed", description: error.message, variant: "destructive" });
-      logUserActivity(currentUser.userId, "PASSWORD_CHANGE_FAILURE", error.message);
-      throw error;
-    }
-  }, [currentUser, toast]);
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const updatedUser = { ...currentUser, passwordChangeRequired: false };
+    setCurrentUser(updatedUser);
+    localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(updatedUser));
+    setIsPasswordChangeRequired(false);
+    logUserActivity(currentUser.userId, "PASSWORD_CHANGE_SUCCESS_DEMO");
+    return updatedUser;
+  }, [currentUser]);
 
   const updateProfile = useCallback(async (profileData: ProfileEditFormData): Promise<UserWithDepartment> => {
     if (!currentUser) {
         throw new Error("No active user session found.");
     }
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-    try {
-        const response = await fetch(`/api/users/${currentUser.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(profileData),
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to update profile.');
-        }
-
-        const updatedUser = await response.json();
-        setCurrentUser(updatedUser);
-        localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(updatedUser));
-        logUserActivity(currentUser.userId, "PROFILE_UPDATE_API_SUCCESS");
-        return updatedUser;
-    } catch (e) {
-        const error = e as Error;
-        console.error("Error updating profile:", error);
-        toast({ title: "Update Failed", description: error.message, variant: "destructive" });
-        logUserActivity(currentUser.userId, "PROFILE_UPDATE_FAILURE", error.message);
-        throw error;
-    }
-  }, [currentUser, toast]);
+    const updatedUser = { 
+        ...currentUser, 
+        fullName: profileData.fullName,
+        email: profileData.email,
+        profileImageURL: profileData.profileImageURL || null,
+    };
+    
+    setCurrentUser(updatedUser);
+    localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(updatedUser));
+    logUserActivity(currentUser.userId, "PROFILE_UPDATE_SUCCESS_DEMO");
+    return updatedUser;
+  }, [currentUser]);
 
   return { 
     isAuthenticated, 

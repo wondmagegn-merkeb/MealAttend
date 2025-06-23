@@ -1,4 +1,6 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
+  "/admin/attendance/page": "app/admin/attendance/page.js",
   "/admin/departments/page": "app/admin/departments/page.js",
   "/admin/page": "app/admin/page.js",
   "/api/activity-logs/route": "app/api/activity-logs/route.js",

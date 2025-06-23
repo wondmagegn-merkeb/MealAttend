@@ -19,17 +19,11 @@ import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
-import { useQuery } from '@tanstack/react-query';
-import type { AttendanceRecord, Student } from '@prisma/client';
-
-type MealType = "BREAKFAST" | "LUNCH" | "DINNER";
+import { mockAttendanceRecords, mockStudents } from '@/lib/demo-data';
+import type { AttendanceRecordWithStudent, Student, MealType } from '@/types';
 
 const ALL_MEAL_TYPES: MealType[] = ["BREAKFAST", "LUNCH", "DINNER"];
 const ITEMS_PER_PAGE = 10;
-
-interface AttendanceRecordWithStudent extends AttendanceRecord {
-  student: Student;
-}
 
 interface ExportAttendanceRecord {
   studentId: string;
@@ -38,18 +32,6 @@ interface ExportAttendanceRecord {
   breakfast: string;
   lunch: string;
   dinner: string;
-}
-
-async function fetchAttendanceRecords(): Promise<AttendanceRecordWithStudent[]> {
-  const response = await fetch('/api/attendance');
-  if (!response.ok) throw new Error('Failed to fetch attendance records');
-  return response.json();
-}
-
-async function fetchStudents(): Promise<Student[]> {
-  const response = await fetch('/api/students');
-  if (!response.ok) throw new Error('Failed to fetch students');
-  return response.json();
 }
 
 const parseClass = (classStr: string | null | undefined): { number: number; letter: string } => {
@@ -130,15 +112,20 @@ export default function AttendancePage() {
   const [classSearch, setClassSearch] = useState('');
   const [isClassPopoverOpen, setClassPopoverOpen] = useState(false);
   
-  const { data: allAttendanceRecords = [], isLoading: isLoadingAttendance, error: attendanceError } = useQuery<AttendanceRecordWithStudent[]>({
-    queryKey: ['attendanceRecords'],
-    queryFn: fetchAttendanceRecords,
-  });
+  // Using mock data instead of useQuery
+  const [allAttendanceRecords, setAllAttendanceRecords] = useState<AttendanceRecordWithStudent[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-  const { data: students = [], isLoading: isLoadingStudents, error: studentsError } = useQuery<Student[]>({
-    queryKey: ['students'],
-    queryFn: fetchStudents,
-  });
+  useEffect(() => {
+    setIsLoading(true);
+    setTimeout(() => {
+        setAllAttendanceRecords(mockAttendanceRecords);
+        setStudents(mockStudents);
+        setIsLoading(false);
+    }, 500);
+  }, []);
 
   const uniqueClasses = useMemo(() => {
     if (!students.length) return [];
@@ -545,7 +532,7 @@ export default function AttendancePage() {
                 <div>
                     <CardTitle>{isReportView ? "Report Results" : "Filtered Records"}</CardTitle>
                     <CardDescription>
-                      {isLoadingAttendance ? "Loading records..." : (
+                      {isLoading ? "Loading records..." : (
                         isReportView 
                         ? `Report for ${reportStudentId && reportStudentId !== 'all_students' ? (students.find(s => s.studentId === reportStudentId)?.name || 'selected student') : 'all students'}${reportSelectedClass ? `, Class: ${reportSelectedClass}` : ''}${reportDateRange?.from ? ` from ${format(reportDateRange.from, "LLL dd, y")}` : ''}${reportDateRange?.to ? ` to ${format(reportDateRange.to, "LLL dd, y")}` : reportDateRange?.from ? '' : ''}. Meals: ${selectedMealTypes.size === ALL_MEAL_TYPES.length ? 'All' : Array.from(selectedMealTypes).map(m => m.charAt(0) + m.slice(1).toLowerCase()).join(', ') || 'None'}. Found ${processedRecords.length} record(s).`
                         : `Displaying records. Meals: ${selectedMealTypes.size === ALL_MEAL_TYPES.length ? 'All' : Array.from(selectedMealTypes).map(m => m.charAt(0) + m.slice(1).toLowerCase()).join(', ') || 'None'}. ${searchTerm ? `Search: "${searchTerm}".` : ''} Found ${processedRecords.length} record(s).`
@@ -584,10 +571,10 @@ export default function AttendancePage() {
             </div>
         </CardHeader>
         <CardContent>
-            {isLoadingAttendance ? (
+            {isLoading ? (
                 <div className="flex justify-center items-center py-10"><Loader2 className="h-8 w-8 animate-spin text-primary" /><span className="ml-2">Loading attendance...</span></div>
-            ) : attendanceError ? (
-                <div className="text-center py-10 text-destructive"><AlertTriangle className="mx-auto h-8 w-8 mb-2" /><p>Error: {(attendanceError as Error).message}</p></div>
+            ) : error ? (
+                <div className="text-center py-10 text-destructive"><AlertTriangle className="mx-auto h-8 w-8 mb-2" /><p>Error: {(error as Error).message}</p></div>
             ) : processedRecords.length === 0 ? (
                 <p className="text-center py-4 text-muted-foreground">{isReportView ? "No records match your report criteria." : "No attendance records found for the current filters."}</p>
             ) : (
@@ -609,5 +596,3 @@ export default function AttendancePage() {
     </div>
   );
 }
-
-    

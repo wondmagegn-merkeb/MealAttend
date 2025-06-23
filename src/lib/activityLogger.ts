@@ -1,25 +1,9 @@
 
-import type { UserActivityLog } from "@prisma/client";
-
 export async function logUserActivity(userIdentifier: string | null, action: string, details?: string) {
   const effectiveUserId = userIdentifier || 'unknown_user';
 
-  const logData: Partial<Omit<UserActivityLog, 'id' | 'createdAt'>> = {
-    userIdentifier: effectiveUserId,
-    action,
-    details: details || null,
-    activityTimestamp: new Date(),
-  };
-
-  try {
-    await fetch('/api/activity-logs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(logData),
-    });
-  } catch (error) {
-    console.error("Failed to log user activity to API:", error);
-  }
+  console.log(`[Activity Log] User: ${effectiveUserId}, Action: ${action}, Details: ${details || 'N/A'}`);
+  
+  // In a real app, you would send this to an API endpoint.
+  // For this demo, we just log to the console. The activity log page uses its own mock data.
 }

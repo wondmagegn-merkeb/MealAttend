@@ -4,7 +4,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import type { User, Department } from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -14,13 +13,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
+import { mockDepartments } from "@/lib/demo-data";
+import type { UserWithDepartment, Department } from '@/types';
 
-async function fetchDepartments(): Promise<Department[]> {
-  const response = await fetch('/api/departments');
-  if (!response.ok) throw new Error('Failed to fetch departments');
-  return response.json();
-}
 
 const userFormSchema = z.object({
   fullName: z.string().min(1, { message: "Full Name is required." }),
@@ -40,8 +35,8 @@ export type UserFormData = z.infer<typeof userFormSchema>;
 export type ProfileEditFormData = z.infer<typeof profileEditFormSchema>;
 
 interface UserFormProps {
-  onSubmit: (data: any) => void; // Allow more flexible data shape from different schemas
-  initialData?: (User & { department: Department | null }) | null;
+  onSubmit: (data: any) => void; 
+  initialData?: UserWithDepartment | null;
   isLoading?: boolean;
   submitButtonText?: string;
   isProfileEditMode?: boolean;
@@ -50,10 +45,16 @@ interface UserFormProps {
 export function UserForm({ onSubmit, initialData, isLoading = false, submitButtonText = "Submit", isProfileEditMode = false }: UserFormProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const { data: availableDepartments = [], isLoading: isLoadingDepartments } = useQuery<Department[]>({
-    queryKey: ['departments'],
-    queryFn: fetchDepartments,
-  });
+  const [availableDepartments, setAvailableDepartments] = useState<Department[]>([]);
+  const [isLoadingDepartments, setIsLoadingDepartments] = useState(true);
+
+  useEffect(() => {
+    setIsLoadingDepartments(true);
+    setTimeout(() => {
+      setAvailableDepartments(mockDepartments);
+      setIsLoadingDepartments(false);
+    }, 300);
+  }, []);
 
   const currentSchema = isProfileEditMode ? profileEditFormSchema : userFormSchema;
 
@@ -95,7 +96,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       reader.readAsDataURL(file);
     } else {
       const originalImageUrl = initialData?.profileImageURL || "";
-      setImagePreview(originalImageUrl);
+      setImagePreview(originalImageUrl || null);
       form.setValue("profileImageURL", originalImageUrl, { shouldValidate: true });
     }
   };

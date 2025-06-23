@@ -12,8 +12,9 @@ import { DepartmentsTable } from "@/components/admin/departments/DepartmentsTabl
 import { useToast } from "@/hooks/use-toast";
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Department } from '@prisma/client';
+import { mockDepartments } from '@/lib/demo-data';
+import type { Department } from '@/types';
+
 
 type SortableDepartmentKeys = 'id' | 'name';
 type SortDirection = 'ascending' | 'descending';
@@ -25,67 +26,40 @@ interface SortConfig {
 
 const ITEMS_PER_PAGE = 5;
 
-async function fetchDepartments(): Promise<Department[]> {
-  const response = await fetch('/api/departments');
-  console.log(response )
-  if (!response.ok) {
-    throw new Error('Failed to fetch departments');
-  }
-  return response.json();
-}
-
-async function deleteDepartmentAPI(departmentId: string): Promise<void> {
-  const response = await fetch(`/api/departments/${departmentId}`, {
-    method: 'DELETE',
-  });
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'Failed to delete department' }));
-    throw new Error(errorData.message || 'Failed to delete department');
-  }
-}
-
 export default function DepartmentsPage() {
   const { toast } = useToast();
   const { currentUserId } = useAuth();
   const router = useRouter();
-  const queryClient = useQueryClient();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'ascending' });
   const [currentPage, setCurrentPage] = useState(1);
   
-  const { data: departments = [], isLoading: isLoadingDepartments, error: departmentsError } = useQuery<Department[]>({
-    queryKey: ['departments'],
-    queryFn: fetchDepartments,
-  });
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [isLoadingDepartments, setIsLoadingDepartments] = useState(true);
+  const [departmentsError, setDepartmentsError] = useState<Error | null>(null);
 
-  const deleteMutation = useMutation({
-    mutationFn: deleteDepartmentAPI,
-    onSuccess: (_, departmentIdToDelete) => {
-      queryClient.invalidateQueries({ queryKey: ['departments'] });
-      const deletedDepartment = departments.find(d => d.id === departmentIdToDelete);
-      logUserActivity(currentUserId, "DEPARTMENT_DELETE_SUCCESS", `Deleted department ID: ${departmentIdToDelete}, Name: ${deletedDepartment?.name || 'Unknown'}`);
-      toast({
-        title: "Department Deleted",
-        description: "The department record has been successfully deleted.",
-      });
-    },
-    onError: (error: Error, departmentIdToDelete) => {
-      logUserActivity(currentUserId, "DEPARTMENT_DELETE_FAILURE", `Attempted to delete department ID: ${departmentIdToDelete}. Error: ${error.message}`);
-      toast({
-        title: "Error Deleting Department",
-        description: error.message || "Failed to delete department. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  useEffect(() => {
+    setIsLoadingDepartments(true);
+    // Simulate API fetch
+    setTimeout(() => {
+        setDepartments(mockDepartments);
+        setIsLoadingDepartments(false);
+    }, 500);
+  }, []);
 
   const handleEditDepartment = (department: Department) => {
     router.push(`/admin/departments/${department.id}/edit`);
   };
 
   const handleDeleteDepartment = (departmentIdToDelete: string) => {
-    deleteMutation.mutate(departmentIdToDelete);
+    const deletedDepartment = departments.find(d => d.id === departmentIdToDelete);
+    setDepartments(prev => prev.filter(d => d.id !== departmentIdToDelete));
+    logUserActivity(currentUserId, "DEPARTMENT_DELETE_SUCCESS", `Deleted department ID: ${departmentIdToDelete}, Name: ${deletedDepartment?.name || 'Unknown'}`);
+    toast({
+      title: "Department Deleted (Demo)",
+      description: "The department record has been successfully deleted.",
+    });
   };
 
   const handleSort = (key: SortableDepartmentKeys) => {
@@ -165,7 +139,7 @@ export default function DepartmentsPage() {
           <h2 className="text-3xl font-semibold tracking-tight text-primary flex items-center">
             <DepartmentIcon className="mr-3 h-8 w-8" /> Manage Departments
           </h2>
-          <p className="text-muted-foreground">Add, edit, or remove department records from the database.</p>
+          <p className="text-muted-foreground">Add, edit, or remove department records.</p>
         </div>
         <Button asChild size="lg" className="shadow-md hover:shadow-lg transition-shadow">
           <Link href="/admin/departments/new">
@@ -190,12 +164,6 @@ export default function DepartmentsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {deleteMutation.isPending && (
-            <div className="flex justify-center items-center py-4">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              <span className="ml-2">Deleting department...</span>
-            </div>
-          )}
           {departmentsError && (
              <div className="text-center py-10 text-destructive">
                 <AlertTriangle className="mx-auto h-8 w-8 mb-2" />

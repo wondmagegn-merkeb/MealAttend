@@ -12,8 +12,9 @@ import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
-import { useQuery } from '@tanstack/react-query';
-import type { Student } from '@prisma/client';
+import { mockStudents } from '@/lib/demo-data';
+import type { Student } from '@/types';
+
 
 const getYearFromStudentId = (studentId: string): string | null => {
   const parts = studentId.split('/'); 
@@ -38,14 +39,6 @@ const parseClass = (classStr: string | null | undefined): { number: number; lett
 
 const ITEMS_PER_PAGE_DISPLAY = 10;
 
-async function fetchAllStudentsForExport(): Promise<Student[]> {
-  const response = await fetch('/api/students');
-  if (!response.ok) {
-    throw new Error('Failed to fetch students for export');
-  }
-  return response.json();
-}
-
 export default function ExportStudentsPage() {
   const { toast } = useToast();
   const [isMounted, setIsMounted] = useState(false);
@@ -54,10 +47,18 @@ export default function ExportStudentsPage() {
   const [selectedYear, setSelectedYear] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: allStudents = [], isLoading: isLoadingStudents, error: studentsError } = useQuery<Student[]>({
-    queryKey: ['allStudentsForExport'],
-    queryFn: fetchAllStudentsForExport,
-  });
+  // Using mock data instead of useQuery
+  const [allStudents, setAllStudents] = useState<Student[]>([]);
+  const [isLoadingStudents, setIsLoadingStudents] = useState(true);
+  const [studentsError, setStudentsError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    setIsLoadingStudents(true);
+    setTimeout(() => {
+        setAllStudents(mockStudents);
+        setIsLoadingStudents(false);
+    }, 500);
+  }, []);
 
   useEffect(() => {
     setIsMounted(true);

@@ -10,9 +10,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ChevronsUpDown, ArrowUp, ArrowDown } from "lucide-react";
-import type { UserActivityLog } from "@prisma/client";
 import { format, parseISO } from 'date-fns';
 import { cn } from "@/lib/utils";
+import type { UserActivityLog } from "@/types";
 
 type SortableActivityLogKeys = 'activityTimestamp' | 'userIdentifier' | 'action';
 type SortDirection = 'ascending' | 'descending';

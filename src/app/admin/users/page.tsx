@@ -12,8 +12,10 @@ import { UsersTable } from "@/components/admin/users/UsersTable";
 import { useToast } from "@/hooks/use-toast";
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { User, Department } from '@prisma/client';
+import { mockUsers } from '@/lib/demo-data';
+import type { UserWithDepartment } from '@/types';
+
+
 type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'createdAt';
 type SortDirection = 'ascending' | 'descending';
 
@@ -22,62 +24,38 @@ interface SortConfig {
   direction: SortDirection;
 }
 
-interface UserWithDepartment extends User {
-  department: Department | null;
-}
-
 const ITEMS_PER_PAGE = 5;
-
-async function fetchUsers(): Promise<UserWithDepartment[]> {
-  const response = await fetch('/api/users');
-  if (!response.ok) throw new Error('Failed to fetch users');
-  return response.json();
-}
-
-async function deleteUserAPI(userId: string): Promise<void> {
-  const response = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'Failed to delete user' }));
-    throw new Error(errorData.message || 'Failed to delete user');
-  }
-}
 
 export default function UsersPage() {
   const { toast } = useToast();
   const { currentUserId: actorUserId } = useAuth();
   const router = useRouter();
-  const queryClient = useQueryClient();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'createdAt', direction: 'descending' });
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: users = [], isLoading: isLoadingUsers, error: usersError } = useQuery<UserWithDepartment[]>({
-    queryKey: ['users'],
-    queryFn: fetchUsers,
-  });
+  const [users, setUsers] = useState<UserWithDepartment[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+  const [usersError, setUsersError] = useState<Error | null>(null);
 
-  const deleteMutation = useMutation({
-    mutationFn: deleteUserAPI,
-    onSuccess: (_, userIdToDelete) => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      const deletedUser = users.find(u => u.id === userIdToDelete);
-      logUserActivity(actorUserId, "USER_DELETE_SUCCESS", `Deleted user ID: ${deletedUser?.userId || 'N/A'}, Name: ${deletedUser?.fullName || 'Unknown'}`);
-      toast({ title: "User Deleted", description: "The user record has been successfully deleted." });
-    },
-    onError: (error: Error, userIdToDelete) => {
-      const userToDelete = users.find(u => u.id === userIdToDelete);
-      logUserActivity(actorUserId, "USER_DELETE_FAILURE", `Attempted to delete user ID: ${userToDelete?.userId}. Error: ${error.message}`);
-      toast({ title: "Error Deleting User", description: error.message || "Failed to delete user.", variant: "destructive" });
-    },
-  });
+  useEffect(() => {
+    setIsLoadingUsers(true);
+    setTimeout(() => {
+        setUsers(mockUsers);
+        setIsLoadingUsers(false);
+    }, 500);
+  }, []);
 
-  const handleEditUser = (user: User) => {
+  const handleEditUser = (user: UserWithDepartment) => {
     router.push(`/admin/users/${user.id}/edit`);
   };
 
   const handleDeleteUser = (internalUserId: string) => {
-    deleteMutation.mutate(internalUserId);
+    const deletedUser = users.find(u => u.id === internalUserId);
+    setUsers(prev => prev.filter(u => u.id !== internalUserId));
+    logUserActivity(actorUserId, "USER_DELETE_SUCCESS", `Deleted user ID: ${deletedUser?.userId || 'N/A'}, Name: ${deletedUser?.fullName || 'Unknown'}`);
+    toast({ title: "User Deleted (Demo)", description: "The user record has been successfully deleted." });
   };
 
   const handleSort = (key: SortableUserKeys) => {
@@ -146,7 +124,7 @@ export default function UsersPage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>User List</CardTitle>
-          <CardDescription>Browse and manage all registered users from the database.</CardDescription>
+          <CardDescription>Browse and manage all registered users.</CardDescription>
            <div className="mt-4 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input type="search" placeholder="Search by User ID, name, department, email or role..." value={searchTerm} onChange={handleSearchChange} className="pl-10 w-full sm:w-1/2 md:w-1/3" />
@@ -155,12 +133,10 @@ export default function UsersPage() {
         <CardContent>
           {isLoadingUsers ? (
             <div className="flex justify-center items-center py-4"><Loader2 className="h-6 w-6 animate-spin text-primary" /><span className="ml-2">Loading users...</span></div>
-          ) : deleteMutation.isPending ? (
-            <div className="flex justify-center items-center py-4"><Loader2 className="h-6 w-6 animate-spin text-primary" /><span className="ml-2">Deleting user...</span></div>
           ) : usersError ? (
             <div className="text-center py-10 text-destructive"><AlertTriangle className="mx-auto h-8 w-8 mb-2" /><p>Error loading users: {(usersError as Error).message}</p></div>
           ) : (
- <UsersTable users={currentTableData} onEdit={handleEditUser} onDelete={handleDeleteUser} sortConfig={sortConfig} onSort={handleSort} />
+             <UsersTable users={currentTableData} onEdit={handleEditUser} onDelete={handleDeleteUser} sortConfig={sortConfig} onSort={handleSort} />
           )}
           
           {!isLoadingUsers && !usersError && filteredAndSortedUsers.length > ITEMS_PER_PAGE && (

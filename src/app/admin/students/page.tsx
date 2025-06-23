@@ -12,8 +12,9 @@ import { StudentsTable } from "@/components/admin/students/StudentsTable";
 import { useToast } from "@/hooks/use-toast";
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Student } from '@prisma/client';
+import { mockStudents } from '@/lib/demo-data';
+import type { Student } from '@/types';
+
 
 type SortableStudentKeys = 'studentId' | 'name' | 'classGrade' | 'gender' | 'createdAt';
 type SortDirection = 'ascending' | 'descending';
@@ -25,66 +26,42 @@ interface SortConfig {
 
 const ITEMS_PER_PAGE = 5;
 
-async function fetchStudents(): Promise<Student[]> {
-  const response = await fetch('/api/students');
-  if (!response.ok) {
-    throw new Error('Failed to fetch students');
-  }
-  return response.json();
-}
-
-async function deleteStudentAPI(studentId: string): Promise<void> {
-  const response = await fetch(`/api/students/${studentId}`, {
-    method: 'DELETE',
-  });
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'Failed to delete student' }));
-    throw new Error(errorData.message || 'Failed to delete student');
-  }
-}
-
 export default function StudentsPage() {
   const { toast } = useToast();
   const { currentUserId } = useAuth();
   const router = useRouter();
-  const queryClient = useQueryClient();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'createdAt', direction: 'descending' });
   const [currentPage, setCurrentPage] = useState(1);
   
-  const { data: students = [], isLoading: isLoadingStudents, error: studentsError } = useQuery<Student[]>({
-    queryKey: ['students'],
-    queryFn: fetchStudents,
-  });
+  const [students, setStudents] = useState<Student[]>([]);
+  const [isLoadingStudents, setIsLoadingStudents] = useState(true);
+  const [studentsError, setStudentsError] = useState<Error | null>(null);
 
-  const deleteMutation = useMutation({
-    mutationFn: deleteStudentAPI,
-    onSuccess: (_, studentIdToDelete) => {
-      queryClient.invalidateQueries({ queryKey: ['students'] });
-      const deletedStudent = students.find(s => s.id === studentIdToDelete);
-      logUserActivity(currentUserId, "STUDENT_DELETE_SUCCESS", `Deleted student ID: ${deletedStudent?.studentId || 'N/A'}, Name: ${deletedStudent?.name || 'Unknown'}`);
-      toast({
-        title: "Student Deleted",
-        description: "The student record has been successfully deleted.",
-      });
-    },
-    onError: (error: Error, studentIdToDelete) => {
-      logUserActivity(currentUserId, "STUDENT_DELETE_FAILURE", `Attempted to delete student (internal ID: ${studentIdToDelete}). Error: ${error.message}`);
-      toast({
-        title: "Error Deleting Student",
-        description: error.message || "Failed to delete student. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  useEffect(() => {
+    setIsLoadingStudents(true);
+    // Simulate API fetch
+    setTimeout(() => {
+      setStudents(mockStudents);
+      setIsLoadingStudents(false);
+    }, 500);
+  }, []);
+
 
   const handleEditStudent = (student: Student) => {
     router.push(`/admin/students/${student.id}/edit`);
   };
 
   const handleDeleteStudent = (studentInternalId: string) => {
-    deleteMutation.mutate(studentInternalId);
+    const deletedStudent = students.find(s => s.id === studentInternalId);
+    setStudents(prev => prev.filter(s => s.id !== studentInternalId));
+    
+    logUserActivity(currentUserId, "STUDENT_DELETE_SUCCESS", `Deleted student ID: ${deletedStudent?.studentId || 'N/A'}, Name: ${deletedStudent?.name || 'Unknown'}`);
+    toast({
+      title: "Student Deleted (Demo)",
+      description: "The student record has been successfully deleted.",
+    });
   };
 
   const handleSort = (key: SortableStudentKeys) => {
@@ -169,7 +146,7 @@ export default function StudentsPage() {
           <h2 className="text-3xl font-semibold tracking-tight text-primary flex items-center">
             <Users className="mr-3 h-8 w-8" /> Manage Students
           </h2>
-          <p className="text-muted-foreground">Add, edit, or remove student records from the database.</p>
+          <p className="text-muted-foreground">Add, edit, or remove student records.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
            <Button asChild size="lg" variant="outline" className="shadow-md hover:shadow-lg transition-shadow">
@@ -206,12 +183,6 @@ export default function StudentsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {deleteMutation.isPending && (
-            <div className="flex justify-center items-center py-4">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              <span className="ml-2">Deleting student...</span>
-            </div>
-          )}
            {studentsError && (
              <div className="text-center py-10 text-destructive">
                 <AlertTriangle className="mx-auto h-8 w-8 mb-2" />

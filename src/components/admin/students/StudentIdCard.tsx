@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from 'next/image';
 import { School } from "lucide-react"; 
-import type { Student } from "@prisma/client"; // Use Prisma client type
+import type { Student } from "@/types";
 
 interface StudentIdCardProps {
   student: Student;
@@ -15,7 +15,6 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
   const schoolName = "Greenfield Secondary School"; 
   const validUntil = "July 2026"; 
 
-  // Ensure qrCodeData has a fallback to student.id if it's null/undefined
   const qrDataToEncode = student.qrCodeData || student.id;
   const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrDataToEncode)}&format=png&qzone=1`;
 
@@ -55,7 +54,7 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
               
               <div className="flex">
                 <p className="w-16 font-medium text-muted-foreground">Grade:</p>
-                <p className="font-medium">{student.classGrade || 'N/A'}</p> {/* Changed to classGrade */}
+                <p className="font-medium">{student.classGrade || 'N/A'}</p>
               </div>
               
               <div className="flex">

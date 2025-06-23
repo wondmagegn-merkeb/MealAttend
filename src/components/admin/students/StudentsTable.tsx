@@ -17,7 +17,8 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { Student } from '@prisma/client'; // Import Prisma's Student type
+import type { Student } from '@/types';
+
 
 type SortableStudentKeys = 'studentId' | 'name' | 'classGrade' | 'gender' | 'createdAt';
 type SortDirection = 'ascending' | 'descending';
@@ -30,7 +31,7 @@ interface SortConfig {
 interface StudentsTableProps {
   students: Student[];
   onEdit: (student: Student) => void;
-  onDelete: (studentId: string) => void; // studentId here refers to the internal Prisma ID (cuid)
+  onDelete: (studentId: string) => void;
   sortConfig: SortConfig;
   onSort: (key: SortableStudentKeys) => void;
 }
@@ -46,7 +47,7 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
 
   const confirmDelete = () => {
     if (studentToDelete) {
-      onDelete(studentToDelete.id); // Pass the Prisma 'id' for deletion
+      onDelete(studentToDelete.id);
     }
     setShowDeleteDialog(false);
     setStudentToDelete(null);
@@ -122,7 +123,6 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button variant="ghost" size="icon" asChild>
-                          {/* Link to student's Prisma ID for the ID card page */}
                           <Link href={`/admin/students/${student.id}/id-card`}> 
                             <Eye className="h-4 w-4" />
                             <span className="sr-only">View ID Card</span>
@@ -171,7 +171,7 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the student
-              &quot;{studentToDelete?.name}&quot; and remove their data from the database.
+              &quot;{studentToDelete?.name}&quot; and remove their data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

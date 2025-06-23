@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { WelcomeBanner } from "@/components/admin/WelcomeBanner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,11 +14,12 @@ import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
-import { useQuery } from '@tanstack/react-query';
-import type { Student, User, AttendanceRecord, UserActivityLog } from '@prisma/client';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import { QuickActions } from '@/components/admin/QuickActions';
+import { mockStudents, mockUsers, mockAttendanceRecords, mockActivityLogs } from '@/lib/demo-data';
+import type { Student, User, AttendanceRecord, UserActivityLog } from '@/types';
+
 
 const CURRENT_GREGORIAN_YEAR = new Date().getFullYear();
 const CURRENT_GREGORIAN_MONTH = new Date().getMonth(); // 0-indexed (January is 0)
@@ -37,40 +38,30 @@ const getYearFromStudentId = (studentId: string): string | null => {
   return null;
 };
 
-async function fetchStudents(): Promise<Student[]> {
-  const res = await fetch('/api/students');
-  if (!res.ok) throw new Error('Failed to fetch students');
-  return res.json();
-}
-async function fetchUsers(): Promise<User[]> {
-  const res = await fetch('/api/users');
-  if (!res.ok) throw new Error('Failed to fetch users');
-  return res.json();
-}
-async function fetchAttendance(): Promise<AttendanceRecord[]> {
-  const res = await fetch('/api/attendance');
-  if (!res.ok) throw new Error('Failed to fetch attendance');
-  return res.json();
-}
-async function fetchActivityLogs(): Promise<UserActivityLog[]> {
-    const res = await fetch('/api/activity-logs');
-    if (!res.ok) throw new Error('Failed to fetch activity logs');
-    return res.json();
-}
-
 export default function AdminDashboardPage() {
   const [selectedYear, setSelectedYear] = useState<string>(String(CURRENT_GREGORIAN_YEAR));
   const [selectedMonth, setSelectedMonth] = useState<number>(CURRENT_GREGORIAN_MONTH); 
   const { toast } = useToast();
   const { currentUser } = useAuth();
 
-  const { data: allStudents = [], isLoading: isLoadingStudents, error: studentsError } = useQuery<Student[]>({ queryKey: ['students'], queryFn: fetchStudents });
-  const { data: allUsers = [], isLoading: isLoadingUsers, error: usersError } = useQuery<User[]>({ queryKey: ['users'], queryFn: fetchUsers });
-  const { data: allAttendanceRecords = [], isLoading: isLoadingAttendance, error: attendanceError } = useQuery<AttendanceRecord[]>({ queryKey: ['attendanceRecords'], queryFn: fetchAttendance });
-  const { data: allActivityLogs = [], isLoading: isLoadingLogs, error: logsError } = useQuery<UserActivityLog[]>({ queryKey: ['activityLogs'], queryFn: fetchActivityLogs });
-  
-  const isLoading = isLoadingStudents || isLoadingUsers || isLoadingAttendance || isLoadingLogs;
-  const dataError = studentsError || usersError || attendanceError || logsError;
+  const [allStudents, setAllStudents] = useState<Student[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [allAttendanceRecords, setAllAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  const [allActivityLogs, setAllActivityLogs] = useState<UserActivityLog[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [dataError, setDataError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    setIsLoading(true);
+    // Simulate fetching data
+    setTimeout(() => {
+      setAllStudents(mockStudents);
+      setAllUsers(mockUsers);
+      setAllAttendanceRecords(mockAttendanceRecords);
+      setAllActivityLogs(mockActivityLogs);
+      setIsLoading(false);
+    }, 500);
+  }, []);
   
   const userActivity = useMemo(() => {
     if (!currentUser || !allActivityLogs.length) return [];
@@ -366,5 +357,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
-    

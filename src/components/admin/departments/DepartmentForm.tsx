@@ -4,7 +4,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import type { Department } from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import type { Department } from "@/types";
 
 const departmentFormSchema = z.object({
   name: z.string().min(1, { message: "Department Name is required." }),

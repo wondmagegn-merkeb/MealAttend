@@ -10,53 +10,25 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Department } from '@prisma/client';
-
-async function createDepartmentAPI(data: DepartmentFormData): Promise<Department> {
-  const response = await fetch('/api/departments', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  });
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'Failed to create department' }));
-    throw new Error(errorData.message || 'Failed to create department');
-  }
-  return response.json();
-}
 
 export default function NewDepartmentPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { currentUserId } = useAuth();
-  const queryClient = useQueryClient();
-
-  const mutation = useMutation({
-    mutationFn: createDepartmentAPI,
-    onSuccess: (newDepartment) => {
-      queryClient.invalidateQueries({ queryKey: ['departments'] });
-      logUserActivity(currentUserId, "DEPARTMENT_CREATE_SUCCESS", `Created department ID: ${newDepartment.id}, Name: ${newDepartment.name}`);
-      toast({
-        title: "Department Added",
-        description: `${newDepartment.name} has been successfully added.`,
-      });
-      router.push('/admin/departments');
-    },
-    onError: (error: Error) => {
-      logUserActivity(currentUserId, "DEPARTMENT_CREATE_FAILURE", `Error: ${error.message}`);
-      toast({
-        title: "Error Adding Department",
-        description: error.message || "Failed to save department. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFormSubmit = (data: DepartmentFormData) => {
-    mutation.mutate(data);
+    setIsSubmitting(true);
+    // Simulate API call
+    setTimeout(() => {
+        logUserActivity(currentUserId, "DEPARTMENT_CREATE_SUCCESS", `Created department Name: ${data.name}`);
+        toast({
+            title: "Department Added (Demo)",
+            description: `${data.name} has been successfully added.`,
+        });
+        router.push('/admin/departments');
+        setIsSubmitting(false);
+    }, 1000);
   };
 
   return (
@@ -75,7 +47,7 @@ export default function NewDepartmentPage() {
       </div>
       <DepartmentForm 
         onSubmit={handleFormSubmit} 
-        isLoading={mutation.isPending}
+        isLoading={isSubmitting}
         submitButtonText="Add Department"
       />
     </div>

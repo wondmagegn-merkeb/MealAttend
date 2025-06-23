@@ -9,38 +9,29 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, UserCog } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { logUserActivity } from '@/lib/activityLogger';
 
 export default function EditProfilePage() {
   const router = useRouter();
   const { toast } = useToast();
   const { currentUser, isAuthenticated, updateProfile } = useAuth();
-  const queryClient = useQueryClient();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const mutation = useMutation({
-    mutationFn: updateProfile,
-    onSuccess: (updatedUser) => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      logUserActivity(currentUser?.userId || null, "PROFILE_UPDATE_SUCCESS");
-      toast({
-        title: "Profile Updated",
-        description: "Your profile details have been saved.",
-      });
-    },
-    onError: (error: Error) => {
-      // Toast is handled within the useAuth hook's updateProfile function
-      logUserActivity(currentUser?.userId || null, "PROFILE_UPDATE_FAILURE", `Error: ${error.message}`);
-    },
-  });
-
-  const handleFormSubmit = (data: ProfileEditFormData) => {
-    if (!currentUser) {
-      toast({ title: "Error", description: "No user session found.", variant: "destructive" });
-      logUserActivity(null, "PROFILE_UPDATE_FAILURE", "No user session found.");
-      return;
+  const handleFormSubmit = async (data: ProfileEditFormData) => {
+    setIsSubmitting(true);
+    try {
+        await updateProfile(data);
+        toast({
+            title: "Profile Updated",
+            description: "Your profile details have been saved.",
+        });
+        // Optional: redirect or stay on page
+        // router.push('/admin/profile');
+    } catch (error) {
+        // Error toast is handled by useAuth hook
+    } finally {
+        setIsSubmitting(false);
     }
-    mutation.mutate(data);
   };
   
   if (isAuthenticated === null) {
@@ -84,7 +75,7 @@ export default function EditProfilePage() {
       <UserForm 
         onSubmit={handleFormSubmit} 
         initialData={currentUser}
-        isLoading={mutation.isPending}
+        isLoading={isSubmitting}
         submitButtonText="Save Profile Changes"
         isProfileEditMode={true}
       />

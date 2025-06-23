@@ -15,7 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import React from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import type { Department } from "@prisma/client";
+import type { Department } from "@/types";
 
 type SortableDepartmentKeys = 'id' | 'name'; 
 type SortDirection = 'ascending' | 'descending';

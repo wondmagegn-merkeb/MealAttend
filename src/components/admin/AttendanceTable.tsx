@@ -14,11 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CheckCircle, XCircle, ChevronsUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
-import type { AttendanceRecord, Student } from "@prisma/client";
-
-export interface AttendanceRecordWithStudent extends AttendanceRecord {
-  student: Student;
-}
+import type { AttendanceRecordWithStudent } from "@/types";
 
 export type SortableAttendanceKeys = 'studentId' | 'studentName' | 'recordDate' | 'mealType' | 'scannedAtTimestamp' | 'status';
 

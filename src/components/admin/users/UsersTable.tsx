@@ -12,12 +12,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Edit, Trash2, ChevronsUpDown, ArrowUp, ArrowDown } from "lucide-react";
-import type { User, Department } from "@prisma/client";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import React from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import type { UserWithDepartment } from "@/types";
 
 type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'createdAt';
 type SortDirection = 'ascending' | 'descending';
@@ -27,13 +27,9 @@ interface SortConfig {
   direction: SortDirection;
 }
 
-interface UserWithDepartment extends User {
-  department: Department | null;
-}
-
 interface UsersTableProps {
   users: UserWithDepartment[];
-  onEdit: (user: User) => void;
+  onEdit: (user: UserWithDepartment) => void;
   onDelete: (userId: string) => void;
   sortConfig: SortConfig;
   onSort: (key: SortableUserKeys) => void;
@@ -41,9 +37,9 @@ interface UsersTableProps {
 
 export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: UsersTableProps) {
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
-  const [userToDelete, setUserToDelete] = React.useState<User | null>(null);
+  const [userToDelete, setUserToDelete] = React.useState<UserWithDepartment | null>(null);
 
-  const handleDeleteClick = (user: User) => {
+  const handleDeleteClick = (user: UserWithDepartment) => {
     setUserToDelete(user);
     setShowDeleteDialog(true);
   };

@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { StudentForm, type StudentFormData } from "@/components/admin/students/StudentForm";
 import { useToast } from "@/hooks/use-toast";
@@ -10,90 +11,65 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Student } from '@prisma/client';
-
-async function fetchStudentById(id: string): Promise<Student> {
-  const response = await fetch(`/api/students/${id}`);
-  if (!response.ok) {
-    if (response.status === 404) throw new Error('Student not found');
-    throw new Error('Failed to fetch student');
-  }
-  return response.json();
-}
+import { mockStudents } from '@/lib/demo-data';
+import type { Student } from '@/types';
 
 type ApiStudentUpdateData = {
   name: string;
   gender?: string | null;
   classGrade?: string | null;
   profileImageURL?: string | null;
-  // studentId is not typically updated this way or is handled specially if allowed
 };
-
-async function updateStudentAPI({ id, data }: { id: string, data: ApiStudentUpdateData }): Promise<Student> {
-  const response = await fetch(`/api/students/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'Failed to update student' }));
-    throw new Error(errorData.message || 'Failed to update student');
-  }
-  return response.json();
-}
-
 
 export default function EditStudentPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
   const { currentUserId } = useAuth();
-  const queryClient = useQueryClient();
   
   const studentInternalId = typeof params.id === 'string' ? params.id : undefined;
 
-  const { data: student, isLoading: isFetchingStudent, error: fetchError } = useQuery<Student, Error>({
-    queryKey: ['student', studentInternalId],
-    queryFn: () => fetchStudentById(studentInternalId!),
-    enabled: !!studentInternalId,
-  });
+  const [student, setStudent] = useState<Student | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  const mutation = useMutation({
-    mutationFn: updateStudentAPI,
-    onSuccess: (updatedStudent) => {
-      queryClient.invalidateQueries({ queryKey: ['students'] });
-      queryClient.invalidateQueries({ queryKey: ['student', updatedStudent.id] });
-      logUserActivity(currentUserId, "STUDENT_UPDATE_SUCCESS", `Updated student ID: ${updatedStudent.studentId}, Name: ${updatedStudent.name}`);
-      toast({
-        title: "Student Updated",
-        description: `${updatedStudent.name}'s record has been updated.`,
-      });
-      router.push('/admin/students');
-    },
-    onError: (error: Error) => {
-      logUserActivity(currentUserId, "STUDENT_UPDATE_FAILURE", `Attempted to update student ID: ${student?.studentId}. Error: ${error.message}`);
-      toast({
-        title: "Error Updating Student",
-        description: error.message || "Failed to update student. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  useEffect(() => {
+    setIsLoading(true);
+    if(studentInternalId) {
+      setTimeout(() => {
+        const foundStudent = mockStudents.find(s => s.id === studentInternalId);
+        if (foundStudent) {
+          setStudent(foundStudent);
+        } else {
+          setError(new Error('Student not found'));
+        }
+        setIsLoading(false);
+      }, 500);
+    } else {
+      setError(new Error('No student ID provided'));
+      setIsLoading(false);
+    }
+  }, [studentInternalId]);
+
 
   const handleFormSubmit = (data: Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string }) => {
     if (!studentInternalId) return;
+    setIsSubmitting(true);
     
-    const apiData: ApiStudentUpdateData = {
-      name: data.name,
-      gender: data.gender === 'unspecified' ? null : data.gender || null,
-      classGrade: data.classGrade || null,
-      profileImageURL: data.profileImageURL || null,
-    };
-    mutation.mutate({ id: studentInternalId, data: apiData });
+    // Simulate API call
+    setTimeout(() => {
+      logUserActivity(currentUserId, "STUDENT_UPDATE_SUCCESS", `Updated student ID: ${student?.studentId}, Name: ${data.name}`);
+      toast({
+        title: "Student Updated (Demo)",
+        description: `${data.name}'s record has been updated.`,
+      });
+      router.push('/admin/students');
+      setIsSubmitting(false);
+    }, 1000);
   };
 
-  if (isFetchingStudent) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -102,7 +78,7 @@ export default function EditStudentPage() {
     );
   }
 
-  if (fetchError) {
+  if (error) {
     return (
       <div className="space-y-6 max-w-2xl mx-auto text-center">
          <Card className="shadow-lg">
@@ -113,9 +89,9 @@ export default function EditStudentPage() {
             </CardHeader>
             <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  {fetchError.message === 'Student not found' 
+                  {error.message === 'Student not found' 
                     ? 'The student record you are trying to edit could not be found.'
-                    : `Failed to load student data: ${fetchError.message}`
+                    : `Failed to load student data: ${error.message}`
                   }
                 </p>
                 <Button variant="outline" asChild>
@@ -144,11 +120,11 @@ export default function EditStudentPage() {
           </Link>
         </Button>
       </div>
-      {student && ( // student from useQuery
+      {student && (
         <StudentForm 
           onSubmit={handleFormSubmit} 
-          initialData={student} // Pass the fetched student data
-          isLoading={mutation.isPending}
+          initialData={student}
+          isLoading={isSubmitting}
           submitButtonText="Save Changes"
           isEditMode={true}
         />

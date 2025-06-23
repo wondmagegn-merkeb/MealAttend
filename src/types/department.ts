@@ -1,5 +1,3 @@
 
-export interface Department {
-  id: string; // Unique identifier
-  name: string;
-}
+// This file is obsolete and can be removed. Types are now managed in /src/types/index.ts
+export {};

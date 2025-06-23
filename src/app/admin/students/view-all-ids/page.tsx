@@ -10,8 +10,9 @@ import { ArrowLeft, Loader2, Printer, AlertTriangle } from 'lucide-react';
 import { StudentIdCard } from '@/components/admin/students/StudentIdCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { useQuery } from '@tanstack/react-query';
-import type { Student } from '@prisma/client';
+import { mockStudents } from '@/lib/demo-data';
+import type { Student } from '@/types';
+
 
 const getYearFromStudentId = (studentId: string): string | null => {
   const parts = studentId.split('/'); 
@@ -34,14 +35,6 @@ const parseClass = (classStr: string | null | undefined): { number: number; lett
   return { number: Infinity, letter: classStr.toUpperCase() };
 };
 
-async function fetchAllStudents(): Promise<Student[]> {
-  const response = await fetch('/api/students');
-  if (!response.ok) {
-    throw new Error('Failed to fetch students for ID cards');
-  }
-  return response.json();
-}
-
 export default function ViewAllIdCardsPage() {
   const { toast } = useToast();
   const [isMounted, setIsMounted] = useState(false);
@@ -49,10 +42,17 @@ export default function ViewAllIdCardsPage() {
   const [selectedClass, setSelectedClass] = useState<string>('all');
   const [selectedYear, setSelectedYear] = useState<string>('all');
 
-  const { data: allStudents = [], isLoading: isLoadingStudents, error: studentsError } = useQuery<Student[]>({
-    queryKey: ['allStudentsForIdCards'],
-    queryFn: fetchAllStudents,
-  });
+  const [allStudents, setAllStudents] = useState<Student[]>([]);
+  const [isLoadingStudents, setIsLoadingStudents] = useState(true);
+  const [studentsError, setStudentsError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    setIsLoadingStudents(true);
+    setTimeout(() => {
+        setAllStudents(mockStudents);
+        setIsLoadingStudents(false);
+    }, 500);
+  }, []);
 
   useEffect(() => {
     setIsMounted(true);

@@ -6,10 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Loader2, Search, ChevronLeft, ChevronRight, ListChecks, AlertTriangle } from "lucide-react";
 import { ActivityLogTable } from "@/components/admin/activity/ActivityLogTable";
-import type { UserActivityLog } from "@prisma/client";
 import { Button } from '@/components/ui/button';
-import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
+import { mockActivityLogs } from '@/lib/demo-data';
+import type { UserActivityLog } from '@/types';
+
 
 type SortableActivityLogKeys = 'activityTimestamp' | 'userIdentifier' | 'action';
 type SortDirection = 'ascending' | 'descending';
@@ -21,24 +22,26 @@ interface SortConfig {
 
 const ITEMS_PER_PAGE = 10;
 
-async function fetchActivityLogs(): Promise<UserActivityLog[]> {
-  const response = await fetch('/api/activity-logs');
-  if (!response.ok) {
-    throw new Error('Failed to fetch activity logs');
-  }
-  return response.json();
-}
-
 export default function ActivityLogPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'activityTimestamp', direction: 'descending' });
   const [currentPage, setCurrentPage] = useState(1);
   const { currentUser } = useAuth();
   
-  const { data: logs = [], isLoading: isLoadingLogs, error: logsError } = useQuery<UserActivityLog[]>({
-    queryKey: ['activityLogs'],
-    queryFn: fetchActivityLogs,
-  });
+  // Using mock data instead of useQuery
+  const [logs, setLogs] = useState<UserActivityLog[]>([]);
+  const [isLoadingLogs, setIsLoadingLogs] = useState(true);
+  const [logsError, setLogsError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    // Simulate fetching data
+    setIsLoadingLogs(true);
+    setTimeout(() => {
+      setLogs(mockActivityLogs);
+      setIsLoadingLogs(false);
+    }, 500);
+  }, []);
+
 
   const handleSort = (key: SortableActivityLogKeys) => {
     let direction: SortDirection = 'ascending';
@@ -129,7 +132,7 @@ export default function ActivityLogPage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Activity Records</CardTitle>
-          <CardDescription>Browse activity logs from the database.</CardDescription>
+          <CardDescription>Browse activity logs.</CardDescription>
           <div className="mt-4 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -187,7 +190,7 @@ export default function ActivityLogPage() {
             </div>
           )}
           {filteredAndSortedLogs.length === 0 && !isLoadingLogs && !logsError && (
-            <p className="text-center text-muted-foreground py-4">No activity logs match your current search criteria or no logs found in the database.</p>
+            <p className="text-center text-muted-foreground py-4">No activity logs match your current search criteria or no logs found.</p>
           )}
         </CardContent>
       </Card>
