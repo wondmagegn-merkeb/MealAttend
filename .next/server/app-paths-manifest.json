@@ -3,6 +3,7 @@
   "/admin/activity-log/page": "app/admin/activity-log/page.js",
   "/admin/attendance/page": "app/admin/attendance/page.js",
   "/admin/departments/[id]/edit/page": "app/admin/departments/[id]/edit/page.js",
+  "/admin/departments/new/page": "app/admin/departments/new/page.js",
   "/admin/departments/page": "app/admin/departments/page.js",
   "/admin/page": "app/admin/page.js",
   "/admin/students/[id]/id-card/page": "app/admin/students/[id]/id-card/page.js",

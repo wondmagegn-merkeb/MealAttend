@@ -19,7 +19,7 @@ export default function NewDepartmentPage() {
 
   const handleFormSubmit = (data: DepartmentFormData) => {
     setIsSubmitting(true);
-    const newDepartmentId = `ADERA/DPT/${new Date().getFullYear()}/${Math.floor(10000 + Math.random() * 90000)}`;
+    const newDepartmentId = `ADERA/DEP/${new Date().getFullYear()}/${Math.floor(10000 + Math.random() * 90000)}`;
     
     // Simulate API call
     setTimeout(() => {
