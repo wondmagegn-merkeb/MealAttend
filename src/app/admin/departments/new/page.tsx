@@ -10,6 +10,7 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
+import { generateNextId } from '@/lib/idGenerator';
 
 export default function NewDepartmentPage() {
   const router = useRouter();
@@ -17,20 +18,31 @@ export default function NewDepartmentPage() {
   const { currentUserId } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleFormSubmit = (data: DepartmentFormData) => {
+  const handleFormSubmit = async (data: DepartmentFormData) => {
     setIsSubmitting(true);
-    const newDepartmentId = `ADERA/DEP/${new Date().getFullYear()}/${Math.floor(10000 + Math.random() * 90000)}`;
     
-    // Simulate API call
-    setTimeout(() => {
-        logUserActivity(currentUserId, "DEPARTMENT_CREATE_SUCCESS", `Created department ID: ${newDepartmentId}, Name: ${data.name}`);
-        toast({
-            title: "Department Added (Demo)",
-            description: `${data.name} has been successfully added.`,
-        });
-        router.push('/admin/departments');
-        setIsSubmitting(false);
-    }, 1000);
+    try {
+      const newDepartmentId = await generateNextId('DEPARTMENT');
+      
+      // Simulate API call
+      setTimeout(() => {
+          logUserActivity(currentUserId, "DEPARTMENT_CREATE_SUCCESS", `Created department ID: ${newDepartmentId}, Name: ${data.name}`);
+          toast({
+              title: "Department Added (Demo)",
+              description: `${data.name} has been successfully added with ID ${newDepartmentId}.`,
+          });
+          router.push('/admin/departments');
+          setIsSubmitting(false);
+      }, 1000);
+
+    } catch (error) {
+      toast({
+        title: "Error Generating ID",
+        description: "Could not generate a new department ID. Please try again.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+    }
   };
 
   return (

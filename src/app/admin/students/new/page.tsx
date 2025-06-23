@@ -10,6 +10,7 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
+import { generateNextId } from '@/lib/idGenerator';
 
 export default function NewStudentPage() {
   const router = useRouter();
@@ -17,20 +18,29 @@ export default function NewStudentPage() {
   const { currentUserId } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleFormSubmit = (data: Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string | null }) => {
+  const handleFormSubmit = async (data: Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string | null }) => {
     setIsSubmitting(true);
-    const newStudentId = `ADERA/STU/${new Date().getFullYear()}/${Math.floor(10000 + Math.random() * 90000)}`;
     
-    // Simulate API call
-    setTimeout(() => {
-        logUserActivity(currentUserId, "STUDENT_CREATE_SUCCESS", `Created student ID: ${newStudentId}, Name: ${data.name}`);
-        toast({
-            title: "Student Added (Demo)",
-            description: `${data.name} has been successfully added with ID ${newStudentId}.`,
-        });
-        router.push('/admin/students');
-        setIsSubmitting(false);
-    }, 1000);
+    try {
+      const newStudentId = await generateNextId('STUDENT');
+      // Simulate API call
+      setTimeout(() => {
+          logUserActivity(currentUserId, "STUDENT_CREATE_SUCCESS", `Created student ID: ${newStudentId}, Name: ${data.name}`);
+          toast({
+              title: "Student Added (Demo)",
+              description: `${data.name} has been successfully added with ID ${newStudentId}.`,
+          });
+          router.push('/admin/students');
+          setIsSubmitting(false);
+      }, 1000);
+    } catch (error) {
+       toast({
+          title: "Error Generating ID",
+          description: "Could not generate a new student ID. Please try again.",
+          variant: "destructive",
+      });
+      setIsSubmitting(false);
+    }
   };
 
   return (

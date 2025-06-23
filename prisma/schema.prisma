@@ -1,27 +1,17 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-  provider     = "postgresql"
-  url          = env("DATABASE_URL")
-  relationMode = "prisma"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
   provider = "prisma-client-js"
 }
 
-model Student {
-  id                String             @id @default(cuid())
-  studentId         String             @unique
-  name              String
-  gender            String?
-  classGrade        String?
-  profileImageURL   String?
-  qrCodeData        String?            @unique
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  attendanceRecords AttendanceRecord[]
+model Department {
+  id    String @id
+  name  String @unique
+  users User[]
 }
 
 model User {
@@ -30,52 +20,45 @@ model User {
   fullName               String
   email                  String      @unique
   passwordHash           String
-  role                   String      @default("User") // "Admin" or "User"
-  profileImageURL        String?
-  passwordChangeRequired Boolean     @default(true)
+  role                   String
+  status                 String
   departmentId           String?
   department             Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  createdAt              DateTime    @default(now())
-  updatedAt              DateTime    @updatedAt
-}
+  passwordChangeRequired Boolean     @default(true)
+  profileImageURL        String?
 
-model Department {
-  id        String   @id @default(cuid())
-  name      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  users     User[]
+}
+
+model Student {
+  id              String    @id @default(cuid())
+  studentId       String    @unique
+  name            String
+  gender          String?
+  classGrade      String?
+  profileImageURL String?
+  qrCodeData      String?   @unique
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  attendance      AttendanceRecord[]
 }
 
 model AttendanceRecord {
-  id                 String    @id @default(cuid())
-  studentInternalId  String
-  student            Student   @relation(fields: [studentInternalId], references: [id], onDelete: Cascade)
-  recordDate         DateTime  @db.Date
-  mealType           MealType
-  scannedAtTimestamp DateTime?
-  status             AttendanceStatus
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  id                 String   @id @default(cuid())
+  studentId          String
+  mealType           String
+  status             String
+  recordDate         DateTime @db.Date
+  scannedAtTimestamp DateTime @default(now())
 
-  @@unique([studentInternalId, recordDate, mealType], name: "unique_attendance_constraint")
+  student Student @relation(fields: [studentId], references: [studentId], onDelete: Cascade)
+
+  @@unique([studentId, mealType, recordDate])
 }
 
-model UserActivityLog {
-  id                String   @id @default(cuid())
-  activityTimestamp DateTime @default(now())
-  userIdentifier    String // This could be the User's ADERA ID
-  action            String   // e.g., 'LOGIN_SUCCESS', 'STUDENT_CREATED'
-  details           String?  // e.g., 'Created student John Doe with ID STU123'
-}
-
-enum MealType {
-  BREAKFAST
-  LUNCH
-  DINNER
-}
-
-enum AttendanceStatus {
-  PRESENT
-  ABSENT
+model IdCounter {
+  id    String @id @default(cuid())
+  type  String @unique // e.g., 'USER', 'STUDENT', 'DEPARTMENT'
+  count Int
 }
