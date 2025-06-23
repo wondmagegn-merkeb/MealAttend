@@ -68,7 +68,7 @@ export function useAuth(): AuthContextType {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: userIdInput, password }),
       });
-
+console.log("Login API response:", response)
       const data = await response.json();
 
       if (!response.ok) {
