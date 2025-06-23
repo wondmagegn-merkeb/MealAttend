@@ -19,7 +19,7 @@ export default function NewStudentPage() {
 
   const handleFormSubmit = (data: Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string | null }) => {
     setIsSubmitting(true);
-    const newStudentId = `GSS/STU/${new Date().getFullYear()}/${Math.floor(10000 + Math.random() * 90000)}`;
+    const newStudentId = `ADERA/STU/${new Date().getFullYear()}/${Math.floor(10000 + Math.random() * 90000)}`;
     
     // Simulate API call
     setTimeout(() => {

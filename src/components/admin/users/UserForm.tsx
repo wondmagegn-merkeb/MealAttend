@@ -22,6 +22,7 @@ const userFormSchema = z.object({
   departmentId: z.string().min(1, { message: "Department is required." }),
   email: z.string().email({ message: "Invalid email address." }).min(1, { message: "Email is required." }),
   role: z.enum(['Admin', 'User'], { errorMap: () => ({ message: "Please select a role." }) }),
+  status: z.enum(['Active', 'Inactive'], { errorMap: () => ({ message: "Please select a status." }) }),
   profileImageURL: z.string().optional().or(z.literal("")),
 });
 
@@ -63,12 +64,14 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     defaultValues: initialData ? {
       ...initialData,
       departmentId: initialData.departmentId || "",
+      status: initialData.status || "Active",
       profileImageURL: initialData.profileImageURL || "",
     } : {
       fullName: "",
       departmentId: "",
       email: "",
       role: "User",
+      status: "Active",
       profileImageURL: "",
     },
   });
@@ -78,6 +81,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       form.reset({
         ...initialData,
         departmentId: initialData.departmentId || "",
+        status: initialData.status || "Active",
         profileImageURL: initialData.profileImageURL || "",
       });
       setImagePreview(initialData.profileImageURL || null);
@@ -142,16 +146,33 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
             )} />
 
             {!isProfileEditMode && (
-              <FormField control={form.control} name="role" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Role</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger></FormControl>
-                    <SelectContent><SelectItem value="Admin">Admin</SelectItem><SelectItem value="User">User</SelectItem></SelectContent>
-                  </Select>
-                  <FormDescription>The user's role in the system.</FormDescription><FormMessage />
-                </FormItem>
-              )} />
+              <>
+                <FormField control={form.control} name="role" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Role</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger></FormControl>
+                      <SelectContent><SelectItem value="Admin">Admin</SelectItem><SelectItem value="User">User</SelectItem></SelectContent>
+                    </Select>
+                    <FormDescription>The user's role in the system.</FormDescription><FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="status" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl>
+                      <SelectContent>
+                          <SelectItem value="Active">Active</SelectItem>
+                          <SelectItem value="Inactive">Inactive</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>The user's current status in the system.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </>
             )}
 
             <FormItem>

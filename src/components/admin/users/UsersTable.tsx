@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import type { UserWithDepartment } from "@/types";
 
-type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'createdAt';
+type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'status' | 'createdAt';
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -90,6 +90,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
               <SortableTableHead columnKey="department">Department</SortableTableHead>
               <SortableTableHead columnKey="email">Email</SortableTableHead>
               <SortableTableHead columnKey="role">Role</SortableTableHead>
+              <SortableTableHead columnKey="status">Status</SortableTableHead>
               <SortableTableHead columnKey="createdAt">Created At</SortableTableHead>
               <TableHead className="text-right w-[100px]">Actions</TableHead>
             </TableRow>
@@ -117,6 +118,12 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
                   <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>
                     {user.role}
                   </Badge>
+                </TableCell>
+                <TableCell>
+                    <Badge variant={user.status === 'Active' ? 'default' : 'destructive'}
+                        className={user.status === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'}>
+                        {user.status}
+                    </Badge>
                 </TableCell>
                 <TableCell>{format(new Date(user.createdAt), "yyyy-MM-dd")}</TableCell>
                 <TableCell className="text-right">

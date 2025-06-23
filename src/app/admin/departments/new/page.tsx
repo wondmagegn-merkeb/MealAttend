@@ -19,9 +19,11 @@ export default function NewDepartmentPage() {
 
   const handleFormSubmit = (data: DepartmentFormData) => {
     setIsSubmitting(true);
+    const newDepartmentId = `ADERA/DPT/${new Date().getFullYear()}/${Math.floor(10000 + Math.random() * 90000)}`;
+    
     // Simulate API call
     setTimeout(() => {
-        logUserActivity(currentUserId, "DEPARTMENT_CREATE_SUCCESS", `Created department Name: ${data.name}`);
+        logUserActivity(currentUserId, "DEPARTMENT_CREATE_SUCCESS", `Created department ID: ${newDepartmentId}, Name: ${data.name}`);
         toast({
             title: "Department Added (Demo)",
             description: `${data.name} has been successfully added.`,

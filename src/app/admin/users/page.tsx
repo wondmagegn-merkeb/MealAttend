@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlusCircle, Users as UsersIcon, Loader2, Search, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react";
 import { UsersTable } from "@/components/admin/users/UsersTable";
 import { useToast } from "@/hooks/use-toast";
@@ -16,7 +17,7 @@ import { mockUsers } from '@/lib/demo-data';
 import type { UserWithDepartment } from '@/types';
 
 
-type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'createdAt';
+type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'status' | 'createdAt';
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -34,6 +35,7 @@ export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'createdAt', direction: 'descending' });
   const [currentPage, setCurrentPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const [users, setUsers] = useState<UserWithDepartment[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
@@ -72,6 +74,11 @@ export default function UsersPage() {
 
   const filteredAndSortedUsers = useMemo(() => {
     let processedUsers = [...users];
+    
+    if (statusFilter !== 'all') {
+      processedUsers = processedUsers.filter(user => user.status === statusFilter);
+    }
+    
     if (searchTerm) {
       const lowerSearchTerm = searchTerm.toLowerCase();
       processedUsers = processedUsers.filter(user =>
@@ -93,7 +100,7 @@ export default function UsersPage() {
       });
     }
     return processedUsers;
-  }, [users, searchTerm, sortConfig]);
+  }, [users, searchTerm, sortConfig, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredAndSortedUsers.length / ITEMS_PER_PAGE));
   
@@ -125,9 +132,21 @@ export default function UsersPage() {
         <CardHeader>
           <CardTitle>User List</CardTitle>
           <CardDescription>Browse and manage all registered users.</CardDescription>
-           <div className="mt-4 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input type="search" placeholder="Search by User ID, name, department, email or role..." value={searchTerm} onChange={handleSearchChange} className="pl-10 w-full sm:w-1/2 md:w-1/3" />
+           <div className="mt-4 flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-grow">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input type="search" placeholder="Search by ID, name, email, etc..." value={searchTerm} onChange={handleSearchChange} className="pl-10 w-full" />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Inactive">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent>

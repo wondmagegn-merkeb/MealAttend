@@ -18,6 +18,7 @@ export const mockUsers: UserWithDepartment[] = [
     fullName: 'Admin User',
     email: 'admin@example.com',
     role: 'Admin',
+    status: 'Active',
     departmentId: 'dept_2',
     department: mockDepartments[1],
     passwordChangeRequired: false,
@@ -31,6 +32,7 @@ export const mockUsers: UserWithDepartment[] = [
     fullName: 'Normal User',
     email: 'user@example.com',
     role: 'User',
+    status: 'Inactive',
     departmentId: 'dept_1',
     department: mockDepartments[0],
     passwordChangeRequired: false,
@@ -44,6 +46,7 @@ export const mockUsers: UserWithDepartment[] = [
     fullName: 'Jane Doe',
     email: 'jane.doe@example.com',
     role: 'User',
+    status: 'Active',
     departmentId: 'dept_3',
     department: mockDepartments[2],
     passwordChangeRequired: true, // This user needs to change password
@@ -57,7 +60,7 @@ export const mockUsers: UserWithDepartment[] = [
 export const mockStudents: Student[] = [
   {
     id: 'stu_1',
-    studentId: 'GSS/STU/2023/00101',
+    studentId: 'ADERA/STU/2023/00101',
     name: 'Alice Johnson',
     gender: 'Female',
     classGrade: '11A',
@@ -68,7 +71,7 @@ export const mockStudents: Student[] = [
   },
   {
     id: 'stu_2',
-    studentId: 'GSS/STU/2024/00205',
+    studentId: 'ADERA/STU/2024/00205',
     name: 'Bob Williams',
     gender: 'Male',
     classGrade: '10B',
@@ -79,7 +82,7 @@ export const mockStudents: Student[] = [
   },
   {
     id: 'stu_3',
-    studentId: 'GSS/STU/2023/00115',
+    studentId: 'ADERA/STU/2023/00115',
     name: 'Charlie Brown',
     gender: 'Male',
     classGrade: '11A',
@@ -94,7 +97,7 @@ export const mockStudents: Student[] = [
 export const mockAttendanceRecords: AttendanceRecordWithStudent[] = [
   {
     id: 'att_1',
-    studentId: 'GSS/STU/2023/00101',
+    studentId: 'ADERA/STU/2023/00101',
     student: mockStudents[0],
     mealType: 'LUNCH',
     status: 'PRESENT',
@@ -103,7 +106,7 @@ export const mockAttendanceRecords: AttendanceRecordWithStudent[] = [
   },
   {
     id: 'att_2',
-    studentId: 'GSS/STU/2024/00205',
+    studentId: 'ADERA/STU/2024/00205',
     student: mockStudents[1],
     mealType: 'LUNCH',
     status: 'PRESENT',
@@ -112,7 +115,7 @@ export const mockAttendanceRecords: AttendanceRecordWithStudent[] = [
   },
   {
     id: 'att_3',
-    studentId: 'GSS/STU/2023/00101',
+    studentId: 'ADERA/STU/2023/00101',
     student: mockStudents[0],
     mealType: 'BREAKFAST',
     status: 'PRESENT',
@@ -141,7 +144,7 @@ export const mockActivityLogs: UserActivityLog[] = [
     id: 'log_3',
     userIdentifier: 'ADERA/USR/2024/00001',
     action: 'STUDENT_CREATE_SUCCESS',
-    details: 'Created student ID: GSS/STU/2024/00205, Name: Bob Williams',
+    details: 'Created student ID: ADERA/STU/2024/00205, Name: Bob Williams',
     activityTimestamp: subDays(new Date(), 2).toISOString(),
   },
 ];

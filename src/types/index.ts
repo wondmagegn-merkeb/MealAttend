@@ -10,6 +10,7 @@ export interface User {
   fullName: string;
   email: string;
   role: 'Admin' | 'User';
+  status: 'Active' | 'Inactive';
   departmentId: string | null;
   passwordChangeRequired: boolean;
   profileImageURL: string | null;
