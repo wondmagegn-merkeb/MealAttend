@@ -16,7 +16,6 @@ import jsQR from 'jsqr';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
 import type { Student, AttendanceRecord, MealType } from "@/types";
-import { checkAndRecordAttendance } from '@/actions/attendanceActions';
 
 const SCAN_COOLDOWN_MS = 3000;
 
@@ -46,24 +45,53 @@ export function QrScannerClient() {
     setIsProcessing(true);
     setLastScanTime(Date.now());
     
-    const result = await checkAndRecordAttendance(identifier, selectedMealType);
+    let response;
+    try {
+      if (identifier.qrCodeData) {
+        // QR Code Scan - this records attendance automatically
+        response = await fetch('/api/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ qrCodeData: identifier.qrCodeData, mealType: selectedMealType }),
+        });
+      } else if (identifier.studentId) {
+        // Manual Student ID Check - this only checks status without recording
+        response = await fetch('/api/attendance/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentId: identifier.studentId, mealType: selectedMealType }),
+        });
+      } else {
+        throw new Error("No identifier provided.");
+      }
 
-    if (result.success) {
-        if (result.type === 'success') {
-            toast({ title: "Attendance Recorded!", description: `${result.student?.name} marked as present for ${selectedMealType}.` });
-            logUserActivity(currentUserId, "ATTENDANCE_RECORD_SUCCESS", `Student: ${result.student?.name}, Meal: ${selectedMealType}`);
-        } else if (result.type === 'already_recorded') {
-             toast({ title: "Already Recorded", description: `${result.student?.name} has already been recorded.` });
-        }
-        setLastResult({ student: result.student || null, record: result.record || null, message: result.message, type: result.type });
-    } else { // Error case
-        toast({ title: "Scan/Search Error", description: result.message, variant: "destructive" });
-        logUserActivity(currentUserId, "ATTENDANCE_FAILURE", `Identifier: ${identifier.qrCodeData || identifier.studentId}. Error: ${result.message}`);
-        setLastResult({ student: null, record: null, message: result.message, type: 'error' });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'An unknown error occurred.');
+      }
+
+      if (result.success) {
+          if (result.type === 'success') {
+              toast({ title: "Attendance Recorded!", description: `${result.student?.name} marked as present for ${selectedMealType}.` });
+              logUserActivity(currentUserId, "ATTENDANCE_RECORD_SUCCESS", `Student: ${result.student?.name}, Meal: ${selectedMealType}`);
+          } else if (result.type === 'already_recorded') {
+               toast({ title: "Already Recorded", description: `${result.student?.name} has already been recorded.` });
+          } else if (result.type === 'info') {
+               toast({ title: "Student Found", description: `${result.student?.name} has not yet been recorded for this meal.` });
+          }
+          setLastResult({ student: result.student || null, record: result.record || null, message: result.message, type: result.type });
+      } else {
+           throw new Error(result.message || 'An unknown error occurred.');
+      }
+    } catch (error: any) {
+        const errorMessage = error.message || 'Failed to process request.';
+        toast({ title: "Scan/Search Error", description: errorMessage, variant: "destructive" });
+        logUserActivity(currentUserId, "ATTENDANCE_FAILURE", `Identifier: ${identifier.qrCodeData || identifier.studentId}. Error: ${errorMessage}`);
+        setLastResult({ student: null, record: null, message: errorMessage, type: 'error' });
+    } finally {
+        setIsProcessing(false);
     }
-
-    setIsProcessing(false);
-
   }, [selectedMealType, toast, currentUserId]);
 
   const processQrCode = useCallback((qrCodeData: string) => {
