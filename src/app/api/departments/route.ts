@@ -1,10 +1,12 @@
+
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { generateNextId } from '@/lib/idGenerator';
 
 export const dynamic = 'force-dynamic';
 
 // GET all departments
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const departments = await prisma.department.findMany({
       orderBy: {
@@ -25,16 +27,15 @@ export async function POST(request: Request) {
   try {
     const data = await request.json();
     
-    if (!data.id || !data.name) {
-      return NextResponse.json(
-        { message: 'Missing required fields: id and name' },
-        { status: 400 }
-      );
+    if (!data.name) {
+      return NextResponse.json({ message: 'Missing required field: name' }, { status: 400 });
     }
+
+    const newDepartmentId = await generateNextId('DEPARTMENT');
 
     const newDepartment = await prisma.department.create({
       data: {
-        id: data.id,
+        id: newDepartmentId,
         name: data.name,
       },
     });
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
      if ((error as any).code === 'P2002') {
        return NextResponse.json(
-        { message: 'A department with this ID or name already exists.', error: (error as any).message },
+        { message: 'A department with this name already exists.', error: (error as any).message },
         { status: 409 }
       );
     }
