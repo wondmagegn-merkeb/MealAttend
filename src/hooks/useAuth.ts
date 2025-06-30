@@ -137,7 +137,7 @@ export function useAuth(): AuthContextType {
     const updatedUser = { 
         ...currentUser, 
         fullName: profileData.fullName,
-        email: profileData.email,
+        // email: profileData.email, // Do not update email from profile page
         profileImageURL: profileData.profileImageURL || null,
     };
     

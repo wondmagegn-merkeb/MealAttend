@@ -142,7 +142,22 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
             )}
 
             <FormField control={form.control} name="email" render={({ field }) => (
-              <FormItem><FormLabel>Email Address</FormLabel><FormControl><Input type="email" placeholder="e.g., jane.smith@example.com" {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem>
+                <FormLabel>Email Address</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="email" 
+                    placeholder="e.g., jane.smith@example.com" 
+                    {...field}
+                    readOnly={isProfileEditMode}
+                    className={isProfileEditMode ? "bg-muted/50" : ""}
+                  />
+                </FormControl>
+                {isProfileEditMode 
+                  ? <FormDescription>Your email address cannot be changed.</FormDescription>
+                  : <FormMessage />
+                }
+              </FormItem>
             )} />
 
             {!isProfileEditMode && (
