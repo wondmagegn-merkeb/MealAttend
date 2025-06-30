@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
@@ -12,9 +13,13 @@ import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
-import { mockStudents } from '@/lib/demo-data';
 import type { Student } from '@/types';
 
+const fetchStudents = async (): Promise<Student[]> => {
+    const response = await fetch('/api/students');
+    if (!response.ok) throw new Error('Failed to fetch students');
+    return response.json();
+};
 
 const getYearFromStudentId = (studentId: string): string | null => {
   const parts = studentId.split('/'); 
@@ -47,18 +52,10 @@ export default function ExportStudentsPage() {
   const [selectedYear, setSelectedYear] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Using mock data instead of useQuery
-  const [allStudents, setAllStudents] = useState<Student[]>([]);
-  const [isLoadingStudents, setIsLoadingStudents] = useState(true);
-  const [studentsError, setStudentsError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    setIsLoadingStudents(true);
-    setTimeout(() => {
-        setAllStudents(mockStudents);
-        setIsLoadingStudents(false);
-    }, 500);
-  }, []);
+  const { data: allStudents = [], isLoading: isLoadingStudents, error: studentsError } = useQuery<Student[]>({
+    queryKey: ['students'],
+    queryFn: fetchStudents
+  });
 
   useEffect(() => {
     setIsMounted(true);
@@ -219,7 +216,7 @@ export default function ExportStudentsPage() {
                 </CardHeader>
                 <CardContent>
                     <CardDescription className="mb-6">
-                        Failed to load student data: {studentsError.message}. Please try again later.
+                        Failed to load student data: {(studentsError as Error).message}. Please try again later.
                     </CardDescription>
                     <Button variant="outline" asChild>
                         <Link href="/admin/students">

@@ -3,15 +3,23 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, AlertTriangle, Printer } from 'lucide-react';
 import { StudentIdCard } from '@/components/admin/students/StudentIdCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { mockStudents } from '@/lib/demo-data';
 import type { Student } from '@/types';
 
+const fetchStudent = async (id: string): Promise<Student> => {
+    const response = await fetch(`/api/students/${id}`);
+    if (!response.ok) {
+        if (response.status === 404) throw new Error('Student not found');
+        throw new Error('Failed to fetch student data');
+    }
+    return response.json();
+};
 
 export default function StudentIdCardPage() {
   const params = useParams();
@@ -21,28 +29,11 @@ export default function StudentIdCardPage() {
   const studentInternalId = typeof params.id === 'string' ? params.id : undefined;
   const [autoPrintTriggered, setAutoPrintTriggered] = useState(false);
 
-  const [student, setStudent] = useState<Student | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    setIsLoading(true);
-    if (studentInternalId) {
-      setTimeout(() => {
-        const foundStudent = mockStudents.find(s => s.id === studentInternalId);
-        if (foundStudent) {
-          setStudent(foundStudent);
-        } else {
-          setError(new Error('Student not found'));
-        }
-        setIsLoading(false);
-      }, 500);
-    } else {
-        setError(new Error('No student ID provided'));
-        setIsLoading(false);
-    }
-  }, [studentInternalId]);
-
+  const { data: student, isLoading, error } = useQuery<Student>({
+    queryKey: ['student', studentInternalId],
+    queryFn: () => fetchStudent(studentInternalId!),
+    enabled: !!studentInternalId,
+  });
 
   const handlePrint = useCallback(() => {
     window.print();
@@ -54,10 +45,9 @@ export default function StudentIdCardPage() {
       if (autoprintQueryParam === 'true') {
         handlePrint();
         setAutoPrintTriggered(true);
-        // router.replace(`/admin/students/${studentInternalId}/id-card`, { scroll: false }); // Optional: remove query param
       }
     }
-  }, [student, isLoading, error, searchParams, autoPrintTriggered, handlePrint, studentInternalId, router]);
+  }, [student, isLoading, error, searchParams, autoPrintTriggered, handlePrint]);
 
 
   if (isLoading) {
@@ -79,9 +69,9 @@ export default function StudentIdCardPage() {
             </CardHeader>
             <CardContent>
                 <CardDescription className="mb-6">
-                  {error?.message === 'Student not found'
+                  {(error as Error)?.message === 'Student not found'
                     ? 'The student record for this ID card could not be found.'
-                    : `Failed to load student data: ${error?.message || 'Unknown error'}`
+                    : `Failed to load student data: ${(error as Error)?.message || 'Unknown error'}`
                   }
                 </CardDescription>
                 <Button variant="outline" asChild>

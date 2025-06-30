@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { StudentForm, type StudentFormData } from "@/components/admin/students/StudentForm";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
@@ -11,62 +11,68 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
-import { mockStudents } from '@/lib/demo-data';
 import type { Student } from '@/types';
 
-type ApiStudentUpdateData = {
-  name: string;
-  gender?: string | null;
-  classGrade?: string | null;
-  profileImageURL?: string | null;
+type ApiStudentUpdateData = Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string | null };
+
+const fetchStudent = async (id: string): Promise<Student> => {
+    const response = await fetch(`/api/students/${id}`);
+    if (!response.ok) {
+        if (response.status === 404) throw new Error('Student not found');
+        throw new Error('Failed to fetch student');
+    }
+    return response.json();
+};
+
+const updateStudent = async ({ id, data }: { id: string, data: ApiStudentUpdateData }): Promise<Student> => {
+    const response = await fetch(`/api/students/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update student');
+    }
+    return response.json();
 };
 
 export default function EditStudentPage() {
   const router = useRouter();
   const params = useParams();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { currentUserId } = useAuth();
   
   const studentInternalId = typeof params.id === 'string' ? params.id : undefined;
 
-  const [student, setStudent] = useState<Student | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const { data: student, isLoading, error } = useQuery<Student>({
+    queryKey: ['student', studentInternalId],
+    queryFn: () => fetchStudent(studentInternalId!),
+    enabled: !!studentInternalId,
+  });
 
-  useEffect(() => {
-    setIsLoading(true);
-    if(studentInternalId) {
-      setTimeout(() => {
-        const foundStudent = mockStudents.find(s => s.id === studentInternalId);
-        if (foundStudent) {
-          setStudent(foundStudent);
-        } else {
-          setError(new Error('Student not found'));
-        }
-        setIsLoading(false);
-      }, 500);
-    } else {
-      setError(new Error('No student ID provided'));
-      setIsLoading(false);
-    }
-  }, [studentInternalId]);
-
-
-  const handleFormSubmit = (data: Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string }) => {
-    if (!studentInternalId) return;
-    setIsSubmitting(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      logUserActivity(currentUserId, "STUDENT_UPDATE_SUCCESS", `Updated student ID: ${student?.studentId}, Name: ${data.name}`);
+  const mutation = useMutation({
+    mutationFn: updateStudent,
+    onSuccess: (updatedData) => {
       toast({
-        title: "Student Updated (Demo)",
-        description: `${data.name}'s record has been updated.`,
+        title: "Student Updated",
+        description: `${updatedData.name}'s record has been updated.`,
       });
+      logUserActivity(currentUserId, "STUDENT_UPDATE_SUCCESS", `Updated student ID: ${updatedData.studentId}, Name: ${updatedData.name}`);
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+      queryClient.invalidateQueries({ queryKey: ['student', studentInternalId] });
       router.push('/admin/students');
-      setIsSubmitting(false);
-    }, 1000);
+    },
+    onError: (error: Error) => {
+        toast({ title: "Update Failed", description: error.message, variant: "destructive" });
+    }
+  });
+
+
+  const handleFormSubmit = (data: ApiStudentUpdateData) => {
+    if (!studentInternalId) return;
+    mutation.mutate({ id: studentInternalId, data });
   };
 
   if (isLoading) {
@@ -89,9 +95,9 @@ export default function EditStudentPage() {
             </CardHeader>
             <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  {error.message === 'Student not found' 
+                  {(error as Error).message === 'Student not found' 
                     ? 'The student record you are trying to edit could not be found.'
-                    : `Failed to load student data: ${error.message}`
+                    : `Failed to load student data: ${(error as Error).message}`
                   }
                 </p>
                 <Button variant="outline" asChild>
@@ -124,7 +130,7 @@ export default function EditStudentPage() {
         <StudentForm 
           onSubmit={handleFormSubmit} 
           initialData={student}
-          isLoading={isSubmitting}
+          isLoading={mutation.isPending}
           submitButtonText="Save Changes"
           isEditMode={true}
         />

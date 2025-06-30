@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { StudentForm, type StudentFormData } from "@/components/admin/students/StudentForm";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
@@ -10,37 +10,49 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
-import { generateNextId } from '@/lib/idGenerator';
+
+const createStudent = async (data: Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string | null }) => {
+  const response = await fetch('/api/students', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to create student');
+  }
+  return response.json();
+};
+
 
 export default function NewStudentPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { currentUserId } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleFormSubmit = async (data: Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string | null }) => {
-    setIsSubmitting(true);
-    
-    try {
-      const newStudentId = await generateNextId('STUDENT');
-      // Simulate API call
-      setTimeout(() => {
-          logUserActivity(currentUserId, "STUDENT_CREATE_SUCCESS", `Created student ID: ${newStudentId}, Name: ${data.name}`);
-          toast({
-              title: "Student Added (Demo)",
-              description: `${data.name} has been successfully added with ID ${newStudentId}.`,
-          });
-          router.push('/admin/students');
-          setIsSubmitting(false);
-      }, 1000);
-    } catch (error) {
+  
+  const mutation = useMutation({
+    mutationFn: createStudent,
+    onSuccess: (newData) => {
+      toast({
+          title: "Student Added",
+          description: `${newData.name} has been successfully added with ID ${newData.studentId}.`,
+      });
+      logUserActivity(currentUserId, "STUDENT_CREATE_SUCCESS", `Created student ID: ${newData.studentId}, Name: ${newData.name}`);
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+      router.push('/admin/students');
+    },
+    onError: (error: Error) => {
        toast({
-          title: "Error Generating ID",
-          description: "Could not generate a new student ID. Please try again.",
+          title: "Error Adding Student",
+          description: error.message,
           variant: "destructive",
       });
-      setIsSubmitting(false);
     }
+  });
+
+  const handleFormSubmit = async (data: Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string | null }) => {
+    mutation.mutate(data);
   };
 
   return (
@@ -59,7 +71,7 @@ export default function NewStudentPage() {
       </div>
       <StudentForm 
         onSubmit={handleFormSubmit} 
-        isLoading={isSubmitting}
+        isLoading={mutation.isPending}
         submitButtonText="Add Student"
         isEditMode={false}
       />

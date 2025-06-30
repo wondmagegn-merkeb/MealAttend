@@ -1,9 +1,10 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,9 +13,21 @@ import { StudentsTable } from "@/components/admin/students/StudentsTable";
 import { useToast } from "@/hooks/use-toast";
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
-import { mockStudents } from '@/lib/demo-data';
 import type { Student } from '@/types';
 
+const fetchStudents = async (): Promise<Student[]> => {
+  const response = await fetch('/api/students');
+  if (!response.ok) throw new Error('Failed to fetch students');
+  return response.json();
+};
+
+const deleteStudent = async (studentId: string) => {
+  const response = await fetch(`/api/students/${studentId}`, { method: 'DELETE' });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to delete student');
+  }
+};
 
 type SortableStudentKeys = 'studentId' | 'name' | 'classGrade' | 'gender' | 'createdAt';
 type SortDirection = 'ascending' | 'descending';
@@ -27,6 +40,7 @@ interface SortConfig {
 const ITEMS_PER_PAGE = 5;
 
 export default function StudentsPage() {
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { currentUserId } = useAuth();
   const router = useRouter();
@@ -35,33 +49,30 @@ export default function StudentsPage() {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'createdAt', direction: 'descending' });
   const [currentPage, setCurrentPage] = useState(1);
   
-  const [students, setStudents] = useState<Student[]>([]);
-  const [isLoadingStudents, setIsLoadingStudents] = useState(true);
-  const [studentsError, setStudentsError] = useState<Error | null>(null);
+  const { data: students = [], isLoading: isLoadingStudents, error: studentsError } = useQuery<Student[]>({
+    queryKey: ['students'],
+    queryFn: fetchStudents,
+  });
 
-  useEffect(() => {
-    setIsLoadingStudents(true);
-    // Simulate API fetch
-    setTimeout(() => {
-      setStudents(mockStudents);
-      setIsLoadingStudents(false);
-    }, 500);
-  }, []);
-
+  const deleteMutation = useMutation({
+    mutationFn: deleteStudent,
+    onSuccess: (_, deletedStudentId) => {
+        const deletedStudent = students.find(s => s.id === deletedStudentId);
+        toast({ title: "Student Deleted", description: "The student record has been successfully deleted." });
+        logUserActivity(currentUserId, "STUDENT_DELETE_SUCCESS", `Deleted student ID: ${deletedStudent?.studentId || 'N/A'}, Name: ${deletedStudent?.name || 'Unknown'}`);
+        queryClient.invalidateQueries({ queryKey: ['students'] });
+    },
+    onError: (error: Error) => {
+        toast({ title: "Error Deleting Student", description: error.message, variant: "destructive" });
+    }
+  });
 
   const handleEditStudent = (student: Student) => {
     router.push(`/admin/students/${student.id}/edit`);
   };
 
   const handleDeleteStudent = (studentInternalId: string) => {
-    const deletedStudent = students.find(s => s.id === studentInternalId);
-    setStudents(prev => prev.filter(s => s.id !== studentInternalId));
-    
-    logUserActivity(currentUserId, "STUDENT_DELETE_SUCCESS", `Deleted student ID: ${deletedStudent?.studentId || 'N/A'}, Name: ${deletedStudent?.name || 'Unknown'}`);
-    toast({
-      title: "Student Deleted (Demo)",
-      description: "The student record has been successfully deleted.",
-    });
+    deleteMutation.mutate(studentInternalId);
   };
 
   const handleSort = (key: SortableStudentKeys) => {
@@ -130,15 +141,6 @@ export default function StudentsPage() {
     }
   }, [currentPage, totalPages, filteredAndSortedStudents.length]);
 
-  if (isLoadingStudents) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2">Loading students...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -183,13 +185,17 @@ export default function StudentsPage() {
           </div>
         </CardHeader>
         <CardContent>
-           {studentsError && (
+           {isLoadingStudents ? (
+             <div className="flex justify-center items-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <span className="ml-2">Loading students...</span>
+            </div>
+           ) : studentsError ? (
              <div className="text-center py-10 text-destructive">
                 <AlertTriangle className="mx-auto h-8 w-8 mb-2" />
-                <p>Error loading students: {studentsError.message}</p>
+                <p>Error loading students: {(studentsError as Error).message}</p>
             </div>
-          )}
-          {!isLoadingStudents && !studentsError && (
+          ) : (
             <StudentsTable 
               students={currentTableData} 
               onEdit={handleEditStudent} 

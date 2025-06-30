@@ -1,9 +1,10 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,8 +14,22 @@ import { UsersTable } from "@/components/admin/users/UsersTable";
 import { useToast } from "@/hooks/use-toast";
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
-import { mockUsers } from '@/lib/demo-data';
 import type { UserWithDepartment } from '@/types';
+
+
+const fetchUsers = async (): Promise<UserWithDepartment[]> => {
+  const response = await fetch('/api/users');
+  if (!response.ok) throw new Error('Failed to fetch users');
+  return response.json();
+};
+
+const deleteUser = async (userId: string) => {
+  const response = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to delete user');
+  }
+};
 
 
 type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'status' | 'createdAt';
@@ -28,6 +43,7 @@ interface SortConfig {
 const ITEMS_PER_PAGE = 5;
 
 export default function UsersPage() {
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { currentUserId: actorUserId } = useAuth();
   const router = useRouter();
@@ -37,27 +53,31 @@ export default function UsersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('all');
 
-  const [users, setUsers] = useState<UserWithDepartment[]>([]);
-  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
-  const [usersError, setUsersError] = useState<Error | null>(null);
+  const { data: users = [], isLoading: isLoadingUsers, error: usersError } = useQuery<UserWithDepartment[]>({
+    queryKey: ['users'],
+    queryFn: fetchUsers,
+  });
 
-  useEffect(() => {
-    setIsLoadingUsers(true);
-    setTimeout(() => {
-        setUsers(mockUsers);
-        setIsLoadingUsers(false);
-    }, 500);
-  }, []);
+  const deleteMutation = useMutation({
+    mutationFn: deleteUser,
+    onSuccess: (_, deletedUserId) => {
+      const deletedUser = users.find(u => u.id === deletedUserId);
+      toast({ title: "User Deleted", description: "The user record has been successfully deleted." });
+      logUserActivity(actorUserId, "USER_DELETE_SUCCESS", `Deleted user ID: ${deletedUser?.userId || 'N/A'}, Name: ${deletedUser?.fullName || 'Unknown'}`);
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error Deleting User", description: error.message, variant: "destructive" });
+    }
+  });
+
 
   const handleEditUser = (user: UserWithDepartment) => {
     router.push(`/admin/users/${user.id}/edit`);
   };
 
   const handleDeleteUser = (internalUserId: string) => {
-    const deletedUser = users.find(u => u.id === internalUserId);
-    setUsers(prev => prev.filter(u => u.id !== internalUserId));
-    logUserActivity(actorUserId, "USER_DELETE_SUCCESS", `Deleted user ID: ${deletedUser?.userId || 'N/A'}, Name: ${deletedUser?.fullName || 'Unknown'}`);
-    toast({ title: "User Deleted (Demo)", description: "The user record has been successfully deleted." });
+    deleteMutation.mutate(internalUserId);
   };
 
   const handleSort = (key: SortableUserKeys) => {

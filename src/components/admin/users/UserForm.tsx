@@ -4,6 +4,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useQuery } from '@tanstack/react-query';
 
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -13,10 +14,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { mockDepartments } from "@/lib/demo-data";
 import type { UserWithDepartment, Department } from '@/types';
 import { useToast } from "@/hooks/use-toast";
 
+
+const fetchDepartments = async (): Promise<Department[]> => {
+    const response = await fetch('/api/departments');
+    if (!response.ok) {
+        throw new Error('Failed to fetch departments');
+    }
+    return response.json();
+};
 
 const userFormSchema = z.object({
   fullName: z.string().min(1, { message: "Full Name is required." }),
@@ -49,16 +57,11 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const [availableDepartments, setAvailableDepartments] = useState<Department[]>([]);
-  const [isLoadingDepartments, setIsLoadingDepartments] = useState(true);
-
-  useEffect(() => {
-    setIsLoadingDepartments(true);
-    setTimeout(() => {
-      setAvailableDepartments(mockDepartments);
-      setIsLoadingDepartments(false);
-    }, 300);
-  }, []);
+  const { data: availableDepartments = [], isLoading: isLoadingDepartments } = useQuery<Department[]>({
+      queryKey: ['departments'],
+      queryFn: fetchDepartments,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
   const currentSchema = isProfileEditMode ? profileEditFormSchema : userFormSchema;
 

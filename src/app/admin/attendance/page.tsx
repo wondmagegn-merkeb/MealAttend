@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,8 +20,19 @@ import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
-import { mockAttendanceRecords, mockStudents } from '@/lib/demo-data';
 import type { AttendanceRecordWithStudent, Student, MealType } from '@/types';
+
+const fetchAttendanceRecords = async (): Promise<AttendanceRecordWithStudent[]> => {
+  const response = await fetch('/api/attendance');
+  if (!response.ok) throw new Error('Failed to fetch attendance records');
+  return response.json();
+};
+
+const fetchStudents = async (): Promise<Student[]> => {
+  const response = await fetch('/api/students');
+  if (!response.ok) throw new Error('Failed to fetch students');
+  return response.json();
+};
 
 const ALL_MEAL_TYPES: MealType[] = ["BREAKFAST", "LUNCH", "DINNER"];
 const ITEMS_PER_PAGE = 10;
@@ -112,20 +124,19 @@ export default function AttendancePage() {
   const [classSearch, setClassSearch] = useState('');
   const [isClassPopoverOpen, setClassPopoverOpen] = useState(false);
   
-  // Using mock data instead of useQuery
-  const [allAttendanceRecords, setAllAttendanceRecords] = useState<AttendanceRecordWithStudent[]>([]);
-  const [students, setStudents] = useState<Student[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const { data: allAttendanceRecords = [], isLoading: isLoadingAttendance, error: attendanceError } = useQuery<AttendanceRecordWithStudent[]>({
+    queryKey: ['attendanceRecords'],
+    queryFn: fetchAttendanceRecords,
+  });
 
-  useEffect(() => {
-    setIsLoading(true);
-    setTimeout(() => {
-        setAllAttendanceRecords(mockAttendanceRecords);
-        setStudents(mockStudents);
-        setIsLoading(false);
-    }, 500);
-  }, []);
+  const { data: students = [], isLoading: isLoadingStudents, error: studentsError } = useQuery<Student[]>({
+    queryKey: ['students'],
+    queryFn: fetchStudents,
+  });
+
+  const isLoading = isLoadingAttendance || isLoadingStudents;
+  const error = attendanceError || studentsError;
+
 
   const uniqueClasses = useMemo(() => {
     if (!students.length) return [];

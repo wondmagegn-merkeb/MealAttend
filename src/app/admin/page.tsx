@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { WelcomeBanner } from "@/components/admin/WelcomeBanner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,9 +18,27 @@ import * as XLSX from 'xlsx';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import { QuickActions } from '@/components/admin/QuickActions';
-import { mockStudents, mockUsers, mockAttendanceRecords, mockActivityLogs } from '@/lib/demo-data';
-import type { Student, User, AttendanceRecord, UserActivityLog } from '@/types';
+import type { Student, User, AttendanceRecord, UserActivityLog, AttendanceRecordWithStudent } from '@/types';
 
+const fetchDashboardData = async (): Promise<{ students: Student[], users: User[], attendance: AttendanceRecordWithStudent[], activity: UserActivityLog[] }> => {
+    const [studentsRes, usersRes, attendanceRes, activityRes] = await Promise.all([
+        fetch('/api/students'),
+        fetch('/api/users'),
+        fetch('/api/attendance'),
+        fetch('/api/activity-log')
+    ]);
+
+    if (!studentsRes.ok || !usersRes.ok || !attendanceRes.ok || !activityRes.ok) {
+        throw new Error('Failed to fetch all dashboard data');
+    }
+
+    return {
+        students: await studentsRes.json(),
+        users: await usersRes.json(),
+        attendance: await attendanceRes.json(),
+        activity: await activityRes.json()
+    };
+};
 
 const CURRENT_GREGORIAN_YEAR = new Date().getFullYear();
 const CURRENT_GREGORIAN_MONTH = new Date().getMonth(); // 0-indexed (January is 0)
@@ -44,24 +63,15 @@ export default function AdminDashboardPage() {
   const { toast } = useToast();
   const { currentUser } = useAuth();
 
-  const [allStudents, setAllStudents] = useState<Student[]>([]);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
-  const [allAttendanceRecords, setAllAttendanceRecords] = useState<AttendanceRecord[]>([]);
-  const [allActivityLogs, setAllActivityLogs] = useState<UserActivityLog[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [dataError, setDataError] = useState<Error | null>(null);
+  const { data, isLoading, error: dataError } = useQuery({
+      queryKey: ['dashboardData'],
+      queryFn: fetchDashboardData,
+  });
 
-  useEffect(() => {
-    setIsLoading(true);
-    // Simulate fetching data
-    setTimeout(() => {
-      setAllStudents(mockStudents);
-      setAllUsers(mockUsers);
-      setAllAttendanceRecords(mockAttendanceRecords);
-      setAllActivityLogs(mockActivityLogs);
-      setIsLoading(false);
-    }, 500);
-  }, []);
+  const allStudents = data?.students || [];
+  const allUsers = data?.users || [];
+  const allAttendanceRecords = data?.attendance || [];
+  const allActivityLogs = data?.activity || [];
   
   const userActivity = useMemo(() => {
     if (!currentUser || !allActivityLogs.length) return [];

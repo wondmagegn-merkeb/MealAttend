@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DepartmentForm, type DepartmentFormData } from "@/components/admin/departments/DepartmentForm";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
@@ -11,54 +12,69 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
-import { mockDepartments } from '@/lib/demo-data';
 import type { Department } from '@/types';
+
+const fetchDepartment = async (id: string): Promise<Department> => {
+  const response = await fetch(`/api/departments/${id}`);
+  if (!response.ok) {
+    if (response.status === 404) throw new Error('Department not found');
+    throw new Error('Failed to fetch department');
+  }
+  return response.json();
+};
+
+const updateDepartment = async ({ id, data }: { id: string, data: DepartmentFormData }): Promise<Department> => {
+  const response = await fetch(`/api/departments/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to update department');
+  }
+  return response.json();
+};
 
 export default function EditDepartmentPage() {
   const router = useRouter();
   const params = useParams();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { currentUserId } = useAuth();
   
   const departmentId = typeof params.id === 'string' ? params.id : undefined;
 
-  const [department, setDepartment] = useState<Department | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const { data: department, isLoading, error } = useQuery<Department>({
+    queryKey: ['department', departmentId],
+    queryFn: () => fetchDepartment(departmentId!),
+    enabled: !!departmentId,
+  });
 
-  useEffect(() => {
-    setIsLoading(true);
-    if (departmentId) {
-      setTimeout(() => {
-        const foundDept = mockDepartments.find(d => d.id === departmentId);
-        if (foundDept) {
-          setDepartment(foundDept);
-        } else {
-          setError(new Error('Department not found'));
-        }
-        setIsLoading(false);
-      }, 500);
-    } else {
-      setError(new Error('No department ID provided'));
-      setIsLoading(false);
+  const mutation = useMutation({
+    mutationFn: updateDepartment,
+    onSuccess: (updatedData) => {
+      toast({
+        title: "Department Updated",
+        description: `${updatedData.name}'s record has been updated.`,
+      });
+      logUserActivity(currentUserId, "DEPARTMENT_UPDATE_SUCCESS", `Updated department ID: ${updatedData.departmentId}, Name: ${updatedData.name}`);
+      queryClient.invalidateQueries({ queryKey: ['departments'] });
+      queryClient.invalidateQueries({ queryKey: ['department', departmentId] });
+      router.push('/admin/departments');
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Update Failed",
+        description: error.message,
+        variant: "destructive",
+      });
     }
-  }, [departmentId]);
+  });
 
   const handleFormSubmit = (data: DepartmentFormData) => {
     if (!departmentId) return;
-    setIsSubmitting(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      logUserActivity(currentUserId, "DEPARTMENT_UPDATE_SUCCESS", `Updated department ID: ${departmentId}, Name: ${data.name}`);
-      toast({
-        title: "Department Updated (Demo)",
-        description: `${data.name}'s record has been updated.`,
-      });
-      router.push('/admin/departments');
-      setIsSubmitting(false);
-    }, 1000);
+    mutation.mutate({ id: departmentId, data });
   };
 
   if (isLoading) {
@@ -81,9 +97,9 @@ export default function EditDepartmentPage() {
             </CardHeader>
             <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  {error.message === 'Department not found' 
+                  {(error as Error).message === 'Department not found' 
                     ? 'The department record you are trying to edit could not be found.'
-                    : `Failed to load department data: ${error.message}`
+                    : `Failed to load department data: ${(error as Error).message}`
                   }
                 </p>
                 <Button variant="outline" asChild>
@@ -116,7 +132,7 @@ export default function EditDepartmentPage() {
         <DepartmentForm 
           onSubmit={handleFormSubmit} 
           initialData={department}
-          isLoading={isSubmitting}
+          isLoading={mutation.isPending}
           submitButtonText="Save Changes"
         />
       )}

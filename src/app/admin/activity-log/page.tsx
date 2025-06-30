@@ -1,16 +1,23 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Loader2, Search, ChevronLeft, ChevronRight, ListChecks, AlertTriangle } from "lucide-react";
 import { ActivityLogTable } from "@/components/admin/activity/ActivityLogTable";
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { mockActivityLogs } from '@/lib/demo-data';
 import type { UserActivityLog } from '@/types';
 
+const fetchActivityLogs = async (): Promise<UserActivityLog[]> => {
+  const response = await fetch('/api/activity-log');
+  if (!response.ok) {
+    throw new Error('Failed to fetch activity logs');
+  }
+  return response.json();
+};
 
 type SortableActivityLogKeys = 'activityTimestamp' | 'userIdentifier' | 'action';
 type SortDirection = 'ascending' | 'descending';
@@ -28,20 +35,10 @@ export default function ActivityLogPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const { currentUser } = useAuth();
   
-  // Using mock data instead of useQuery
-  const [logs, setLogs] = useState<UserActivityLog[]>([]);
-  const [isLoadingLogs, setIsLoadingLogs] = useState(true);
-  const [logsError, setLogsError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    // Simulate fetching data
-    setIsLoadingLogs(true);
-    setTimeout(() => {
-      setLogs(mockActivityLogs);
-      setIsLoadingLogs(false);
-    }, 500);
-  }, []);
-
+  const { data: logs = [], isLoading: isLoadingLogs, error: logsError } = useQuery<UserActivityLog[]>({
+    queryKey: ['activityLogs'],
+    queryFn: fetchActivityLogs,
+  });
 
   const handleSort = (key: SortableActivityLogKeys) => {
     let direction: SortDirection = 'ascending';

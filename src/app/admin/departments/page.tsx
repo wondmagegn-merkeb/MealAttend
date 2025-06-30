@@ -1,9 +1,10 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,11 +13,23 @@ import { DepartmentsTable } from "@/components/admin/departments/DepartmentsTabl
 import { useToast } from "@/hooks/use-toast";
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
-import { mockDepartments } from '@/lib/demo-data';
 import type { Department } from '@/types';
 
+const fetchDepartments = async (): Promise<Department[]> => {
+  const response = await fetch('/api/departments');
+  if (!response.ok) throw new Error('Failed to fetch departments');
+  return response.json();
+};
 
-type SortableDepartmentKeys = 'id' | 'name';
+const deleteDepartment = async (departmentId: string) => {
+  const response = await fetch(`/api/departments/${departmentId}`, { method: 'DELETE' });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to delete department');
+  }
+};
+
+type SortableDepartmentKeys = 'departmentId' | 'name';
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -27,6 +40,7 @@ interface SortConfig {
 const ITEMS_PER_PAGE = 5;
 
 export default function DepartmentsPage() {
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { currentUserId } = useAuth();
   const router = useRouter();
@@ -35,31 +49,30 @@ export default function DepartmentsPage() {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'ascending' });
   const [currentPage, setCurrentPage] = useState(1);
   
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [isLoadingDepartments, setIsLoadingDepartments] = useState(true);
-  const [departmentsError, setDepartmentsError] = useState<Error | null>(null);
+  const { data: departments = [], isLoading: isLoadingDepartments, error: departmentsError } = useQuery<Department[]>({
+    queryKey: ['departments'],
+    queryFn: fetchDepartments,
+  });
 
-  useEffect(() => {
-    setIsLoadingDepartments(true);
-    // Simulate API fetch
-    setTimeout(() => {
-        setDepartments(mockDepartments);
-        setIsLoadingDepartments(false);
-    }, 500);
-  }, []);
+  const deleteMutation = useMutation({
+    mutationFn: deleteDepartment,
+    onSuccess: (_, deletedDepartmentId) => {
+        const deletedDepartment = departments.find(d => d.id === deletedDepartmentId);
+        toast({ title: "Department Deleted", description: "The department record has been successfully deleted." });
+        logUserActivity(currentUserId, "DEPARTMENT_DELETE_SUCCESS", `Deleted department ID: ${deletedDepartment?.departmentId}, Name: ${deletedDepartment?.name || 'Unknown'}`);
+        queryClient.invalidateQueries({ queryKey: ['departments'] });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error Deleting Department", description: error.message, variant: "destructive" });
+    },
+  });
 
   const handleEditDepartment = (department: Department) => {
     router.push(`/admin/departments/${department.id}/edit`);
   };
 
   const handleDeleteDepartment = (departmentIdToDelete: string) => {
-    const deletedDepartment = departments.find(d => d.id === departmentIdToDelete);
-    setDepartments(prev => prev.filter(d => d.id !== departmentIdToDelete));
-    logUserActivity(currentUserId, "DEPARTMENT_DELETE_SUCCESS", `Deleted department ID: ${departmentIdToDelete}, Name: ${deletedDepartment?.name || 'Unknown'}`);
-    toast({
-      title: "Department Deleted (Demo)",
-      description: "The department record has been successfully deleted.",
-    });
+    deleteMutation.mutate(departmentIdToDelete);
   };
 
   const handleSort = (key: SortableDepartmentKeys) => {
@@ -83,7 +96,7 @@ export default function DepartmentsPage() {
       const lowerSearchTerm = searchTerm.toLowerCase();
       processedDepartments = processedDepartments.filter(dept =>
         dept.name.toLowerCase().includes(lowerSearchTerm) ||
-        dept.id.toLowerCase().includes(lowerSearchTerm)
+        dept.departmentId.toLowerCase().includes(lowerSearchTerm)
       );
     }
 
@@ -122,16 +135,6 @@ export default function DepartmentsPage() {
     }
   }, [currentPage, totalPages, filteredAndSortedDepartments.length]);
 
-
-  if (isLoadingDepartments) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2">Loading departments...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -164,13 +167,17 @@ export default function DepartmentsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {departmentsError && (
+          {isLoadingDepartments ? (
+             <div className="flex justify-center items-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <span className="ml-2">Loading departments...</span>
+            </div>
+          ) : departmentsError ? (
              <div className="text-center py-10 text-destructive">
                 <AlertTriangle className="mx-auto h-8 w-8 mb-2" />
-                <p>Error loading departments: {departmentsError.message}</p>
+                <p>Error loading departments: {(departmentsError as Error).message}</p>
             </div>
-          )}
-          {!isLoadingDepartments && !departmentsError && (
+          ) : (
             <DepartmentsTable 
               departments={currentTableData} 
               onEdit={handleEditDepartment} 
@@ -179,7 +186,7 @@ export default function DepartmentsPage() {
               onSort={handleSort}
             />
           )}
-          {filteredAndSortedDepartments.length > ITEMS_PER_PAGE && !isLoadingDepartments && (
+          {filteredAndSortedDepartments.length > ITEMS_PER_PAGE && !isLoadingDepartments && !departmentsError && (
             <div className="flex items-center justify-between pt-4 mt-4 border-t">
               <p className="text-sm text-muted-foreground">
                 Page {currentPage} of {totalPages} ({filteredAndSortedDepartments.length} departments)
