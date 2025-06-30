@@ -34,11 +34,10 @@ import { useToast } from "@/hooks/use-toast";
 // Zod schema for validation
 const studentFormSchema = z.object({
   name: z.string().min(1, { message: "Full Name is required." }),
-  gender: z.string().optional().or(z.literal("")), // Optional or empty string
-  classNumber: z.string().optional().or(z.literal("")), // Made optional
-  classAlphabet: z.string().optional().or(z.literal("")), // Made optional
+  gender: z.enum(["Male", "Female", ""]).optional(),
+  classNumber: z.string().optional().or(z.literal("")),
+  classAlphabet: z.string().optional().or(z.literal("")),
   profileImageURL: z.string().optional().or(z.literal("")),
-  // classGrade is not directly in the form, but constructed/parsed
 });
 
 export type StudentFormData = z.infer<typeof studentFormSchema>;
@@ -54,7 +53,6 @@ interface StudentFormProps {
 const gradeAlphabetOptions = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const classNumberOptions = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
 
-// Helper function to parse classGrade into classNumber and classAlphabet
 const parseClassGrade = (classGrade: string | null | undefined): { classNumber: string, classAlphabet: string } => {
   if (!classGrade) return { classNumber: "", classAlphabet: "" };
   const match = classGrade.match(/^(\d+)([A-Za-z]*)$/);
@@ -63,9 +61,8 @@ const parseClassGrade = (classGrade: string | null | undefined): { classNumber: 
   }
   const numericMatch = classGrade.match(/^(\d+)$/);
   if (numericMatch) {
-    return { classNumber: numericMatch[1], classAlphabet: "" };
+     return { classNumber: numericMatch[1], classAlphabet: "" };
   }
-  // If it's just letters or unparsable, treat as alphabet part of an unknown number
   return { classNumber: "", classAlphabet: classGrade.toUpperCase() };
 };
 
@@ -79,7 +76,7 @@ export function StudentForm({
 }: StudentFormProps) {
   const { toast } = useToast();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const { classNumber: initialClassNumber, classAlphabet: initialClassAlphabet } = initialData?.classGrade
     ? parseClassGrade(initialData.classGrade)
@@ -117,49 +114,55 @@ export function StudentForm({
       });
       setImagePreview(null);
     }
+    setSelectedFile(null);
   }, [initialData, form]);
 
-  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    if (imagePreview && imagePreview.startsWith("blob:")) {
+      return () => {
+        URL.revokeObjectURL(imagePreview);
+      };
+    }
+  }, [imagePreview]);
+
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setIsUploading(true);
-      setImagePreview(null); // Clear preview during upload
-      
-      // Simulate an upload process to a cloud storage
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // In a real application, you would upload the file and get back a URL.
-      // For this demo, we use a placeholder URL.
-      const mockUrl = `https://placehold.co/120x120.png`;
-
-      setImagePreview(mockUrl);
-      form.setValue("profileImageURL", mockUrl, { shouldValidate: true });
-      
-      toast({
-        title: "Image Uploaded (Simulated)",
-        description: "A placeholder image URL has been saved.",
-      });
-      setIsUploading(false);
+      setSelectedFile(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
-  const onFormSubmit = (data: StudentFormData) => {
+  const onFormSubmit = async (data: StudentFormData) => {
     const { classNumber, classAlphabet, ...restOfData } = data;
 
+    let classGrade: string | null = null;
     const finalClassNumber = classNumber === 'na' ? '' : classNumber;
     const finalClassAlphabet = classAlphabet === 'na' ? '' : classAlphabet;
     
-    let classGrade: string | null = null;
-    if (finalClassNumber && finalClassAlphabet) {
+    if (finalClassNumber) {
       classGrade = `${finalClassNumber}${finalClassAlphabet}`;
-    } else if (finalClassNumber) {
-      classGrade = finalClassNumber;
     } else if (finalClassAlphabet) {
       classGrade = finalClassAlphabet;
     }
-    // If both are empty, classGrade remains null
 
-    onSubmit({ ...restOfData, classGrade });
+    let finalProfileUrl = initialData?.profileImageURL || null;
+
+    if (selectedFile) {
+      toast({ title: "Uploading image...", description: "Please wait a moment." });
+      await new Promise(resolve => setTimeout(resolve, 1500)); 
+      finalProfileUrl = `https://placehold.co/120x120.png`;
+    }
+
+    const dataToSubmit = { 
+        ...restOfData,
+        gender: data.gender || null,
+        classGrade, 
+        profileImageURL: finalProfileUrl 
+    };
+    
+    onSubmit(dataToSubmit);
   };
 
 
@@ -209,8 +212,6 @@ export function StudentForm({
                     <SelectContent>
                       <SelectItem value="Male">Male</SelectItem>
                       <SelectItem value="Female">Female</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                      <SelectItem value="unspecified">Prefer not to say / N/A</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -278,21 +279,13 @@ export function StudentForm({
               <FormLabel>Profile Image</FormLabel>
               <div className="flex items-center gap-4">
                 <Avatar className="h-20 w-20 rounded-md">
-                  {isUploading ? (
-                    <div className="flex h-full w-full items-center justify-center rounded-md bg-muted">
-                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                    </div>
-                  ) : (
-                    <>
-                      <AvatarImage
-                        src={imagePreview || `https://placehold.co/80x80.png?text=No+Image`}
-                        alt="Profile preview"
-                        className="object-cover"
-                        data-ai-hint="student profile"
-                      />
-                      <AvatarFallback>IMG</AvatarFallback>
-                    </>
-                  )}
+                  <AvatarImage
+                    src={imagePreview || `https://placehold.co/80x80.png?text=No+Image`}
+                    alt="Profile preview"
+                    className="object-cover"
+                    data-ai-hint="student profile"
+                  />
+                  <AvatarFallback>IMG</AvatarFallback>
                 </Avatar>
                 <FormControl>
                   <Input
@@ -305,12 +298,12 @@ export function StudentForm({
                       file:text-sm file:font-semibold
                       file:bg-primary/10 file:text-primary
                       hover:file:bg-primary/20"
-                    disabled={isUploading}
+                    disabled={isLoading}
                   />
                 </FormControl>
               </div>
               <FormDescription>
-                {isUploading ? "Uploading image..." : "Upload a profile picture for the student."}
+                Select an image. It will be uploaded on submission.
               </FormDescription>
               <FormField
                 control={form.control}
@@ -323,7 +316,7 @@ export function StudentForm({
             </FormItem>
 
             <div className="flex justify-end pt-2">
-              <Button type="submit" className="w-full sm:w-auto" disabled={isLoading || isUploading}>
+              <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

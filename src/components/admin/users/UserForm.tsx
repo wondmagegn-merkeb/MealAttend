@@ -55,7 +55,7 @@ interface UserFormProps {
 export function UserForm({ onSubmit, initialData, isLoading = false, submitButtonText = "Submit", isProfileEditMode = false }: UserFormProps) {
   const { toast } = useToast();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const { data: availableDepartments = [], isLoading: isLoadingDepartments } = useQuery<Department[]>({
       queryKey: ['departments'],
@@ -92,37 +92,48 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       });
       setImagePreview(initialData.profileImageURL || null);
     }
+    setSelectedFile(null);
   }, [initialData, form]);
 
-  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    if (imagePreview && imagePreview.startsWith("blob:")) {
+      return () => {
+        URL.revokeObjectURL(imagePreview);
+      };
+    }
+  }, [imagePreview]);
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setIsUploading(true);
-      setImagePreview(null);
-      
-      // Simulate an upload process to a cloud storage
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // In a real application, you would upload the file and get back a URL.
-      // For this demo, we use a placeholder URL.
-      const mockUrl = `https://placehold.co/100x100.png`;
-
-      setImagePreview(mockUrl);
-      form.setValue("profileImageURL", mockUrl, { shouldValidate: true });
-      
-      toast({
-        title: "Image Uploaded (Simulated)",
-        description: "A placeholder image URL has been saved.",
-      });
-      setIsUploading(false);
+      setSelectedFile(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
+  
+  const onFormSubmit = async (data: UserFormData | ProfileEditFormData) => {
+    let finalProfileUrl = initialData?.profileImageURL || null;
+
+    if (selectedFile) {
+        toast({ title: "Uploading image...", description: "Please wait a moment." });
+        await new Promise(resolve => setTimeout(resolve, 1500)); 
+        finalProfileUrl = `https://placehold.co/100x100.png`;
+    }
+
+    const dataToSubmit = {
+        ...data,
+        profileImageURL: finalProfileUrl,
+    };
+    
+    onSubmit(dataToSubmit);
+  };
+
 
   return (
     <Card className="shadow-md border-border">
       <CardContent className="pt-6">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6">
             {initialData?.userId && !isProfileEditMode && (
               <FormItem>
                 <FormLabel>User ID</FormLabel>
@@ -144,7 +155,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
               <FormField control={form.control} name="departmentId" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Department</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={isLoadingDepartments || availableDepartments.length === 0}>
+                  <Select onValueChange={(field as any).onChange} value={(field as any).value} defaultValue={(field as any).value} disabled={isLoadingDepartments || availableDepartments.length === 0}>
                     <FormControl><SelectTrigger><SelectValue placeholder={isLoadingDepartments ? "Loading..." : "Select a department"} /></SelectTrigger></FormControl>
                     <SelectContent>{availableDepartments.map((dept) => (<SelectItem key={dept.id} value={dept.id}>{dept.name}</SelectItem>))}</SelectContent>
                   </Select>
@@ -178,7 +189,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                 <FormField control={form.control} name="role" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Role</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                    <Select onValueChange={(field as any).onChange} value={(field as any).value} defaultValue={(field as any).value}>
                       <FormControl><SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger></FormControl>
                       <SelectContent><SelectItem value="Admin">Admin</SelectItem><SelectItem value="User">User</SelectItem></SelectContent>
                     </Select>
@@ -189,7 +200,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                 <FormField control={form.control} name="status" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                    <Select onValueChange={(field as any).onChange} value={(field as any).value} defaultValue={(field as any).value}>
                       <FormControl><SelectTrigger><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl>
                       <SelectContent>
                           <SelectItem value="Active">Active</SelectItem>
@@ -207,28 +218,20 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
               <FormLabel>Profile Image</FormLabel>
               <div className="flex items-center gap-4">
                 <Avatar className="h-20 w-20 rounded-md">
-                   {isUploading ? (
-                    <div className="flex h-full w-full items-center justify-center rounded-md bg-muted">
-                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                    </div>
-                  ) : (
-                    <>
-                      <AvatarImage src={imagePreview || `https://placehold.co/80x80.png?text=No+Img`} alt="Profile preview" className="object-cover" data-ai-hint="user avatar" />
-                      <AvatarFallback>IMG</AvatarFallback>
-                    </>
-                  )}
+                    <AvatarImage src={imagePreview || `https://placehold.co/80x80.png?text=No+Img`} alt="Profile preview" className="object-cover" data-ai-hint="user avatar" />
+                    <AvatarFallback>IMG</AvatarFallback>
                 </Avatar>
-                <FormControl><Input type="file" accept="image/*" onChange={handleImageChange} className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" disabled={isUploading} /></FormControl>
+                <FormControl><Input type="file" accept="image/*" onChange={handleImageChange} className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" disabled={isLoading} /></FormControl>
               </div>
               <FormDescription>
-                {isUploading ? "Uploading image..." : "Upload a profile picture for the user. Use a square image for best results."}
+                 Select an image. It will be uploaded on submission.
               </FormDescription>
               <FormField control={form.control} name="profileImageURL" render={({ field }) => <Input type="hidden" {...field} />} />
               {form.formState.errors.profileImageURL && (<FormMessage>{(form.formState.errors.profileImageURL as any).message}</FormMessage>)}
             </FormItem>
             
             <div className="flex justify-end pt-2">
-              <Button type="submit" className="w-full sm:w-auto" disabled={isLoading || isLoadingDepartments || isUploading}>
+              <Button type="submit" className="w-full sm:w-auto" disabled={isLoading || isLoadingDepartments}>
                 {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
               </Button>
             </div>

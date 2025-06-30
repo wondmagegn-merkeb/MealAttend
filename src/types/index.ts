@@ -1,6 +1,7 @@
 
 export interface Department {
   id: string;
+  departmentId: string;
   name: string;
 }
 
@@ -26,7 +27,7 @@ export interface Student {
   id: string;
   studentId: string;
   name: string;
-  gender: 'Male' | 'Female' | 'Other' | '' | null;
+  gender: 'Male' | 'Female' | null;
   classGrade: string | null;
   profileImageURL: string | null;
   qrCodeData: string | null;
@@ -38,12 +39,12 @@ export type MealType = "BREAKFAST" | "LUNCH" | "DINNER";
 
 export interface AttendanceRecord {
     id: string;
+    attendanceId: string;
     studentId: string;
     mealType: MealType;
     status: 'PRESENT' | 'ABSENT';
     recordDate: string;
-    scannedAtTimestamp: string;
-    student: Student;
+    scannedAtTimestamp: string | null;
 }
 
 export interface AttendanceRecordWithStudent extends AttendanceRecord {
@@ -52,7 +53,9 @@ export interface AttendanceRecordWithStudent extends AttendanceRecord {
 
 export interface UserActivityLog {
     id: string;
+    logId: string;
     userIdentifier: string;
+    userId: string | null;
     action: string;
     details: string | null;
     activityTimestamp: string;
