@@ -36,7 +36,6 @@ export async function POST(request: Request) {
 
     const newStudent = await prisma.student.create({
       data: {
-        id: newStudentId,
         studentId: newStudentId,
         name,
         gender,

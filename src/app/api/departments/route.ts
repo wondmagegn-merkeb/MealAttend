@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
     const newDepartment = await prisma.department.create({
       data: {
-        id: newDepartmentId,
+        departmentId: newDepartmentId,
         name: data.name,
       },
     });

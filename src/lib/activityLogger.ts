@@ -26,7 +26,7 @@ export async function logUserActivity(userIdentifier: string | null, action: str
 
     await prisma.activityLog.create({
       data: {
-        id: newLogId,
+        logId: newLogId,
         userIdentifier: effectiveUserId,
         action,
         details,

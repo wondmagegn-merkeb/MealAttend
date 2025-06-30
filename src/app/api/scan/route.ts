@@ -44,10 +44,10 @@ export async function POST(request: Request) {
         });
     }
 
-    const newRecordId = await generateNextId('ATTENDANCE');
+    const newAttendanceId = await generateNextId('ATTENDANCE');
     const newRecord = await prisma.attendanceRecord.create({
         data: {
-            id: newRecordId,
+            attendanceId: newAttendanceId,
             studentId: student.id,
             mealType: mealType,
             status: 'PRESENT',

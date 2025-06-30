@@ -5,10 +5,10 @@ import { subDays, formatISO } from 'date-fns';
 const prisma = new PrismaClient();
 
 const departments = [
-  { id: 'dept_1', name: 'Kitchen Staff' },
-  { id: 'dept_2', name: 'Administration' },
-  { id: 'dept_3', name: 'Teaching Faculty' },
-  { id: 'dept_4', name: 'Security' },
+  { id: 'dept_1', departmentId: 'ADERA/DEP/2024/00001', name: 'Kitchen Staff' },
+  { id: 'dept_2', departmentId: 'ADERA/DEP/2024/00002', name: 'Administration' },
+  { id: 'dept_3', departmentId: 'ADERA/DEP/2024/00003', name: 'Teaching Faculty' },
+  { id: 'dept_4', departmentId: 'ADERA/DEP/2024/00004', name: 'Security' },
 ];
 
 const users = [
@@ -95,7 +95,8 @@ const students = [
 const attendanceRecords = [
    {
     id: 'att_1',
-    studentId: 'stu_1', // Use internal ID
+    attendanceId: 'ADERA/ATT/2024/00001',
+    studentId: 'stu_1',
     mealType: 'LUNCH',
     status: 'PRESENT',
     recordDate: new Date(formatISO(new Date(), { representation: 'date' }) + 'T00:00:00.000Z'),
@@ -103,7 +104,8 @@ const attendanceRecords = [
   },
   {
     id: 'att_2',
-    studentId: 'stu_2', // Use internal ID
+    attendanceId: 'ADERA/ATT/2024/00002',
+    studentId: 'stu_2',
     mealType: 'LUNCH',
     status: 'PRESENT',
     recordDate: new Date(formatISO(new Date(), { representation: 'date' }) + 'T00:00:00.000Z'),
@@ -111,7 +113,8 @@ const attendanceRecords = [
   },
   {
     id: 'att_3',
-    studentId: 'stu_1', // Use internal ID
+    attendanceId: 'ADERA/ATT/2024/00003',
+    studentId: 'stu_1',
     mealType: 'BREAKFAST',
     status: 'PRESENT',
     recordDate: new Date(formatISO(subDays(new Date(), 1), { representation: 'date' }) + 'T00:00:00.000Z'),
@@ -122,24 +125,27 @@ const attendanceRecords = [
 const activityLogs = [
   {
     id: 'log_1',
+    logId: 'ADERA/LOG/2024/00001',
     userIdentifier: 'ADERA/USR/2024/00001',
-    userId: 'user_1', // Use internal ID
+    userId: 'user_1',
     action: 'LOGIN_SUCCESS',
     details: null,
     activityTimestamp: new Date(),
   },
   {
     id: 'log_2',
+    logId: 'ADERA/LOG/2024/00002',
     userIdentifier: 'ADERA/USR/2024/00002',
-    userId: 'user_2', // Use internal ID
+    userId: 'user_2',
     action: 'ATTENDANCE_RECORD_SUCCESS',
     details: 'Student: Bob Williams, Meal: LUNCH',
     activityTimestamp: subDays(new Date(), 1),
   },
   {
     id: 'log_3',
+    logId: 'ADERA/LOG/2024/00003',
     userIdentifier: 'ADERA/USR/2024/00001',
-    userId: 'user_1', // Use internal ID
+    userId: 'user_1',
     action: 'STUDENT_CREATE_SUCCESS',
     details: 'Created student ID: ADERA/STU/2024/00205, Name: Bob Williams',
     activityTimestamp: subDays(new Date(), 2),
