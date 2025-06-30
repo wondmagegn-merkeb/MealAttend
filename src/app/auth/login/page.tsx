@@ -12,9 +12,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2, LogIn, Salad, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { REMEMBERED_EMAIL_KEY } from '@/lib/constants';
 
 export default function LoginPage() {
-  const [userId, setUserId] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -24,9 +25,9 @@ export default function LoginPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const rememberedUserId = localStorage.getItem('rememberedUserId');
-    if (rememberedUserId) {
-      setUserId(rememberedUserId);
+    const rememberedEmail = localStorage.getItem(REMEMBERED_EMAIL_KEY);
+    if (rememberedEmail) {
+      setEmail(rememberedEmail);
       setRememberMe(true);
     }
   }, []); // Run only on component mount
@@ -34,23 +35,23 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    if (!userId || !password) {
+    if (!email || !password) {
       toast({
         title: "Missing Fields",
-        description: "Please enter both User ID and password.",
+        description: "Please enter both email and password.",
         variant: "destructive",
       });
       setIsLoading(false);
       return;
     }
     
-    const success = await login(userId, password);
+    const success = await login(email, password);
     
     if (success) {
       if (rememberMe) {
-        localStorage.setItem('rememberedUserId', userId);
+        localStorage.setItem(REMEMBERED_EMAIL_KEY, email);
       } else {
-        localStorage.removeItem('rememberedUserId');
+        localStorage.removeItem(REMEMBERED_EMAIL_KEY);
       }
       // The router push is handled inside the login function now
     }
@@ -58,7 +59,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 p-4 sm:p-8">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4 sm:p-8">
       <div className="flex flex-col md:flex-row w-full max-w-4xl shadow-2xl rounded-xl overflow-hidden bg-card">
         {/* Decorative Left Panel */}
         <div className="hidden md:flex md:w-2/5 bg-primary text-primary-foreground flex-col items-start justify-center p-8 sm:p-12 space-y-6">
@@ -84,13 +85,13 @@ export default function LoginPage() {
             <CardContent className="p-0">
               <form onSubmit={handleLogin} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="userId">User ID</Label>
+                  <Label htmlFor="email">Email</Label>
                   <Input
-                    id="userId"
-                    type="text"
-                    placeholder="e.g., ADERA/USR/2024/00001"
-                    value={userId}
-                    onChange={(e) => setUserId(e.target.value)}
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={isLoading}
                     className="h-11"
@@ -147,9 +148,7 @@ export default function LoginPage() {
                 </Button>
               </form>
             </CardContent>
-            <CardFooter className="flex-col items-center space-y-2 pt-6 p-0">
-              {/* Hint has been removed */}
-            </CardFooter>
+            <CardFooter className="flex-col items-center space-y-2 pt-6 p-0" />
           </Card>
         </div>
       </div>

@@ -17,7 +17,7 @@ interface AuthContextType {
   currentUserRole: User['role'] | null;
   currentUserId: string | null; // ADERA User ID
   isPasswordChangeRequired: boolean;
-  login: (userIdInput: string, password?: string) => Promise<boolean>;
+  login: (email: string, password?: string) => Promise<boolean>;
   logout: () => void;
   changePassword: (newPassword: string) => Promise<UserWithDepartment>;
   updateProfile: (profileData: ProfileEditFormData) => Promise<UserWithDepartment>;
@@ -58,11 +58,11 @@ export function useAuth(): AuthContextType {
     }
   }, []);
 
-  const login = useCallback(async (userIdInput: string, password?: string): Promise<boolean> => {
+  const login = useCallback(async (email: string, password?: string): Promise<boolean> => {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    const user = mockUsers.find(u => u.userId === userIdInput);
+    const user = mockUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
 
     // For demo purposes, any password is valid for a found user, but 'password' is required for the user who needs to change it.
     if (user && (user.passwordChangeRequired ? password === 'password' : true)) {
@@ -83,8 +83,8 @@ export function useAuth(): AuthContextType {
       }
       return true;
     } else {
-      const message = "Invalid User ID or password.";
-      logUserActivity(userIdInput, "LOGIN_FAILURE", message);
+      const message = "Invalid email or password.";
+      logUserActivity(email, "LOGIN_FAILURE", message);
       toast({ title: "Login Failed", description: message, variant: "destructive" });
       return false;
     }
