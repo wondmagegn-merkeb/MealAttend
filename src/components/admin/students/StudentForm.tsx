@@ -28,6 +28,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2 } from "lucide-react"; 
 import { Card, CardContent } from "@/components/ui/card";
 import type { Student } from "@prisma/client";
+import { useToast } from "@/hooks/use-toast";
 
 
 // Zod schema for validation
@@ -76,7 +77,9 @@ export function StudentForm({
   submitButtonText = "Submit",
   isEditMode = false,
 }: StudentFormProps) {
+  const { toast } = useToast();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const { classNumber: initialClassNumber, classAlphabet: initialClassAlphabet } = initialData?.classGrade
     ? parseClassGrade(initialData.classGrade)
@@ -116,20 +119,27 @@ export function StudentForm({
     }
   }, [initialData, form]);
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const dataUrl = reader.result as string;
-        setImagePreview(dataUrl);
-        form.setValue("profileImageURL", dataUrl, { shouldValidate: true });
-      };
-      reader.readAsDataURL(file);
-    } else {
-      const originalImageUrl = initialData?.profileImageURL || "";
-      setImagePreview(originalImageUrl || null);
-      form.setValue("profileImageURL", originalImageUrl, { shouldValidate: true });
+      setIsUploading(true);
+      setImagePreview(null); // Clear preview during upload
+      
+      // Simulate an upload process to a cloud storage
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // In a real application, you would upload the file and get back a URL.
+      // For this demo, we use a placeholder URL.
+      const mockUrl = `https://placehold.co/120x120.png`;
+
+      setImagePreview(mockUrl);
+      form.setValue("profileImageURL", mockUrl, { shouldValidate: true });
+      
+      toast({
+        title: "Image Uploaded (Simulated)",
+        description: "A placeholder image URL has been saved.",
+      });
+      setIsUploading(false);
     }
   };
 
@@ -268,13 +278,21 @@ export function StudentForm({
               <FormLabel>Profile Image</FormLabel>
               <div className="flex items-center gap-4">
                 <Avatar className="h-20 w-20 rounded-md">
-                  <AvatarImage
-                    src={imagePreview || `https://placehold.co/80x80.png?text=No+Image`}
-                    alt="Profile preview"
-                    className="object-cover"
-                    data-ai-hint="student profile"
-                  />
-                  <AvatarFallback>IMG</AvatarFallback>
+                  {isUploading ? (
+                    <div className="flex h-full w-full items-center justify-center rounded-md bg-muted">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    </div>
+                  ) : (
+                    <>
+                      <AvatarImage
+                        src={imagePreview || `https://placehold.co/80x80.png?text=No+Image`}
+                        alt="Profile preview"
+                        className="object-cover"
+                        data-ai-hint="student profile"
+                      />
+                      <AvatarFallback>IMG</AvatarFallback>
+                    </>
+                  )}
                 </Avatar>
                 <FormControl>
                   <Input
@@ -287,11 +305,12 @@ export function StudentForm({
                       file:text-sm file:font-semibold
                       file:bg-primary/10 file:text-primary
                       hover:file:bg-primary/20"
+                    disabled={isUploading}
                   />
                 </FormControl>
               </div>
               <FormDescription>
-                Upload a profile picture for the student.
+                {isUploading ? "Uploading image..." : "Upload a profile picture for the student."}
               </FormDescription>
               <FormField
                 control={form.control}
@@ -304,7 +323,7 @@ export function StudentForm({
             </FormItem>
 
             <div className="flex justify-end pt-2">
-              <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
+              <Button type="submit" className="w-full sm:w-auto" disabled={isLoading || isUploading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
