@@ -1,26 +1,39 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 model IdCounter {
-  type  IdType @id
+  type  String @id
   count Int
 }
 
-enum IdType {
-  STUDENT
-  USER
-  DEPARTMENT
-  ATTENDANCE
-  ACTIVITY_LOG
+model Department {
+  id    String @id
+  name  String @unique
+  users User[]
+}
+
+model User {
+  id                      String       @id
+  userId                  String       @unique
+  fullName                String
+  email                   String       @unique
+  password                String?
+  role                    String
+  status                  String
+  departmentId            String?
+  department              Department?  @relation(fields: [departmentId], references: [id])
+  passwordChangeRequired  Boolean      @default(false)
+  profileImageURL         String?
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
+  activityLogs            ActivityLog[]
 }
 
 model Student {
@@ -36,48 +49,24 @@ model Student {
   attendanceRecords AttendanceRecord[]
 }
 
-model Department {
-  id    String @id
-  name  String @unique
-  users User[]
-}
-
-model User {
-  id                     String        @id
-  userId                 String        @unique
-  fullName               String
-  email                  String        @unique
-  role                   String // "Admin" or "User"
-  status                 String // "Active" or "Inactive"
-  passwordChangeRequired Boolean       @default(false)
-  profileImageURL        String?
-  departmentId           String?
-  department             Department?   @relation(fields: [departmentId], references: [id], onUpdate: NoAction, onDelete: SetNull)
-  createdAt              DateTime      @default(now())
-  updatedAt              DateTime      @updatedAt
-  activityLogs           ActivityLog[]
-}
-
 model AttendanceRecord {
   id                 String   @id
   studentId          String
-  mealType           String // "BREAKFAST", "LUNCH", "DINNER"
-  status             String // "PRESENT", "ABSENT"
-  recordDate         DateTime @db.Date
-  scannedAtTimestamp DateTime @default(now())
+  mealType           String
+  status             String
+  recordDate         DateTime
+  scannedAtTimestamp DateTime
   student            Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  @@index([studentId])
+  @@index([studentId, mealType, recordDate])
 }
 
 model ActivityLog {
   id                String   @id
-  userIdentifier    String // This will store the ADERA User ID
+  userIdentifier    String
+  userId            String?
   action            String
   details           String?
   activityTimestamp DateTime @default(now())
-  userId            String? // Foreign key to the User model's `id` field
   user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([userIdentifier])
 }
