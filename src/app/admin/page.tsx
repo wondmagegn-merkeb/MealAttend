@@ -298,7 +298,7 @@ export default function AdminDashboardPage() {
                             {userActivity.map(log => (
                                 <li key={log.id} className="flex items-start gap-3">
                                     <div className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-primary/80" />
-                                    <div className="flex-grow">
+                                    <div className="flex-grow min-w-0">
                                         <p className="text-sm font-medium leading-tight">{log.action.replace(/_/g, ' ')}</p>
                                         <p className="text-xs text-muted-foreground truncate" title={log.details || undefined}>{log.details || 'No additional details'}</p>
                                         <p className="text-xs text-muted-foreground/80">{formatDistanceToNow(parseISO(log.activityTimestamp as unknown as string), { addSuffix: true })}</p>
@@ -359,7 +359,7 @@ export default function AdminDashboardPage() {
             {userRoleDistributionData.length > 0 ? (
                <ChartContainer config={roleChartConfig} className="h-[300px] w-full">
                 <PieChart><ChartTooltip content={<ChartTooltipContent nameKey="value" hideLabel />} /><Pie data={userRoleDistributionData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} labelLine={false} label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>{userRoleDistributionData.map((entry, index) => (<Cell key={`cell-${index}`} fill={PIE_CHART_COLORS[index % PIE_CHART_COLORS.length]} />))}</Pie><ChartLegend content={<ChartLegendContent nameKey="name" />} /></PieChart>
-              </ChartContainer>
+              </Container>
             ) : (<p className="text-center text-muted-foreground py-10">No user data available for role distribution.</p>)}
           </CardContent>
         </Card>
