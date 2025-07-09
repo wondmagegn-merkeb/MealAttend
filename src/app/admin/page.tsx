@@ -359,7 +359,7 @@ export default function AdminDashboardPage() {
             {userRoleDistributionData.length > 0 ? (
                <ChartContainer config={roleChartConfig} className="h-[300px] w-full">
                 <PieChart><ChartTooltip content={<ChartTooltipContent nameKey="value" hideLabel />} /><Pie data={userRoleDistributionData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} labelLine={false} label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>{userRoleDistributionData.map((entry, index) => (<Cell key={`cell-${index}`} fill={PIE_CHART_COLORS[index % PIE_CHART_COLORS.length]} />))}</Pie><ChartLegend content={<ChartLegendContent nameKey="name" />} /></PieChart>
-              </Container>
+              </ChartContainer>
             ) : (<p className="text-center text-muted-foreground py-10">No user data available for role distribution.</p>)}
           </CardContent>
         </Card>

@@ -12,10 +12,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "postinstall": "prisma generate",
-    "db:seed": "npx prisma db seed"
-  },
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.8.0",
@@ -78,6 +75,7 @@
     "postcss": "^8",
     "prisma": "^5.18.0",
     "ts-node": "^10.9.2",
+    "tsx": "^4.19.0",
     "typescript": "^5.8.3"
   }
 }
