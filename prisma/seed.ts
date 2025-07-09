@@ -1,8 +1,10 @@
 
 import { PrismaClient } from '@prisma/client';
 import { subDays, formatISO } from 'date-fns';
+import { hashSync } from 'bcrypt';
 
 const prisma = new PrismaClient();
+const saltRounds = 10;
 
 const departments = [
   { id: 'dept_1', departmentId: 'ADERA/DEP/2024/00001', name: 'Kitchen Staff' },
@@ -17,7 +19,7 @@ const users = [
     userId: 'ADERA/USR/2024/00001',
     fullName: 'Admin User',
     email: 'admin@example.com',
-    password: 'password123', // Demo password
+    password: hashSync('password123', saltRounds),
     role: 'Admin',
     status: 'Active',
     departmentId: 'dept_2',
@@ -31,7 +33,7 @@ const users = [
     userId: 'ADERA/USR/2024/00002',
     fullName: 'Normal User',
     email: 'user@example.com',
-    password: 'password123',
+    password: hashSync('password123', saltRounds),
     role: 'User',
     status: 'Inactive',
     departmentId: 'dept_1',
@@ -45,7 +47,7 @@ const users = [
     userId: 'ADERA/USR/2024/00003',
     fullName: 'Jane Doe',
     email: 'jane.doe@example.com',
-    password: 'password', // Password for user that needs to change it
+    password: hashSync('password', saltRounds), // Password for user that needs to change it
     role: 'User',
     status: 'Active',
     departmentId: 'dept_3',

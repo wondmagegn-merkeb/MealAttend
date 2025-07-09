@@ -1,7 +1,9 @@
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { hash } from 'bcrypt';
 
+const saltRounds = 10;
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
@@ -16,8 +18,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ message: 'Password must be at least 6 characters long' }, { status: 400 });
     }
 
-    // In a real app, you would hash the password before saving
-    // For this demo, we store it as is.
+    const hashedPassword = await hash(newPassword, saltRounds);
 
     const user = await prisma.user.findUnique({
       where: { userId: userId },
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
     const updatedUser = await prisma.user.update({
       where: { userId: userId },
       data: {
-        password: newPassword,
+        password: hashedPassword,
         passwordChangeRequired: false,
       },
       include: {

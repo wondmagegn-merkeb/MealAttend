@@ -1,72 +1,77 @@
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // For Vercel Postgres
+  // provider = "postgres"
+  // url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  // directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
 model Department {
   id           String @id @default(cuid())
-  departmentId String @unique
+  departmentId String @unique @map("department_id")
   name         String @unique
   users        User[]
 }
 
 model User {
-  id                      String        @id @default(cuid())
-  userId                  String        @unique
-  fullName                String
-  email                   String        @unique
-  password                String?
-  role                    String
-  status                  String
-  departmentId            String?
-  department              Department?   @relation(fields: [departmentId], references: [id])
-  passwordChangeRequired  Boolean       @default(false)
-  profileImageURL         String?
-  createdAt               DateTime      @default(now())
-  updatedAt               DateTime      @updatedAt
-  activityLogs            ActivityLog[]
+  id                     String        @id @default(cuid())
+  userId                 String        @unique @map("user_id")
+  fullName               String        @map("full_name")
+  email                  String        @unique
+  password               String
+  role                   String
+  status                 String
+  departmentId           String?       @map("department_id")
+  department             Department?   @relation(fields: [departmentId], references: [id])
+  passwordChangeRequired Boolean       @default(false) @map("password_change_required")
+  profileImageURL        String?       @map("profile_image_url")
+  createdAt              DateTime      @default(now()) @map("created_at")
+  updatedAt              DateTime      @updatedAt @map("updated_at")
+  activityLogs           ActivityLog[]
 }
 
 model Student {
-  id              String             @id @default(cuid())
-  studentId       String             @unique
-  name            String
-  gender          String?
-  classGrade      String?
-  profileImageURL String?
-  qrCodeData      String?
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
-  attendance      AttendanceRecord[]
+  id                String             @id @default(cuid())
+  studentId         String             @unique @map("student_id")
+  name              String
+  gender            String?
+  classGrade        String?            @map("class_grade")
+  profileImageURL   String?            @map("profile_image_url")
+  qrCodeData        String?            @unique @map("qr_code_data")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  attendanceRecords AttendanceRecord[]
 }
 
 model AttendanceRecord {
   id                 String   @id @default(cuid())
-  attendanceId       String   @unique
-  studentId          String
+  attendanceId       String   @unique @map("attendance_id")
+  studentId          String   @map("student_id")
   student            Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  mealType           String // e.g., BREAKFAST, LUNCH, DINNER
-  status             String // e.g., PRESENT, ABSENT
-  recordDate         DateTime @db.Date
-  scannedAtTimestamp DateTime @default(now())
-
-  @@index([studentId, mealType, recordDate])
+  mealType           String   @map("meal_type")
+  status             String
+  recordDate         DateTime @map("record_date")
+  scannedAtTimestamp DateTime @map("scanned_at_timestamp")
 }
 
 model ActivityLog {
   id                String   @id @default(cuid())
-  logId             String   @unique
-  userIdentifier    String // This could be the User's ADERA ID or email if unauthenticated
-  userId            String?
+  logId             String   @unique @map("log_id")
+  userIdentifier    String   @map("user_identifier")
+  userId            String?  @map("user_id")
   user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   action            String
   details           String?
-  activityTimestamp DateTime @default(now())
+  activityTimestamp DateTime @default(now()) @map("activity_timestamp")
 }
 
 model IdCounter {
