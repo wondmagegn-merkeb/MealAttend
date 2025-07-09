@@ -33,7 +33,6 @@ export function QrScannerClient() {
   const [selectedMealType, setSelectedMealType] = useState<MealType>("LUNCH");
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationFrameIdRef = useRef<number | null>(null);
   
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [lastScanTime, setLastScanTime] = useState<number>(0);
@@ -42,20 +41,19 @@ export function QrScannerClient() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const processScanOrCheck = useCallback(async (identifier: { qrCodeData?: string; studentId?: string }) => {
+    if (isProcessing) return;
     setIsProcessing(true);
     setLastScanTime(Date.now());
     
     let response;
     try {
       if (identifier.qrCodeData) {
-        // QR Code Scan - this records attendance automatically
         response = await fetch('/api/scan', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ qrCodeData: identifier.qrCodeData, mealType: selectedMealType }),
         });
       } else if (identifier.studentId) {
-        // Manual Student ID Check - this only checks status without recording
         response = await fetch('/api/attendance/check', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -92,79 +90,97 @@ export function QrScannerClient() {
     } finally {
         setIsProcessing(false);
     }
-  }, [selectedMealType, toast, currentUserId]);
+  }, [selectedMealType, toast, currentUserId, isProcessing]);
 
-  const processQrCode = useCallback((qrCodeData: string) => {
-    if (isProcessing) return;
-    processScanOrCheck({ qrCodeData });
-  }, [isProcessing, processScanOrCheck]);
 
   const handleManualCheck = () => {
     if (!manualStudentId) {
         toast({ title: "Student ID Required", description: "Please enter a student ID to search." });
         return;
     }
-    if (isProcessing) return;
     processScanOrCheck({ studentId: manualStudentId });
   }
 
   const attemptAutoScan = useCallback(() => {
-    if (!videoRef.current || !canvasRef.current || !hasCameraPermission || videoRef.current.paused || videoRef.current.ended || isProcessing) {
-      if (hasCameraPermission && videoRef.current && !videoRef.current.paused) { 
-        animationFrameIdRef.current = requestAnimationFrame(attemptAutoScan);
-      }
+    if (!videoRef.current || !canvasRef.current || videoRef.current.paused || videoRef.current.ended) {
       return;
     }
 
     const now = Date.now();
     if (now - lastScanTime < SCAN_COOLDOWN_MS) {
-      animationFrameIdRef.current = requestAnimationFrame(attemptAutoScan);
       return;
     }
     
     const canvas = canvasRef.current;
     const video = videoRef.current;
     const context = canvas.getContext('2d', { willReadFrequently: true });
-    if (context) {
+    
+    if (context && video.videoWidth > 0) {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      if (canvas.width > 0 && canvas.height > 0) {
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
-        if (code && code.data) {
-          processQrCode(code.data);
-        }
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+      if (code && code.data) {
+        processScanOrCheck({ qrCodeData: code.data });
       }
     }
-    animationFrameIdRef.current = requestAnimationFrame(attemptAutoScan);
-  }, [hasCameraPermission, lastScanTime, processQrCode, isProcessing]);
+  }, [lastScanTime, processScanOrCheck]);
 
   useEffect(() => {
+    let animationFrameId: number | null = null;
+    
+    const scanLoop = () => {
+        attemptAutoScan();
+        animationFrameId = requestAnimationFrame(scanLoop);
+    };
+
     const getCameraPermissionAndStart = async () => {
-      if (!navigator.mediaDevices?.getUserMedia) { setHasCameraPermission(false); return; }
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setHasCameraPermission(false);
+        toast({
+          variant: 'destructive',
+          title: 'Camera Not Supported',
+          description: 'Your browser does not support camera access. Please use a different browser.',
+        });
+        return;
+      }
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        setHasCameraPermission(true);
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          videoRef.current.play().catch(err => console.error("Error playing video:", err));
+          videoRef.current.onloadedmetadata = () => {
+            videoRef.current?.play().then(() => {
+                setHasCameraPermission(true);
+                animationFrameId = requestAnimationFrame(scanLoop);
+            }).catch(playErr => {
+                console.error("Video play error:", playErr);
+                setHasCameraPermission(false);
+            });
+          };
         }
-      } catch (error) { setHasCameraPermission(false); }
+      } catch (error) {
+        console.error('Error accessing camera:', error);
+        setHasCameraPermission(false);
+        toast({
+          variant: 'destructive',
+          title: 'Camera Access Denied',
+          description: 'Please enable camera permissions in your browser settings to use the scanner.',
+        });
+      }
     };
+    
     getCameraPermissionAndStart();
+    
     return () => {
-      if (videoRef.current?.srcObject) { (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop()); }
-      if (animationFrameIdRef.current) cancelAnimationFrame(animationFrameIdRef.current);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      if (videoRef.current?.srcObject) {
+        (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
+      }
     };
-  }, []);
-
-  useEffect(() => {
-    if (hasCameraPermission && videoRef.current && !videoRef.current.paused) {
-      animationFrameIdRef.current = requestAnimationFrame(attemptAutoScan);
-    }
-    return () => { if (animationFrameIdRef.current) cancelAnimationFrame(animationFrameIdRef.current); };
-  }, [hasCameraPermission, attemptAutoScan]);
+  }, [toast, attemptAutoScan]);
 
   return (
     <div className='w-full max-w-md'>
@@ -183,12 +199,22 @@ export function QrScannerClient() {
             </Select>
           </div>
           <div className="aspect-video w-full bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-primary/50 overflow-hidden relative">
-            {hasCameraPermission === null && (<div className="flex flex-col items-center text-muted-foreground p-4 text-center"><Loader2 className="h-16 w-16 animate-spin mb-2" /><p>Requesting camera access...</p></div>)}
-            <video ref={videoRef} className={`w-full h-full object-cover ${hasCameraPermission ? 'block' : 'hidden'}`} autoPlay playsInline muted />
+            <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
             <canvas ref={canvasRef} style={{ display: 'none' }} />
-            {hasCameraPermission === false && (<div className="absolute inset-0 flex flex-col items-center justify-center text-destructive p-4 text-center bg-black/50"><AlertTriangle className="h-16 w-16 mb-2" /><p>Camera access denied or unavailable.</p><p className="text-xs mt-1">Check browser settings.</p></div>)}
+            {hasCameraPermission === null && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground p-4 text-center bg-black/50">
+                <Loader2 className="h-16 w-16 animate-spin mb-2" />
+                <p>Requesting camera access...</p>
+              </div>
+            )}
+             {hasCameraPermission === false && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-destructive p-4 text-center bg-black/50">
+                <AlertTriangle className="h-16 w-16 mb-2" />
+                <p className="font-bold">Camera Access Required</p>
+                <p className="text-xs mt-1">Check browser settings to grant permission.</p>
+              </div>
+            )}
           </div>
-          {hasCameraPermission === false && (<Alert variant="destructive"><AlertTriangle className="h-4 w-4" /><AlertTitle>Camera Access Required</AlertTitle><AlertDescription>Enable camera permissions in your browser settings to use the scanner.</AlertDescription></Alert>)}
           
           <CardDescription className='text-center'>OR</CardDescription>
 
@@ -205,7 +231,7 @@ export function QrScannerClient() {
         </CardContent>
         <CardFooter className="flex flex-col gap-3">
           {isProcessing && (<div className="flex items-center text-primary"><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Processing... Please Wait</span></div>)}
-          <p className="text-xs text-muted-foreground text-center">{hasCameraPermission ? "Auto-scanning active. Point camera at QR code." : "Enable camera for auto-scanning."}</p>
+          <p className="text-xs text-muted-foreground text-center">{hasCameraPermission ? "Auto-scanning active. Point camera at QR code." : "Waiting for camera..."}</p>
         </CardFooter>
       </Card>
 
@@ -262,7 +288,7 @@ function ScanResultDisplay({ result }: { result: ResultState | null }) {
                     <AlertTitle>{result.message}</AlertTitle>
                     {result.record && result.record.scannedAtTimestamp && (
                         <AlertDescription>
-                            Scanned at: {format(parseISO(result.record.scannedAtTimestamp), 'hh:mm:ss a')}
+                            Scanned at: {format(parseISO(result.record.scannedAtTimestamp as unknown as string), 'hh:mm:ss a')}
                         </AlertDescription>
                     )}
                 </Alert>
@@ -270,3 +296,5 @@ function ScanResultDisplay({ result }: { result: ResultState | null }) {
         </Card>
     );
 }
+
+    
