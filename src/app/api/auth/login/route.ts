@@ -29,8 +29,6 @@ export async function POST(request: Request) {
         return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
     }
     
-    // Don't send the password back to the client
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userWithoutPassword } = user;
 
     return NextResponse.json({ message: 'Login successful', user: userWithoutPassword }, { status: 200 });

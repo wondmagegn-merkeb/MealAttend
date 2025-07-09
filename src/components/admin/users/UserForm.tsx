@@ -52,6 +52,15 @@ interface UserFormProps {
   isProfileEditMode?: boolean;
 }
 
+const fileToDataUri = (file: File): Promise<string | null> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(file);
+  });
+};
+
 export function UserForm({ onSubmit, initialData, isLoading = false, submitButtonText = "Submit", isProfileEditMode = false }: UserFormProps) {
   const { toast } = useToast();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -106,6 +115,14 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+        toast({
+          title: "Image Too Large",
+          description: "Please select an image smaller than 2MB.",
+          variant: "destructive",
+        });
+        return;
+      }
       setSelectedFile(file);
       setImagePreview(URL.createObjectURL(file));
     }
@@ -115,9 +132,14 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     let finalProfileUrl = initialData?.profileImageURL || null;
 
     if (selectedFile) {
-        toast({ title: "Uploading image...", description: "Please wait a moment." });
-        await new Promise(resolve => setTimeout(resolve, 1500)); 
-        finalProfileUrl = `https://placehold.co/100x100.png`;
+      try {
+        toast({ title: "Processing image...", description: "Please wait." });
+        finalProfileUrl = await fileToDataUri(selectedFile);
+      } catch (error) {
+        console.error("Image processing error:", error);
+        toast({ title: "Image Error", description: "Could not process the selected image.", variant: "destructive" });
+        return; // Stop submission
+      }
     }
 
     const dataToSubmit = {
@@ -173,13 +195,13 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                     type="email" 
                     placeholder="e.g., jane.smith@example.com" 
                     {...field}
-                    readOnly={isProfileEditMode}
-                    className={isProfileEditMode ? "bg-muted/50" : ""}
+                    readOnly={isProfileEditMode || !!initialData}
+                    className={(isProfileEditMode || !!initialData) ? "bg-muted/50" : ""}
                   />
                 </FormControl>
                 {isProfileEditMode 
                   ? <FormDescription>Your email address cannot be changed.</FormDescription>
-                  : <FormMessage />
+                  : (!!initialData ? <FormDescription>User email cannot be changed after creation.</FormDescription> : <FormMessage />)
                 }
               </FormItem>
             )} />
@@ -224,7 +246,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                 <FormControl><Input type="file" accept="image/*" onChange={handleImageChange} className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" disabled={isLoading} /></FormControl>
               </div>
               <FormDescription>
-                 Select an image. It will be uploaded on submission.
+                 Select an image (max 2MB). It will be processed on submission.
               </FormDescription>
               <FormField control={form.control} name="profileImageURL" render={({ field }) => <Input type="hidden" {...field} />} />
               {form.formState.errors.profileImageURL && (<FormMessage>{(form.formState.errors.profileImageURL as any).message}</FormMessage>)}

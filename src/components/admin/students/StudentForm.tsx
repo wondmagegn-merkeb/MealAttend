@@ -66,6 +66,15 @@ const parseClassGrade = (classGrade: string | null | undefined): { classNumber: 
   return { classNumber: "", classAlphabet: classGrade.toUpperCase() };
 };
 
+const fileToDataUri = (file: File): Promise<string | null> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(file);
+  });
+};
+
 
 export function StudentForm({
   onSubmit,
@@ -129,6 +138,14 @@ export function StudentForm({
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+        toast({
+          title: "Image Too Large",
+          description: "Please select an image smaller than 2MB.",
+          variant: "destructive",
+        });
+        return;
+      }
       setSelectedFile(file);
       setImagePreview(URL.createObjectURL(file));
     }
@@ -150,9 +167,14 @@ export function StudentForm({
     let finalProfileUrl = initialData?.profileImageURL || null;
 
     if (selectedFile) {
-      toast({ title: "Uploading image...", description: "Please wait a moment." });
-      await new Promise(resolve => setTimeout(resolve, 1500)); 
-      finalProfileUrl = `https://placehold.co/120x120.png`;
+       try {
+        toast({ title: "Processing image...", description: "Please wait." });
+        finalProfileUrl = await fileToDataUri(selectedFile);
+      } catch (error) {
+        console.error("Image processing error:", error);
+        toast({ title: "Image Error", description: "Could not process the selected image.", variant: "destructive" });
+        return; // Stop submission
+      }
     }
 
     const dataToSubmit = { 
@@ -303,7 +325,7 @@ export function StudentForm({
                 </FormControl>
               </div>
               <FormDescription>
-                Select an image. It will be uploaded on submission.
+                Select an image (max 2MB). It will be processed on submission.
               </FormDescription>
               <FormField
                 control={form.control}
