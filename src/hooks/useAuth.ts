@@ -7,8 +7,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { AUTH_TOKEN_KEY, CURRENT_USER_DETAILS_KEY } from '@/lib/constants';
 import { useToast } from './use-toast';
 import { logUserActivity } from '@/lib/activityLogger';
-import type { UserFormData, ProfileEditFormData } from '@/components/admin/users/UserForm';
-import { mockUsers } from '@/lib/demo-data';
+import type { ProfileEditFormData } from '@/components/admin/users/UserForm';
 import type { UserWithDepartment, User } from '@/types';
 
 interface AuthContextType {
@@ -59,13 +58,21 @@ export function useAuth(): AuthContextType {
   }, []);
 
   const login = useCallback(async (email: string, password?: string): Promise<boolean> => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const user = mockUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+      const data = await response.json();
 
-    // For demo purposes, any password is valid for a found user, but 'password' is required for the user who needs to change it.
-    if (user && (user.passwordChangeRequired ? password === 'password' : true)) {
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed.');
+      }
+      
+      const user: UserWithDepartment = data.user;
+      
       localStorage.setItem(AUTH_TOKEN_KEY, `mock-jwt-for-${user.userId}`);
       localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(user));
       
@@ -82,10 +89,9 @@ export function useAuth(): AuthContextType {
         router.push('/admin');
       }
       return true;
-    } else {
-      const message = "Invalid email or password.";
-      logUserActivity(email, "LOGIN_FAILURE", message);
-      toast({ title: "Login Failed", description: message, variant: "destructive" });
+    } catch (error: any) {
+      logUserActivity(email, "LOGIN_FAILURE", error.message);
+      toast({ title: "Login Failed", description: error.message, variant: "destructive" });
       return false;
     }
   }, [toast, router]); 
@@ -114,38 +120,62 @@ export function useAuth(): AuthContextType {
     if (!currentUser) {
       throw new Error("No active user session found.");
     }
-
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
     
-    const updatedUser = { ...currentUser, passwordChangeRequired: false };
-    setCurrentUser(updatedUser);
-    localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(updatedUser));
-    setIsPasswordChangeRequired(false);
-    logUserActivity(currentUser.userId, "PASSWORD_CHANGE_SUCCESS_DEMO");
-    return updatedUser;
-  }, [currentUser]);
+    try {
+        const response = await fetch('/api/auth/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: currentUser.userId, newPassword }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to change password.');
+        }
+        
+        const updatedUser: UserWithDepartment = data.user;
+        setCurrentUser(updatedUser);
+        localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(updatedUser));
+        setIsPasswordChangeRequired(false);
+        logUserActivity(currentUser.userId, "PASSWORD_CHANGE_SUCCESS");
+        return updatedUser;
+    } catch (error: any) {
+        toast({ title: "Password Change Failed", description: error.message, variant: "destructive" });
+        throw error;
+    }
+  }, [currentUser, toast]);
 
   const updateProfile = useCallback(async (profileData: ProfileEditFormData): Promise<UserWithDepartment> => {
     if (!currentUser) {
         throw new Error("No active user session found.");
     }
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+        const response = await fetch('/api/auth/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: currentUser.userId,
+                fullName: profileData.fullName,
+                profileImageURL: profileData.profileImageURL || null,
+            }),
+        });
 
-    const updatedUser = { 
-        ...currentUser, 
-        fullName: profileData.fullName,
-        // email: profileData.email, // Do not update email from profile page
-        profileImageURL: profileData.profileImageURL || null,
-    };
-    
-    setCurrentUser(updatedUser);
-    localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(updatedUser));
-    logUserActivity(currentUser.userId, "PROFILE_UPDATE_SUCCESS_DEMO");
-    return updatedUser;
-  }, [currentUser]);
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to update profile.');
+        }
+        
+        const updatedUser: UserWithDepartment = data.user;
+        setCurrentUser(updatedUser);
+        localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(updatedUser));
+        logUserActivity(currentUser.userId, "PROFILE_UPDATE_SUCCESS");
+        return updatedUser;
+    } catch (error: any) {
+        toast({ title: "Profile Update Failed", description: error.message, variant: "destructive" });
+        throw error;
+    }
+  }, [currentUser, toast]);
 
   return { 
     isAuthenticated, 
