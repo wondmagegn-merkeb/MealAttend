@@ -1,7 +1,7 @@
 
 import { PrismaClient } from '@prisma/client';
 import { subDays, formatISO } from 'date-fns';
-import { hashSync } from 'bcrypt';
+import { hashSync } from 'bcryptjs';
 
 const prisma = new PrismaClient();
 const saltRounds = 10;

@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { hash } from 'bcrypt';
+import { hash } from 'bcryptjs';
 
 const saltRounds = 10;
 export const dynamic = 'force-dynamic';
