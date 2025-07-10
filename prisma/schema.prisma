@@ -1,19 +1,18 @@
 
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-}
-
-generator client {
-  provider = "prisma-client-js"
 }
 
 model Department {
   id           String @id @default(cuid())
   departmentId String @unique
   name         String @unique
-
-  users User[]
+  users        User[]
 }
 
 model User {
@@ -22,41 +21,41 @@ model User {
   fullName               String
   email                  String    @unique
   password               String
-  role                   String
-  status                 String
+  role                   String    @default("User") // "Admin" or "User"
+  status                 String    @default("Active") // "Active" or "Inactive"
   departmentId           String?
+  department             Department? @relation(fields: [departmentId], references: [id])
   passwordChangeRequired Boolean   @default(true)
   profileImageURL        String?
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
-  department             Department?   @relation(fields: [departmentId], references: [id])
   activityLogs           ActivityLog[]
+  passwordResetToken     String?   @unique
+  passwordResetExpires   DateTime?
 }
 
 model Student {
-  id              String    @id @default(cuid())
-  studentId       String    @unique
-  name            String
-  gender          String?
-  classGrade      String?
-  profileImageURL String?
-  qrCodeData      String?   @unique
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  attendanceRecords AttendanceRecord[]
+  id                 String             @id @default(cuid())
+  studentId          String             @unique
+  name               String
+  gender             String?
+  classGrade         String?
+  profileImageURL    String?
+  qrCodeData         String?            @unique
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  attendanceRecords  AttendanceRecord[]
 }
 
 model AttendanceRecord {
   id                 String   @id @default(cuid())
   attendanceId       String   @unique
   studentId          String
+  student            Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
   mealType           String
   status             String
-  recordDate         DateTime
-  scannedAtTimestamp DateTime
-
-  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  recordDate         DateTime @db.Date
+  scannedAtTimestamp DateTime?
 }
 
 model ActivityLog {
@@ -64,11 +63,10 @@ model ActivityLog {
   logId             String   @unique
   userIdentifier    String
   userId            String?
+  user              User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   action            String
   details           String?
   activityTimestamp DateTime @default(now())
-
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model IdCounter {

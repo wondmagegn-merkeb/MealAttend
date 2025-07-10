@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from '@/hooks/use-toast';
-import { KeyRound, Lock, CheckCircle, ArrowLeft, Loader2 } from 'lucide-react';
+import { Lock, CheckCircle, ArrowLeft, Loader2 } from 'lucide-react';
 
 // This is the component that will use useSearchParams
 function ResetPasswordForm() {
@@ -17,19 +17,17 @@ function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
 
-  const [email, setEmail] = useState('');
-  const [resetCode, setResetCode] = useState('');
+  const [token, setToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const emailFromQuery = searchParams.get('email');
-    if (emailFromQuery) {
-      setEmail(emailFromQuery);
+    const tokenFromQuery = searchParams.get('token');
+    if (tokenFromQuery) {
+      setToken(tokenFromQuery);
     } else {
-      // Optional: Redirect if email is not in query, or show an error
-      toast({ title: "Missing Email", description: "No email provided for password reset.", variant: "destructive"});
+      toast({ title: "Missing Token", description: "No password reset token provided.", variant: "destructive"});
       router.push('/auth/forgot-password');
     }
   }, [searchParams, router, toast]);
@@ -38,8 +36,14 @@ function ResetPasswordForm() {
     e.preventDefault();
     setIsLoading(true);
 
-    if (!resetCode || !newPassword || !confirmPassword) {
-      toast({ title: "Missing Fields", description: "Please fill in all fields.", variant: "destructive" });
+    if (!newPassword || !confirmPassword) {
+      toast({ title: "Missing Fields", description: "Please fill in all password fields.", variant: "destructive" });
+      setIsLoading(false);
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      toast({ title: "Password Too Short", description: "Password must be at least 6 characters long.", variant: "destructive" });
       setIsLoading(false);
       return;
     }
@@ -50,26 +54,33 @@ function ResetPasswordForm() {
       return;
     }
 
-    // Simulate API call to verify reset code and update password
-    // For demo, let's assume any 6-digit code is valid
-    const MOCK_RESET_CODE_VALID = /^\d{6}$/.test(resetCode);
+    try {
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password: newPassword }),
+      });
 
-    setTimeout(() => {
-      if (MOCK_RESET_CODE_VALID) { // Replace with actual code validation
-        toast({
-          title: "Password Reset Successful (Simulated)",
-          description: "Your password has been updated. You can now log in with your new password.",
-        });
-        router.push('/auth/login');
-      } else {
-        toast({
-          title: "Invalid Reset Code",
-          description: "The reset code entered is incorrect or has expired.",
-          variant: "destructive",
-        });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to reset password.');
       }
+
+      toast({
+        title: "Password Reset Successful",
+        description: data.message,
+      });
+      router.push('/auth/login');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
   
   return (
@@ -80,25 +91,12 @@ function ResetPasswordForm() {
         </div>
         <CardTitle className="text-3xl font-bold">Reset Your Password</CardTitle>
         <CardDescription>
-          Enter the reset code sent to {email ? <strong>{email}</strong> : "your email"}, then set a new password.
+          Create a new, strong password for your account.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="resetCode">Reset Code</Label>
-            <Input
-              id="resetCode"
-              type="text"
-              placeholder="Enter 6-digit code"
-              value={resetCode}
-              onChange={(e) => setResetCode(e.target.value)}
-              required
-              disabled={isLoading}
-              maxLength={6}
-            />
-          </div>
-          <div className="space-y-2">
+           <div className="space-y-2">
             <Label htmlFor="newPassword">New Password</Label>
             <Input
               id="newPassword"
@@ -122,7 +120,7 @@ function ResetPasswordForm() {
               disabled={isLoading}
             />
           </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full" disabled={isLoading || !token}>
             {isLoading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -154,5 +152,3 @@ export default function ResetPasswordPage() {
     </div>
   );
 }
-
-    
