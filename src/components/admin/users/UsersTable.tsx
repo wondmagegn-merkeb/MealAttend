@@ -18,6 +18,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import type { UserWithDepartment } from "@/types";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'status' | 'createdAt';
 type SortDirection = 'ascending' | 'descending';
@@ -81,7 +82,58 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
 
   return (
     <TooltipProvider>
-      <div className="rounded-lg border shadow-sm bg-card">
+      {/* Mobile View */}
+      <div className="md:hidden space-y-4">
+        {users.map((user) => (
+          <Card key={user.id} className="shadow-md">
+            <CardHeader>
+              <div className="flex items-center gap-4">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src={user.profileImageURL || undefined} alt={user.fullName} data-ai-hint="user avatar" />
+                  <AvatarFallback>{user.fullName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <CardTitle className="text-lg">{user.fullName}</CardTitle>
+                  <CardDescription>{user.email}</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">User ID:</span>
+                <span className="font-mono text-xs">{user.userId}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Department:</span>
+                <span>{user.department?.name || 'N/A'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Role:</span>
+                <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>{user.role}</Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Status:</span>
+                <Badge variant={user.status === 'Active' ? 'default' : 'destructive'} className={user.status === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'}>{user.status}</Badge>
+              </div>
+               <div className="flex justify-between">
+                <span className="text-muted-foreground">Created:</span>
+                <span>{format(new Date(user.createdAt), "yyyy-MM-dd")}</span>
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={() => onEdit(user)}>
+                <Edit className="mr-2 h-4 w-4" /> Edit
+              </Button>
+              <Button variant="destructive" size="sm" onClick={() => handleDeleteClick(user)}>
+                <Trash2 className="mr-2 h-4 w-4" /> Delete
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+
+      {/* Desktop View */}
+      <div className="hidden md:block rounded-lg border shadow-sm bg-card">
         <Table>
           <TableHeader>
             <TableRow>

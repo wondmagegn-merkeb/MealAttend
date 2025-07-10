@@ -18,6 +18,8 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Student } from '@/types';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { format } from "date-fns";
 
 
 type SortableStudentKeys = 'studentId' | 'name' | 'classGrade' | 'gender' | 'createdAt';
@@ -82,7 +84,53 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
 
   return (
     <TooltipProvider>
-      <div className="rounded-lg border shadow-sm bg-card">
+      {/* Mobile View */}
+      <div className="md:hidden space-y-4">
+        {students.map((student) => (
+          <Card key={student.id} className="shadow-md">
+            <CardHeader>
+              <div className="flex items-center gap-4">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src={student.profileImageURL || undefined} alt={student.name} data-ai-hint="student profile" />
+                  <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <CardTitle className="text-lg">{student.name}</CardTitle>
+                  <CardDescription>{student.studentId}</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Grade:</span>
+                <span>{student.classGrade || 'N/A'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Gender:</span>
+                <span>{student.gender || 'N/A'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Created:</span>
+                <span>{format(new Date(student.createdAt), "yyyy-MM-dd")}</span>
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-end gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link href={`/admin/students/${student.id}/id-card`}><Eye className="mr-2 h-4 w-4" /> View ID</Link>
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => onEdit(student)}>
+                <Edit className="mr-2 h-4 w-4" /> Edit
+              </Button>
+              <Button variant="destructive" size="sm" onClick={() => handleDeleteClick(student)}>
+                <Trash2 className="mr-2 h-4 w-4" /> Delete
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+
+      {/* Desktop View */}
+      <div className="hidden md:block rounded-lg border shadow-sm bg-card">
         <Table>
           <TableHeader>
             <TableRow>
