@@ -137,14 +137,14 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
         <Table>
           <TableHeader>
             <TableRow>
-              <SortableTableHead columnKey="userId" className="w-[200px]">User ID</SortableTableHead>
+              <SortableTableHead columnKey="userId">User ID</SortableTableHead>
               <SortableTableHead columnKey="fullName">Full Name</SortableTableHead>
               <SortableTableHead columnKey="department">Department</SortableTableHead>
               <SortableTableHead columnKey="email">Email</SortableTableHead>
               <SortableTableHead columnKey="role">Role</SortableTableHead>
               <SortableTableHead columnKey="status">Status</SortableTableHead>
               <SortableTableHead columnKey="createdAt">Created At</SortableTableHead>
-              <TableHead className="text-right w-[100px]">Actions</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

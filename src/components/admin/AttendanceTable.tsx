@@ -114,7 +114,7 @@ export function AttendanceTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <SortableTableHead columnKey="studentId" className="w-[120px]">Student ID</SortableTableHead>
+              <SortableTableHead columnKey="studentId">Student ID</SortableTableHead>
               <SortableTableHead columnKey="studentName">Name</SortableTableHead>
               <SortableTableHead columnKey="recordDate">Date</SortableTableHead>
               <SortableTableHead columnKey="mealType">Meal Type</SortableTableHead>

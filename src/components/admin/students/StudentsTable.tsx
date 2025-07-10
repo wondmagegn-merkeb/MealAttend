@@ -139,7 +139,7 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
               <SortableTableHead columnKey="classGrade">Grade</SortableTableHead>
               <SortableTableHead columnKey="gender">Gender</SortableTableHead>
               <SortableTableHead columnKey="createdAt">Created At</SortableTableHead>
-              <TableHead className="text-right w-[130px]">Actions</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

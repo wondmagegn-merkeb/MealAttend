@@ -109,9 +109,9 @@ export function DepartmentsTable({ departments, onEdit, onDelete, sortConfig, on
         <Table>
           <TableHeader>
             <TableRow>
-              <SortableTableHead columnKey="departmentId" className="w-[250px]">Department ID</SortableTableHead>
+              <SortableTableHead columnKey="departmentId">Department ID</SortableTableHead>
               <SortableTableHead columnKey="name">Name</SortableTableHead>
-              <TableHead className="text-right w-[100px]">Actions</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

@@ -87,8 +87,8 @@ export function ActivityLogTable({ logs, sortConfig, onSort }: ActivityLogTableP
         <Table>
           <TableHeader>
             <TableRow>
-              <SortableTableHead columnKey="activityTimestamp" className="w-[200px]">Timestamp</SortableTableHead>
-              <SortableTableHead columnKey="userIdentifier" className="w-[250px]">User ID</SortableTableHead>
+              <SortableTableHead columnKey="activityTimestamp">Timestamp</SortableTableHead>
+              <SortableTableHead columnKey="userIdentifier">User ID</SortableTableHead>
               <SortableTableHead columnKey="action">Action</SortableTableHead>
               <TableHead>Details</TableHead>
             </TableRow>
@@ -96,7 +96,7 @@ export function ActivityLogTable({ logs, sortConfig, onSort }: ActivityLogTableP
           <TableBody>
             {logs.map((log) => (
               <TableRow key={log.id}>
-                <TableCell className="font-mono text-xs">
+                <TableCell className="font-mono text-xs whitespace-nowrap">
                   {format(parseISO(log.activityTimestamp as unknown as string), "MMM dd, yyyy, hh:mm:ss a")}
                 </TableCell>
                 <TableCell className="font-medium">{log.userIdentifier}</TableCell>
