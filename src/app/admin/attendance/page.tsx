@@ -593,11 +593,29 @@ export default function AttendancePage() {
                     <AttendanceTable records={currentTableData} sortConfig={sortConfig} onSort={handleSort} />
                     {processedRecords.length > ITEMS_PER_PAGE && (
                         <div className="flex items-center justify-between pt-4 mt-4 border-t">
-                        <p className="text-sm text-muted-foreground">Page {currentPage} of {totalPages} ({processedRecords.length} records)</p>
-                        <div className="flex gap-2">
-                            <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1}><ChevronLeft className="mr-1 h-4 w-4" />Previous</Button>
-                            <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages}>Next<ChevronRight className="ml-1 h-4 w-4" /></Button>
-                        </div>
+                            <p className="text-sm text-muted-foreground">
+                                Page {currentPage} of {totalPages} ({processedRecords.length} records)
+                            </p>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                    disabled={currentPage === 1}
+                                >
+                                    <ChevronLeft className="mr-1 h-4 w-4" />
+                                    Previous
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    Next
+                                    <ChevronRight className="ml-1 h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
                     )}
                 </>
