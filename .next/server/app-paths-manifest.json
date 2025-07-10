@@ -5,6 +5,7 @@
   "/api/auth/login/route": "app/api/auth/login/route.js",
   "/api/students/route": "app/api/students/route.js",
   "/api/users/route": "app/api/users/route.js",
+  "/auth/forgot-password/page": "app/auth/forgot-password/page.js",
   "/auth/login/page": "app/auth/login/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/page": "app/page.js"
