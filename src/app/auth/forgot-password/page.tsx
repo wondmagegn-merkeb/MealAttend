@@ -30,6 +30,8 @@ export default function ForgotPasswordPage() {
       return;
     }
 
+    // In a real application, you would make an API call here to send the reset email.
+    // For this prototype, we'll just simulate it.
     setTimeout(() => {
       toast({
         title: "Reset Code Sent (Simulated)",
