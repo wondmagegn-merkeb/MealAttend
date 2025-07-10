@@ -304,7 +304,7 @@ function ScanResultDisplay({ result }: { result: ResultState | null }) {
     const getBorderColor = () => {
         switch (result.type) {
             case 'success': return 'border-green-500';
-            case 'already_recorded': return 'border-amber-500';
+            case 'already_recorded': return 'border-destructive';
             case 'info': return 'border-blue-500';
             case 'error': return 'border-destructive';
             default: return 'border-muted';
@@ -314,7 +314,7 @@ function ScanResultDisplay({ result }: { result: ResultState | null }) {
     const getIcon = () => {
        switch (result.type) {
             case 'success': return <CheckCircle className="h-6 w-6 text-green-500" />;
-            case 'already_recorded': return <Info className="h-6 w-6 text-amber-500" />;
+            case 'already_recorded': return <AlertTriangle className="h-6 w-6 text-destructive" />;
             case 'info': return <Info className="h-6 w-6 text-blue-500" />;
             case 'error': return <AlertTriangle className="h-6 w-6 text-destructive" />;
             default: return null;
@@ -340,7 +340,7 @@ function ScanResultDisplay({ result }: { result: ResultState | null }) {
                         </div>
                     </div>
                 ) : null}
-                <Alert variant={result.type === 'error' ? 'destructive' : 'default'} className="bg-muted/50">
+                <Alert variant={result.type === 'error' || result.type === 'already_recorded' ? 'destructive' : 'default'} className="bg-muted/50">
                     <AlertTitle>{result.message}</AlertTitle>
                     {result.record && result.record.scannedAtTimestamp && (
                         <AlertDescription>
