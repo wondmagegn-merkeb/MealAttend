@@ -52,6 +52,32 @@ const playBeep = () => {
   }
 };
 
+const playWarningBeep = () => {
+  try {
+    if (typeof window !== 'undefined' && window.AudioContext) {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      gainNode.gain.value = 0.1; 
+      oscillator.frequency.value = 440; // Lower pitch for warning
+      oscillator.type = 'sawtooth'; // Harsher sound for warning
+
+      oscillator.start();
+      
+      setTimeout(() => {
+        oscillator.stop();
+        audioContext.close();
+      }, 250); // Slightly longer duration
+    }
+  } catch (e) {
+    console.error("Could not play warning beep sound:", e);
+  }
+};
+
 
 export function QrScannerClient() {
   const { toast } = useToast();
@@ -97,13 +123,15 @@ export function QrScannerClient() {
       }
 
       if (result.success) {
-          playBeep(); // Play beep on any successful interaction
           if (result.type === 'success') {
+              playBeep();
               toast({ title: "Attendance Recorded!", description: `${result.student?.name} marked as present for ${selectedMealType}.` });
               logUserActivity(currentUserId, "ATTENDANCE_RECORD_SUCCESS", `Student: ${result.student?.name}, Meal: ${selectedMealType}`);
           } else if (result.type === 'already_recorded') {
+               playWarningBeep();
                toast({ title: "Already Recorded", description: `${result.student?.name} has already been recorded.` });
           } else if (result.type === 'info') {
+               playBeep();
                toast({ title: "Student Found", description: `${result.student?.name} has not yet been recorded for this meal.` });
           }
           setLastResult({ student: result.student || null, record: result.record || null, message: result.message, type: result.type });
