@@ -26,6 +26,33 @@ interface ResultState {
     type: 'success' | 'info' | 'error' | 'already_recorded';
 }
 
+const playBeep = () => {
+  try {
+    if (typeof window !== 'undefined' && window.AudioContext) {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      gainNode.gain.value = 0.1; 
+      oscillator.frequency.value = 880; 
+      oscillator.type = 'sine';
+
+      oscillator.start();
+      
+      setTimeout(() => {
+        oscillator.stop();
+        audioContext.close();
+      }, 150);
+    }
+  } catch (e) {
+    console.error("Could not play beep sound:", e);
+  }
+};
+
+
 export function QrScannerClient() {
   const { toast } = useToast();
   const { currentUserId } = useAuth();
@@ -70,6 +97,7 @@ export function QrScannerClient() {
       }
 
       if (result.success) {
+          playBeep(); // Play beep on any successful interaction
           if (result.type === 'success') {
               toast({ title: "Attendance Recorded!", description: `${result.student?.name} marked as present for ${selectedMealType}.` });
               logUserActivity(currentUserId, "ATTENDANCE_RECORD_SUCCESS", `Student: ${result.student?.name}, Meal: ${selectedMealType}`);
@@ -296,5 +324,3 @@ function ScanResultDisplay({ result }: { result: ResultState | null }) {
         </Card>
     );
 }
-
-    
