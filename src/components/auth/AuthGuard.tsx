@@ -9,7 +9,9 @@ import { Loader2 } from 'lucide-react';
 import type { User } from '@/types/user';
 import { toast } from '@/hooks/use-toast';
 
-const PUBLIC_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-password', '/auth/change-password'];
+const PUBLIC_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-password'];
+const AUTH_FLOW_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-password', '/auth/change-password'];
+
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -33,7 +35,7 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
       return;
     }
 
-    if (!isAuthenticated && !PUBLIC_PATHS.includes(pathname)) {
+    if (!isAuthenticated && !AUTH_FLOW_PATHS.includes(pathname)) {
       router.replace('/auth/login');
       return;
     }
@@ -46,6 +48,12 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
 
       if (!isPasswordChangeRequired && pathname === '/auth/change-password') {
         // If somehow user lands on change-password but doesn't need to, redirect
+        router.replace('/admin');
+        return;
+      }
+      
+      if (PUBLIC_PATHS.includes(pathname)) {
+        // If logged in and on a public-only page like login, redirect to dashboard
         router.replace('/admin');
         return;
       }
@@ -64,8 +72,8 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
   }, [isAuthenticated, pathname, router, setIsAuthenticated, requiredRole, currentUserRole, currentUserId, isPasswordChangeRequired]);
 
 
-  // Initial loading state or if conditions for redirect are met but redirect hasn't completed
-  if (isAuthenticated === null && !PUBLIC_PATHS.includes(pathname)) {
+  // Show a full-screen loader while authentication state is being determined.
+  if (isAuthenticated === null && !AUTH_FLOW_PATHS.includes(pathname)) {
     return (
       <div className="flex flex-col justify-center items-center h-screen bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
@@ -74,8 +82,8 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
     );
   }
   
+  // Show a loader while redirecting for password change.
   if (isAuthenticated === true && isPasswordChangeRequired && pathname !== '/auth/change-password') {
-    // Show loader while redirecting to change password
      return (
       <div className="flex flex-col justify-center items-center h-screen bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
@@ -84,8 +92,8 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
     );
   }
 
-  if (isAuthenticated === true && requiredRole && currentUserRole !== requiredRole && !PUBLIC_PATHS.includes(pathname) ) {
-    // Show loader while redirecting due to role mismatch
+  // Show a loader while redirecting due to role mismatch.
+  if (isAuthenticated === true && requiredRole && currentUserRole !== requiredRole && !AUTH_FLOW_PATHS.includes(pathname) ) {
      return (
       <div className="flex flex-col justify-center items-center h-screen bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
@@ -94,8 +102,7 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
     );
   }
 
-
   // If authenticated (and password change not required or on the change page),
-  // or on a public path, or role check passes, render children
+  // or on a public path, or role check passes, render children.
   return <>{children}</>;
 }
