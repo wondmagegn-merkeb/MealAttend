@@ -28,6 +28,8 @@ const fetchDashboardData = async (): Promise<{ students: Student[], users: User[
         fetch('/api/activity-log')
     ]);
 
+    console.log("Dashboard data fetched successfully");
+
     if (!studentsRes.ok || !usersRes.ok || !attendanceRes.ok || !activityRes.ok) {
         throw new Error('Failed to fetch all dashboard data');
     }
