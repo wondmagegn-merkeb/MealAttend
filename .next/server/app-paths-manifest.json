@@ -1,5 +1,4 @@
 {
-  "/admin/attendance/page": "app/admin/attendance/page.js",
   "/admin/page": "app/admin/page.js",
   "/api/activity-log/route": "app/api/activity-log/route.js",
   "/api/attendance/route": "app/api/attendance/route.js",
