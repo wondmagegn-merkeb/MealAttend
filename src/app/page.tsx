@@ -12,14 +12,14 @@ const marketingTeam = [
   {
     name: 'Eleanor Vance',
     role: 'Marketing Lead',
-    avatarUrl: 'https://placehold.co/100x100.png',
+    avatarUrl: '/eleanor.png',
     bio: 'Marketing graduate from Wachemo University, driving our brand forward.',
     avatarHint: 'woman professional',
   },
   {
     name: 'Sofia Reyes',
     role: 'Marketing Specialist',
-    avatarUrl: 'https://placehold.co/100x100.png',
+    avatarUrl: '/sofia.png',
     bio: 'Wachemo University marketing graduate with a passion for digital outreach.',
     avatarHint: 'woman professional',
   },
@@ -29,21 +29,21 @@ const developmentTeam = [
   {
     name: 'Leo Maxwell',
     role: 'Full-Stack Developer',
-    avatarUrl: 'https://placehold.co/100x100.png',
+    avatarUrl: '/leo.png',
     bio: 'Full-stack developer with a degree in Computer Science from Wachemo University.',
     avatarHint: 'man professional',
   },
    {
     name: 'Owen Grant',
     role: 'Full-Stack Developer',
-    avatarUrl: 'https://placehold.co/100x100.png',
+    avatarUrl: '/owen.png',
     bio: 'Wachemo University Computer Science graduate, building robust back-end systems.',
     avatarHint: 'man professional',
   },
   {
     name: 'Caleb Finn',
     role: 'Full-Stack Developer',
-    avatarUrl: 'https://placehold.co/100x100.png',
+    avatarUrl: '/caleb.png',
     bio: 'Software Engineering graduate from Wachemo University, focusing on seamless user experiences.',
     avatarHint: 'man professional',
   },
@@ -117,7 +117,7 @@ export default function HomePage() {
                     <h2 className="text-3xl font-semibold text-primary">Our Team</h2>
                 </div>
                  <div className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-6 mb-6">
-                    <Image src="https://placehold.co/120x120.png" alt="AddisSpark Logo" width={120} height={120} className="rounded-lg shadow-md" data-ai-hint="spark logo" />
+                    <Image src="/addisspark-logo.png" alt="AddisSpark Logo" width={120} height={120} className="rounded-lg shadow-md" data-ai-hint="spark logo" />
                     <p className="text-muted-foreground leading-relaxed flex-1">
                       MealAttend is proudly developed by <span className="font-semibold text-accent inline-flex items-center">AddisSpark <Sparkles className="ml-1 h-4 w-4" /></span>, an innovative startup dedicated to creating modern software solutions that solve real-world challenges. Our team is a blend of creative designers, skilled developers, and strategic thinkers.
                     </p>
@@ -140,7 +140,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Development Team */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8">
                     {developmentTeam.map((member) => (
                       <div key={member.name} className="flex flex-col items-center text-center">
                         <Avatar className="h-24 w-24 mb-4 border-4 border-primary/20">

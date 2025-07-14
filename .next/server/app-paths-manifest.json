@@ -3,6 +3,7 @@
   "/admin/page": "app/admin/page.js",
   "/api/auth/login/route": "app/api/auth/login/route.js",
   "/auth/login/page": "app/auth/login/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
   "/info/page": "app/info/page.js",
   "/page": "app/page.js"
 }
