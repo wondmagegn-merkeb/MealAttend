@@ -8,8 +8,23 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
-const marketingTeam = [
+const team = [
   {
+    name: 'Leo Maxwell',
+    role: 'CEO & Full-Stack Developer',
+    avatarUrl: '/leo.png',
+    bio: 'Wachemo University Computer Science graduate, leading the vision and technology.',
+    avatarHint: 'man professional',
+    isCeo: true,
+  },
+  {
+    name: 'Owen Grant',
+    role: 'CTO & Full-Stack Developer',
+    avatarUrl: '/owen.png',
+    bio: 'Wachemo University Computer Science graduate, building robust back-end systems.',
+    avatarHint: 'man professional',
+  },
+   {
     name: 'Eleanor Vance',
     role: 'Marketing Lead',
     avatarUrl: '/eleanor.png',
@@ -23,26 +38,9 @@ const marketingTeam = [
     bio: 'Wachemo University marketing graduate with a passion for digital outreach.',
     avatarHint: 'woman professional',
   },
-];
-
-const developmentTeam = [
-  {
-    name: 'Leo Maxwell',
-    role: 'Full-Stack Developer',
-    avatarUrl: '/leo.png',
-    bio: 'Full-stack developer with a degree in Computer Science from Wachemo University.',
-    avatarHint: 'man professional',
-  },
-   {
-    name: 'Owen Grant',
-    role: 'Full-Stack Developer',
-    avatarUrl: '/owen.png',
-    bio: 'Wachemo University Computer Science graduate, building robust back-end systems.',
-    avatarHint: 'man professional',
-  },
   {
     name: 'Caleb Finn',
-    role: 'Full-Stack Developer',
+    role: 'Lead Full-Stack Developer',
     avatarUrl: '/caleb.png',
     bio: 'Software Engineering graduate from Wachemo University, focusing on seamless user experiences.',
     avatarHint: 'man professional',
@@ -74,9 +72,12 @@ const features = [
 
 
 export default function HomePage() {
+  const ceo = team.find(member => member.isCeo);
+  const otherMembers = team.filter(member => !member.isCeo);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-secondary/30 via-background to-accent/10 p-4 sm:p-8">
-      <div className="w-full max-w-4xl mx-auto">
+      <div className="w-full max-w-5xl mx-auto">
         <Card className="w-full shadow-xl">
           <CardHeader className="text-center">
               <div className="flex justify-center mb-4">
@@ -124,24 +125,22 @@ export default function HomePage() {
                 </div>
                 
                 <div className="space-y-10">
-                  {/* Marketing Team */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
-                    {marketingTeam.map((member) => (
-                      <div key={member.name} className="flex flex-col items-center text-center">
-                        <Avatar className="h-24 w-24 mb-4 border-4 border-primary/20">
-                          <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint={member.avatarHint} />
-                          <AvatarFallback>{member.name.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
-                        </Avatar>
-                        <h3 className="text-lg font-bold">{member.name}</h3>
-                        <p className="text-sm text-accent font-semibold">{member.role}</p>
-                        <p className="text-sm text-muted-foreground mt-2">{member.bio}</p>
-                      </div>
-                    ))}
-                  </div>
+                   {/* CEO Section */}
+                  {ceo && (
+                    <div className="flex flex-col items-center text-center mb-10">
+                      <Avatar className="h-28 w-28 mb-4 border-4 border-primary">
+                        <AvatarImage src={ceo.avatarUrl} alt={ceo.name} data-ai-hint={ceo.avatarHint} />
+                        <AvatarFallback>{ceo.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                      </Avatar>
+                      <h3 className="text-xl font-bold">{ceo.name}</h3>
+                      <p className="text-md text-accent font-semibold">{ceo.role}</p>
+                      <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">{ceo.bio}</p>
+                    </div>
+                  )}
 
-                  {/* Development Team */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8">
-                    {developmentTeam.map((member) => (
+                  {/* Other Team Members */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 pt-8">
+                    {otherMembers.map((member) => (
                       <div key={member.name} className="flex flex-col items-center text-center">
                         <Avatar className="h-24 w-24 mb-4 border-4 border-primary/20">
                           <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint={member.avatarHint} />
