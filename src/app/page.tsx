@@ -26,9 +26,9 @@ const team = [
   },
    {
     name: 'Eleanor Vance',
-    role: 'Marketing Lead',
+    role: 'Project Manager & Marketing Lead',
     avatarUrl: '/eleanor.png',
-    bio: 'Marketing graduate from Wachemo University, driving our brand forward.',
+    bio: 'Marketing graduate from Wachemo University, driving our brand and project timelines forward.',
     avatarHint: 'woman professional',
   },
   {
