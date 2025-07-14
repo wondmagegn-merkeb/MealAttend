@@ -17,6 +17,8 @@ export interface User {
   profileImageURL: string | null;
   createdAt: string;
   updatedAt: string;
+  passwordResetToken?: string | null;
+  passwordResetExpires?: string | null;
 }
 
 export interface UserWithDepartment extends User {
@@ -52,7 +54,7 @@ export interface AttendanceRecordWithStudent extends AttendanceRecord {
 }
 
 export interface UserActivityLog {
-    id: string;
+    id:string;
     logId: string;
     userIdentifier: string;
     userId: string | null;
