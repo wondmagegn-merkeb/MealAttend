@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Shield, Cog, Users } from 'lucide-react';
+import { ArrowLeft, Shield, Cog, Users, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -61,10 +61,13 @@ export default function InfoPage() {
             
             {/* Our Team Section */}
             <section className="text-left">
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-4 mb-4">
                     <Users className="h-10 w-10 text-primary" />
                     <h2 className="text-3xl font-semibold text-primary">Our Team</h2>
                 </div>
+                 <p className="text-muted-foreground leading-relaxed mb-6">
+                  MealAttend is proudly developed by <span className="font-semibold text-accent inline-flex items-center">AddisSpark <Sparkles className="ml-1 h-4 w-4" /></span>, an innovative startup dedicated to creating modern software solutions that solve real-world challenges. Our team is a blend of creative designers, skilled developers, and strategic thinkers.
+                </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {teamMembers.map((member) => (
                     <div key={member.name} className="flex flex-col items-center text-center">
