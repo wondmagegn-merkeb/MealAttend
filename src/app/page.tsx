@@ -10,22 +10,39 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const teamMembers = [
   {
-    name: 'Alice Johnson',
-    role: 'Project Lead',
+    name: 'Eleanor Vance',
+    role: 'Marketing Lead',
     avatarUrl: 'https://placehold.co/100x100.png',
-    bio: 'Visionary leader with a passion for creating efficient solutions.',
+    bio: 'Marketing graduate from Wachemo University, driving our brand forward.',
+    avatarHint: 'woman professional',
   },
   {
-    name: 'Bob Williams',
-    role: 'Lead Developer',
+    name: 'Sofia Reyes',
+    role: 'Marketing Specialist',
     avatarUrl: 'https://placehold.co/100x100.png',
-    bio: 'Expert architect of the MealAttend system and its features.',
+    bio: 'Wachemo University marketing graduate with a passion for digital outreach.',
+    avatarHint: 'woman professional',
   },
   {
-    name: 'Charlie Brown',
-    role: 'UI/UX Designer',
+    name: 'Leo Maxwell',
+    role: 'Full-Stack Developer',
     avatarUrl: 'https://placehold.co/100x100.png',
-    bio: 'Creative mind behind the intuitive and clean user interface.',
+    bio: 'Full-stack developer with a degree in Computer Science from Wachemo University.',
+    avatarHint: 'man professional',
+  },
+   {
+    name: 'Owen Grant',
+    role: 'Full-Stack Developer',
+    avatarUrl: 'https://placehold.co/100x100.png',
+    bio: 'Wachemo University Computer Science graduate, building robust back-end systems.',
+    avatarHint: 'man professional',
+  },
+  {
+    name: 'Caleb Finn',
+    role: 'Full-Stack Developer',
+    avatarUrl: 'https://placehold.co/100x100.png',
+    bio: 'Software Engineering graduate from Wachemo University, focusing on seamless user experiences.',
+    avatarHint: 'man professional',
   },
 ];
 
@@ -106,7 +123,7 @@ export default function HomePage() {
                 {teamMembers.map((member) => (
                     <div key={member.name} className="flex flex-col items-center text-center">
                         <Avatar className="h-24 w-24 mb-4 border-4 border-primary/20">
-                            <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint="team member" />
+                            <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint={member.avatarHint} />
                             <AvatarFallback>{member.name.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
                         </Avatar>
                         <h3 className="text-lg font-bold">{member.name}</h3>
