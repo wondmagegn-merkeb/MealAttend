@@ -96,9 +96,12 @@ export default function InfoPage() {
                     <Users className="h-10 w-10 text-primary" />
                     <h2 className="text-3xl font-semibold text-primary">Our Team</h2>
                 </div>
-                 <p className="text-muted-foreground leading-relaxed mb-6">
-                  MealAttend is proudly developed by <span className="font-semibold text-accent inline-flex items-center">AddisSpark <Sparkles className="ml-1 h-4 w-4" /></span>, an innovative startup dedicated to creating modern software solutions that solve real-world challenges. Our team is a blend of creative designers, skilled developers, and strategic thinkers.
-                </p>
+                 <div className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-6 mb-6">
+                    <Image src="https://placehold.co/120x120.png" alt="AddisSpark Logo" width={120} height={120} className="rounded-lg shadow-md" data-ai-hint="spark logo" />
+                    <p className="text-muted-foreground leading-relaxed flex-1">
+                      MealAttend is proudly developed by <span className="font-semibold text-accent inline-flex items-center">AddisSpark <Sparkles className="ml-1 h-4 w-4" /></span>, an innovative startup dedicated to creating modern software solutions that solve real-world challenges. Our team is a blend of creative designers, skilled developers, and strategic thinkers.
+                    </p>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {teamMembers.map((member) => (
                     <div key={member.name} className="flex flex-col items-center text-center">
