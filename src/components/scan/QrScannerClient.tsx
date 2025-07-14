@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CheckCircle, AlertTriangle, Info, Loader2, Utensils, ScanLine, Search } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Info, Loader2, Utensils, ScanLine, Search, XCircle, UserPlus } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from 'date-fns';
 import jsQR from 'jsqr';
@@ -93,28 +93,29 @@ export function QrScannerClient() {
   const [lastResult, setLastResult] = useState<ResultState | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const processScanOrCheck = useCallback(async (identifier: { qrCodeData?: string; studentId?: string }) => {
+  const processScanOrCheck = useCallback(async (identifier: { qrCodeData?: string; studentId?: string }, isCheckOnly = false) => {
     if (isProcessing) return;
     setIsProcessing(true);
     setLastScanTime(Date.now());
     
     let response;
     try {
+      const endpoint = isCheckOnly ? '/api/attendance/check' : '/api/scan';
+      
+      let body: any = { mealType: selectedMealType };
       if (identifier.qrCodeData) {
-        response = await fetch('/api/scan', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ qrCodeData: identifier.qrCodeData, mealType: selectedMealType }),
-        });
+        body.qrCodeData = identifier.qrCodeData;
       } else if (identifier.studentId) {
-        response = await fetch('/api/attendance/check', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ studentId: identifier.studentId, mealType: selectedMealType }),
-        });
+        body.studentId = identifier.studentId;
       } else {
-        throw new Error("No identifier provided.");
+         throw new Error("No identifier provided.");
       }
+
+      response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
 
       const result = await response.json();
 
@@ -141,7 +142,7 @@ export function QrScannerClient() {
     } catch (error: any) {
         const errorMessage = error.message || 'Failed to process request.';
         toast({ title: "Scan/Search Error", description: errorMessage, variant: "destructive" });
-        logUserActivity(currentUserId, "ATTENDANCE_FAILURE", `Identifier: ${identifier.qrCodeData || identifier.studentId}. Error: ${errorMessage}`);
+        logUserActivity(currentUserId, "ATTENDANCE_FAILURE", `Identifier: ${JSON.stringify(identifier)}. Error: ${errorMessage}`);
         setLastResult({ student: null, record: null, message: errorMessage, type: 'error' });
     } finally {
         setIsProcessing(false);
@@ -154,8 +155,14 @@ export function QrScannerClient() {
         toast({ title: "Student ID Required", description: "Please enter a student ID to search." });
         return;
     }
-    processScanOrCheck({ studentId: manualStudentId });
-  }
+    // Perform a 'check' only, which won't create a record
+    processScanOrCheck({ studentId: manualStudentId }, true);
+  };
+  
+  const handleManualAdd = (studentInternalId: string) => {
+    // Perform a 'scan' action, which creates a record
+    processScanOrCheck({ studentId: studentInternalId }, false);
+  };
 
   const attemptAutoScan = useCallback(() => {
     if (!videoRef.current || !canvasRef.current || videoRef.current.paused || videoRef.current.ended) {
@@ -178,7 +185,7 @@ export function QrScannerClient() {
       const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
       const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
       if (code && code.data) {
-        processScanOrCheck({ qrCodeData: code.data });
+        processScanOrCheck({ qrCodeData: code.data }, false);
       }
     }
   }, [lastScanTime, processScanOrCheck]);
@@ -292,13 +299,25 @@ export function QrScannerClient() {
       </Card>
 
       <div className="mt-6 w-full">
-        <ScanResultDisplay result={lastResult} />
+        <ScanResultDisplay 
+          result={lastResult}
+          onClear={() => setLastResult(null)}
+          onAdd={handleManualAdd}
+          isProcessing={isProcessing}
+        />
       </div>
     </div>
   );
 }
 
-function ScanResultDisplay({ result }: { result: ResultState | null }) {
+interface ScanResultDisplayProps {
+  result: ResultState | null;
+  onClear: () => void;
+  onAdd: (studentInternalId: string) => void;
+  isProcessing: boolean;
+}
+
+function ScanResultDisplay({ result, onClear, onAdd, isProcessing }: ScanResultDisplayProps) {
     if (!result) return null;
 
     const getBorderColor = () => {
@@ -349,6 +368,17 @@ function ScanResultDisplay({ result }: { result: ResultState | null }) {
                     )}
                 </Alert>
             </CardContent>
+            {result.type === 'info' && result.student && (
+                <CardFooter className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={onClear} disabled={isProcessing}>
+                        <XCircle className="mr-2 h-4 w-4" /> Cancel
+                    </Button>
+                    <Button onClick={() => onAdd(result.student!.id)} disabled={isProcessing}>
+                        {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <UserPlus className="mr-2 h-4 w-4" />}
+                        Add as Present
+                    </Button>
+                </CardFooter>
+            )}
         </Card>
     );
 }
