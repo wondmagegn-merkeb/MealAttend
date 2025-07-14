@@ -155,79 +155,76 @@ export default function ViewAllIdCardsPage() {
   }
 
   return (
-    <div className="p-4 md:p-8">
-      <header className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 no-print">
-        <div className="flex-grow">
-          <h1 className="text-3xl font-semibold tracking-tight text-primary">All Student ID Cards</h1>
-          <p className="text-muted-foreground">Filter by grade and year, then print the selection.</p>
-        </div>
-        <div className="flex flex-col sm:flex-row items-end gap-2 w-full sm:w-auto">
-          <div className="w-full sm:w-auto">
-            <Label htmlFor="class-filter" className="text-sm font-medium">Filter by Grade</Label>
-            <Select value={selectedClass} onValueChange={setSelectedClass}>
-              <SelectTrigger id="class-filter" className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Select Grade" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Grades</SelectItem>
-                {uniqueClasses.map(cls => (
-                  <SelectItem key={cls} value={cls}>{cls}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-           <div className="w-full sm:w-auto">
-            <Label htmlFor="year-filter" className="text-sm font-medium">Filter by Admission Year</Label>
-            <Select value={selectedYear} onValueChange={setSelectedYear}>
-              <SelectTrigger id="year-filter" className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Select Year" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Years</SelectItem>
-                {uniqueYears.map(year => (
-                  <SelectItem key={year} value={year}>{year}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+    <div className="bg-gray-100 min-h-screen">
+      <header className="mb-6 p-4 bg-background border-b print:hidden">
+         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 max-w-7xl mx-auto">
+            <div className="flex-grow">
+              <h1 className="text-3xl font-semibold tracking-tight text-primary">All Student ID Cards</h1>
+              <p className="text-muted-foreground">Filter by grade and year, then print the selection.</p>
+            </div>
+            <div className="flex flex-col sm:flex-row items-end gap-2 w-full sm:w-auto">
+              <div className="w-full sm:w-auto">
+                <Label htmlFor="class-filter" className="text-sm font-medium">Filter by Grade</Label>
+                <Select value={selectedClass} onValueChange={setSelectedClass}>
+                  <SelectTrigger id="class-filter" className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Select Grade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Grades</SelectItem>
+                    {uniqueClasses.map(cls => (
+                      <SelectItem key={cls} value={cls}>{cls}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+               <div className="w-full sm:w-auto">
+                <Label htmlFor="year-filter" className="text-sm font-medium">Filter by Admission Year</Label>
+                <Select value={selectedYear} onValueChange={setSelectedYear}>
+                  <SelectTrigger id="year-filter" className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Select Year" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Years</SelectItem>
+                    {uniqueYears.map(year => (
+                      <SelectItem key={year} value={year}>{year}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+             <div className="flex flex-col sm:flex-row justify-end items-center gap-2 w-full sm:w-auto">
+                <Button variant="outline" asChild className="w-full sm:w-auto">
+                    <Link href="/admin/students">
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back
+                    </Link>
+                  </Button>
+                  <Button onClick={handlePrint} disabled={filteredAndSortedStudents.length === 0} className="w-full sm:w-auto">
+                    <Printer className="mr-2 h-4 w-4" />
+                    Print ({filteredAndSortedStudents.length})
+                  </Button>
+            </div>
         </div>
       </header>
-      <div className="flex flex-col sm:flex-row justify-end items-center gap-2 w-full sm:w-auto no-print mb-6">
-        <Button variant="outline" asChild className="w-full sm:w-auto">
-            <Link href="/admin/students">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to List
-            </Link>
-          </Button>
-          <Button onClick={handlePrint} disabled={filteredAndSortedStudents.length === 0} className="w-full sm:w-auto">
-            <Printer className="mr-2 h-4 w-4" />
-            Print Filtered Cards ({filteredAndSortedStudents.length})
-          </Button>
-      </div>
 
-
-      {filteredAndSortedStudents.length === 0 && !isLoadingStudents && (
-        <Card className="shadow-lg mt-6">
-          <CardHeader className="items-center text-center">
-            <AlertTriangle className="h-10 w-10 text-amber-500 mb-2" />
-            <CardTitle className="text-xl">
-              {selectedClass !== 'all' || selectedYear !== 'all' ? "No Matching Students" : "No Student ID Cards"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CardDescription className="text-center">
-              {selectedClass !== 'all' || selectedYear !== 'all'
-                ? "No students match your current filter criteria." 
-                : "There are currently no student records to display ID cards for."}
-            </CardDescription>
-          </CardContent>
-        </Card>
-      )}
-
-      {filteredAndSortedStudents.length > 0 && (
-        <div className="print-grid">
+      {filteredAndSortedStudents.length === 0 ? (
+        <div className="flex items-center justify-center pt-10">
+            <Card className="shadow-lg mt-6 w-full max-w-lg">
+              <CardHeader className="items-center text-center">
+                <AlertTriangle className="h-10 w-10 text-amber-500 mb-2" />
+                <CardTitle className="text-xl">No Matching Students</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-center">
+                  No students were found that match your current filter criteria.
+                </CardDescription>
+              </CardContent>
+            </Card>
+        </div>
+      ) : (
+        <div className="id-card-grid-container p-4 md:p-6">
           {filteredAndSortedStudents.map(student => (
-            <div key={student.id} className="id-card-container">
+            <div key={student.id} className="id-card-wrapper">
               <StudentIdCard student={student} />
             </div>
           ))}
@@ -235,43 +232,50 @@ export default function ViewAllIdCardsPage() {
       )}
 
       <style jsx global>{`
-        .print-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
-          gap: 1.5rem; 
+        .id-card-grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 85.6mm);
+            gap: 10mm;
+            justify-content: center;
         }
-        
-        .id-card-container {
-          /* Styles for individual card wrapper in the grid view */
+
+        .id-card-wrapper {
+            display: flex;
+            justify-content: center;
         }
 
         @media print {
-          body {
-            -webkit-print-color-adjust: exact; 
-            print-color-adjust: exact; 
-            margin: 0.5cm; 
-            padding: 0;
-          }
-          .no-print {
-            display: none !important;
-          }
-          .print-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr; 
-            gap: 10mm 5mm; 
-            width: 100%;
-          }
-          .id-card-container {
-            page-break-inside: avoid !important; 
-            break-inside: avoid !important;
-            border: 1px solid #eee; 
-            transform: scale(0.95); 
-            transform-origin: top left;
-          }
-          .id-card-container > div { 
-             width: 100% !important;
-             max-width: 100% !important;
-          }
+            body {
+                background: white !important;
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important;
+            }
+            .print\\:hidden { display: none !important; }
+            .bg-gray-100 { background-color: white !important; }
+
+            @page {
+              size: A4 landscape;
+              margin: 10mm;
+            }
+
+            .id-card-grid-container {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-around;
+                align-content: space-around;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                gap: 0;
+            }
+            .id-card-wrapper {
+                width: 85.6mm;
+                height: 54mm;
+                margin: 4.5mm; /* Adjust for spacing */
+                box-shadow: none;
+                break-inside: avoid;
+                overflow: hidden;
+            }
         }
       `}</style>
     </div>
