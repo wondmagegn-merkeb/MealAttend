@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Shield, Cog, Users, Sparkles } from 'lucide-react';
+import { ArrowLeft, Shield, Cog, Users, Sparkles, QrCode, ClipboardList, UserCog, FileDown } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -29,6 +29,29 @@ const teamMembers = [
   },
 ];
 
+const features = [
+    {
+        icon: <QrCode className="h-6 w-6 text-accent" />,
+        title: "QR Code Scanning",
+        description: "Fast and touchless attendance tracking using individual QR codes."
+    },
+    {
+        icon: <UserCog className="h-6 w-6 text-accent" />,
+        title: "Student & User Management",
+        description: "Easily add, edit, and manage student and system user profiles."
+    },
+    {
+        icon: <ClipboardList className="h-6 w-6 text-accent" />,
+        title: "Comprehensive Dashboard",
+        description: "Get a real-time overview of attendance statistics and system activity."
+    },
+    {
+        icon: <FileDown className="h-6 w-6 text-accent" />,
+        title: "Reporting & Exports",
+        description: "Generate and export detailed attendance reports in PDF and Excel formats."
+    }
+];
+
 
 export default function InfoPage() {
   return (
@@ -48,13 +71,21 @@ export default function InfoPage() {
 
             {/* About the System Section */}
             <section className="text-left">
-              <div className="flex items-center gap-4 mb-4">
+              <div className="flex items-center gap-4 mb-6">
                  <Cog className="h-10 w-10 text-primary" />
-                 <h2 className="text-3xl font-semibold text-primary">About This System</h2>
+                 <h2 className="text-3xl font-semibold text-primary">System Features</h2>
               </div>
-              <p className="text-muted-foreground leading-relaxed">
-                  MealAttend is a comprehensive solution designed to streamline meal attendance tracking for educational institutions and organizations. By leveraging QR code technology, we eliminate manual processes, reduce errors, and provide real-time data insights. Our intuitive dashboard allows administrators to manage students, view attendance records, and generate detailed reports, ensuring an efficient and organized system for everyone.
-              </p>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {features.map((feature) => (
+                    <div key={feature.title} className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
+                        <div className="flex-shrink-0">{feature.icon}</div>
+                        <div>
+                            <h3 className="text-lg font-semibold text-foreground">{feature.title}</h3>
+                            <p className="text-sm text-muted-foreground">{feature.description}</p>
+                        </div>
+                    </div>
+                ))}
+              </div>
             </section>
 
             <Separator />
