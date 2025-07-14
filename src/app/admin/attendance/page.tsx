@@ -35,7 +35,7 @@ const fetchStudents = async (): Promise<Student[]> => {
 };
 
 const ALL_MEAL_TYPES: MealType[] = ["BREAKFAST", "LUNCH", "DINNER"];
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 5;
 
 interface ExportAttendanceRecord {
   studentId: string;
