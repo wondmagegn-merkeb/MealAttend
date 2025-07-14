@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
-const teamMembers = [
+const marketingTeam = [
   {
     name: 'Eleanor Vance',
     role: 'Marketing Lead',
@@ -23,6 +23,9 @@ const teamMembers = [
     bio: 'Wachemo University marketing graduate with a passion for digital outreach.',
     avatarHint: 'woman professional',
   },
+];
+
+const developmentTeam = [
   {
     name: 'Leo Maxwell',
     role: 'Full-Stack Developer',
@@ -119,18 +122,37 @@ export default function HomePage() {
                       MealAttend is proudly developed by <span className="font-semibold text-accent inline-flex items-center">AddisSpark <Sparkles className="ml-1 h-4 w-4" /></span>, an innovative startup dedicated to creating modern software solutions that solve real-world challenges. Our team is a blend of creative designers, skilled developers, and strategic thinkers.
                     </p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {teamMembers.map((member) => (
-                    <div key={member.name} className="flex flex-col items-center text-center">
+                
+                <div className="space-y-10">
+                  {/* Marketing Team */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
+                    {marketingTeam.map((member) => (
+                      <div key={member.name} className="flex flex-col items-center text-center">
                         <Avatar className="h-24 w-24 mb-4 border-4 border-primary/20">
-                            <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint={member.avatarHint} />
-                            <AvatarFallback>{member.name.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
+                          <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint={member.avatarHint} />
+                          <AvatarFallback>{member.name.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
                         </Avatar>
                         <h3 className="text-lg font-bold">{member.name}</h3>
                         <p className="text-sm text-accent font-semibold">{member.role}</p>
                         <p className="text-sm text-muted-foreground mt-2">{member.bio}</p>
-                    </div>
-                ))}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Development Team */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {developmentTeam.map((member) => (
+                      <div key={member.name} className="flex flex-col items-center text-center">
+                        <Avatar className="h-24 w-24 mb-4 border-4 border-primary/20">
+                          <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint={member.avatarHint} />
+                          <AvatarFallback>{member.name.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
+                        </Avatar>
+                        <h3 className="text-lg font-bold">{member.name}</h3>
+                        <p className="text-sm text-accent font-semibold">{member.role}</p>
+                        <p className="text-sm text-muted-foreground mt-2">{member.bio}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
             </section>
 
