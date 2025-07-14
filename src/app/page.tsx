@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { QrCode, ShieldCheck, Salad } from 'lucide-react';
+import { QrCode, ShieldCheck, Salad, Info } from 'lucide-react';
 
 export default function HomePage() {
   return (
@@ -26,6 +26,12 @@ export default function HomePage() {
             <Link href="/admin" className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5" />
               Admin Dashboard
+            </Link>
+          </Button>
+           <Button asChild variant="outline" size="lg" className="shadow-md hover:shadow-lg transition-shadow">
+            <Link href="/info" className="flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              Public Info
             </Link>
           </Button>
         </div>
