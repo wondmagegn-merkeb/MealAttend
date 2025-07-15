@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from 'next/image';
@@ -12,63 +13,69 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
   const cardTitle = "STUDENT ID";
 
   const qrDataToEncode = student.qrCodeData || student.studentId;
-  const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(qrDataToEncode)}`;
+  const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(qrDataToEncode)}&format=png`;
 
   return (
-    <div className="w-[85.6mm] h-[54mm] bg-card border border-border rounded-xl p-4 flex flex-col justify-between shadow-lg">
-      {/* Header */}
-      <div className="flex items-center justify-between pb-2 mb-2 border-b border-border">
-        <div className="w-10 h-10">
+    <div className="w-[85.6mm] h-[54mm] bg-gradient-to-tr from-blue-50 to-blue-100 border border-blue-800 rounded-lg p-[4mm] flex flex-col justify-between shadow-lg relative overflow-hidden font-sans">
+      <div className="absolute top-[-40%] left-[-40%] w-[200%] h-[200%] bg-radial-gradient-white-15 z-0 transform rotate-45"></div>
+      
+      <div className="relative z-10 flex flex-col h-full">
+        {/* Header */}
+        <div className="flex items-center justify-between pb-[1mm] mb-[1mm] border-b border-blue-900 h-[12mm]">
+          <div className="w-[10mm] h-[10mm] shrink-0">
             <Image 
-                src="https://placehold.co/40x40.png" 
+                src="https://placehold.co/40x40/1d4ed8/ffffff.png?text=TU" 
                 alt="School Logo"
                 width={40}
                 height={40}
-                className="rounded-full"
+                className="rounded-full object-cover"
                 data-ai-hint="university logo"
              />
+          </div>
+          <div className="flex-1 text-center text-xs font-bold text-blue-800 -ml-[9mm]">{schoolName}</div>
+          <div className="text-[7px] font-bold text-blue-800">{cardTitle}</div>
         </div>
-        <div className="text-center">
-            <p className="font-bold text-primary">{schoolName}</p>
-            <p className="text-xs text-muted-foreground">{cardTitle}</p>
-        </div>
-        <div className="w-10"></div>
-      </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex items-center gap-4">
-        {/* Profile Picture */}
-        <div className="w-24 h-32">
-             <Image 
-                src={student.profileImageURL || `https://placehold.co/100x130.png?text=${student.name.split(' ').map(n=>n[0]).join('')}`}
-                alt={`Photo of ${student.name}`}
+        {/* Main Content */}
+        <div className="flex flex-1 mt-[1mm] items-stretch gap-[3mm]">
+          <div className="flex-1 flex flex-col justify-start h-full">
+            <div className="flex items-center mb-[2mm]">
+              <div className="w-[16mm] h-[16mm] shrink-0 mr-[3mm]">
+                 <Image 
+                    src={student.profileImageURL || `https://placehold.co/100x100.png?text=${student.name.split(' ').map(n=>n[0]).join('')}`}
+                    alt={`Photo of ${student.name}`}
+                    width={100}
+                    height={100}
+                    className="w-full h-full object-cover rounded-md border border-gray-400"
+                    data-ai-hint="student profile"
+                 />
+              </div>
+              <div className="text-[9px] font-bold text-slate-800 break-words">{student.name}</div>
+            </div>
+            <div className="text-[7.5px] text-slate-700 space-y-[1mm]">
+              <div><strong>ID:</strong> {student.studentId}</div>
+              <div><strong>Grade:</strong> {student.classGrade || 'N/A'}</div>
+              <div><strong>Gender:</strong> {student.gender || 'N/A'}</div>
+            </div>
+          </div>
+
+          <div className="h-full aspect-square border border-slate-300 rounded p-[1mm] bg-white flex items-center justify-center shrink-0">
+             <Image
+                src={qrCodeImageUrl}
+                alt={`QR Code for ${student.name}`}
                 width={100}
-                height={130}
-                className="w-full h-full object-cover rounded-md"
-                data-ai-hint="student profile"
-             />
-        </div>
-        
-        {/* Details & QR */}
-        <div className="flex-1 flex flex-col justify-between h-full">
-            <div className="text-sm">
-                <p className="font-bold text-lg">{student.name}</p>
-                <p className="text-muted-foreground">ID: {student.studentId}</p>
-                <p className="text-muted-foreground">Grade: {student.classGrade || 'N/A'}</p>
-            </div>
-
-            <div className="w-24 h-24 self-end">
-               <Image
-                  src={qrCodeImageUrl}
-                  alt={`QR Code for ${student.name}`}
-                  width={100}
-                  height={100}
-                  className="rounded-lg"
-                  data-ai-hint="QR code"
-              />
-            </div>
+                height={100}
+                className="w-full h-full object-contain"
+                data-ai-hint="QR code"
+            />
+          </div>
         </div>
       </div>
+       <style jsx>{`
+        .bg-radial-gradient-white-15 {
+          background: radial-gradient(circle at center, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+        }
+      `}</style>
     </div>
   );
 }
