@@ -5,11 +5,17 @@ import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, ChevronLeft, ChevronRight, ListChecks, AlertTriangle } from "lucide-react";
+import { Loader2, Search, ChevronLeft, ChevronRight, ListChecks, AlertTriangle, Calendar as CalendarIcon, FilterX } from "lucide-react";
 import { ActivityLogTable } from "@/components/admin/activity/ActivityLogTable";
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import type { UserActivityLog } from '@/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+import type { DateRange } from 'react-day-picker';
+import { format, isWithinInterval, startOfDay, endOfDay, parseISO } from 'date-fns';
 
 const fetchActivityLogs = async (): Promise<UserActivityLog[]> => {
   const response = await fetch('/api/activity-log');
@@ -27,12 +33,33 @@ interface SortConfig {
   direction: SortDirection;
 }
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
+const ALL_ACTIONS = [
+    "LOGIN_SUCCESS",
+    "LOGIN_FAILURE",
+    "LOGOUT_SUCCESS",
+    "PASSWORD_CHANGE_SUCCESS",
+    "PROFILE_UPDATE_SUCCESS",
+    "ATTENDANCE_RECORD_SUCCESS",
+    "ATTENDANCE_FAILURE",
+    "STUDENT_CREATE_SUCCESS",
+    "STUDENT_UPDATE_SUCCESS",
+    "STUDENT_DELETE_SUCCESS",
+    "USER_CREATE_SUCCESS",
+    "USER_UPDATE_SUCCESS",
+    "USER_DELETE_SUCCESS",
+    "DEPARTMENT_CREATE_SUCCESS",
+    "DEPARTMENT_UPDATE_SUCCESS",
+    "DEPARTMENT_DELETE_SUCCESS",
+];
+
 
 export default function ActivityLogPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'activityTimestamp', direction: 'descending' });
   const [currentPage, setCurrentPage] = useState(1);
+  const [actionFilter, setActionFilter] = useState('all');
+  const [dateRangeFilter, setDateRangeFilter] = useState<DateRange | undefined>(undefined);
   const { currentUser } = useAuth();
   
   const { data: logs = [], isLoading: isLoadingLogs, error: logsError } = useQuery<UserActivityLog[]>({
@@ -53,20 +80,44 @@ export default function ActivityLogPage() {
     setSearchTerm(e.target.value);
     setCurrentPage(1);
   };
+  
+  const handleActionFilterChange = (value: string) => {
+    setActionFilter(value);
+    setCurrentPage(1);
+  };
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setActionFilter('all');
+    setDateRangeFilter(undefined);
+    setCurrentPage(1);
+  };
+
 
   const filteredAndSortedLogs = useMemo(() => {
     let processedLogs = [...logs];
 
-    // Implement role-based filtering
     if (currentUser?.role === 'User') {
         processedLogs = processedLogs.filter(log => log.userIdentifier === currentUser.userId);
+    }
+    
+    if (actionFilter !== 'all') {
+        processedLogs = processedLogs.filter(log => log.action === actionFilter);
+    }
+    
+    if (dateRangeFilter?.from) {
+        processedLogs = processedLogs.filter(log => {
+          const logDate = parseISO(log.activityTimestamp as unknown as string);
+          const fromDate = startOfDay(dateRangeFilter.from!);
+          const toDate = dateRangeFilter.to ? endOfDay(dateRangeFilter.to) : endOfDay(dateRangeFilter.from!);
+          return isWithinInterval(logDate, { start: fromDate, end: toDate });
+        });
     }
 
     if (searchTerm) {
       const lowerSearchTerm = searchTerm.toLowerCase();
       processedLogs = processedLogs.filter(log =>
         log.userIdentifier.toLowerCase().includes(lowerSearchTerm) ||
-        log.action.toLowerCase().includes(lowerSearchTerm) ||
         (log.details && log.details.toLowerCase().includes(lowerSearchTerm))
       );
     }
@@ -90,7 +141,7 @@ export default function ActivityLogPage() {
       });
     }
     return processedLogs;
-  }, [logs, searchTerm, sortConfig, currentUser]);
+  }, [logs, searchTerm, sortConfig, currentUser, actionFilter, dateRangeFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredAndSortedLogs.length / ITEMS_PER_PAGE));
   
@@ -128,22 +179,60 @@ export default function ActivityLogPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Activity Records</CardTitle>
-          <CardDescription>Browse activity logs.</CardDescription>
-          <div className="mt-4 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder={currentUser?.role === 'Admin' ? "Search by User ID, Action, or Details..." : "Search your actions or details..."}
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="pl-10 w-full sm:w-1/2 md:w-1/3"
-            />
+          <CardTitle>Filter & Search Logs</CardTitle>
+          <CardDescription>Use the filters below to narrow down the activity log records.</CardDescription>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 items-end">
+            <div className="relative">
+                <label className="text-sm font-medium text-muted-foreground">Search by User/Details</label>
+                <Search className="absolute left-3 bottom-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                type="search"
+                placeholder={currentUser?.role === 'Admin' ? "User ID or details..." : "Search details..."}
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="pl-10"
+                />
+            </div>
+            <div>
+                 <label htmlFor="action-filter" className="text-sm font-medium text-muted-foreground">Action Type</label>
+                 <Select value={actionFilter} onValueChange={handleActionFilterChange}>
+                    <SelectTrigger id="action-filter">
+                        <SelectValue placeholder="Filter by action" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Actions</SelectItem>
+                        {ALL_ACTIONS.map(action => (
+                            <SelectItem key={action} value={action}>
+                                {action.replace(/_/g, ' ')}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                 </Select>
+            </div>
+            <div>
+                <label htmlFor="date-range" className="text-sm font-medium text-muted-foreground">Date Range</label>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button id="date-range" variant={"outline"} className={cn("w-full justify-start text-left font-normal", !dateRangeFilter && "text-muted-foreground")}>
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dateRangeFilter?.from ? (dateRangeFilter.to ? (<>{format(dateRangeFilter.from, "LLL dd, y")} - {format(dateRangeFilter.to, "LLL dd, y")}</>) : (format(dateRangeFilter.from, "LLL dd, y"))) : (<span>Pick a date range</span>)}
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar initialFocus mode="range" defaultMonth={dateRangeFilter?.from} selected={dateRangeFilter} onSelect={setDateRangeFilter} numberOfMonths={2} />
+                    </PopoverContent>
+                </Popover>
+            </div>
+             <div className="flex gap-2">
+                 <Button onClick={clearFilters} variant="outline" className="w-full">
+                    <FilterX className="mr-2 h-4 w-4" /> Clear Filters
+                </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
           {isLoadingLogs ? (
-            <div className="flex justify-center items-center py-4">
+            <div className="flex justify-center items-center py-10">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
               <span className="ml-2">Loading logs...</span>
             </div>
@@ -187,7 +276,7 @@ export default function ActivityLogPage() {
             </div>
           )}
           {filteredAndSortedLogs.length === 0 && !isLoadingLogs && !logsError && (
-            <p className="text-center text-muted-foreground py-4">No activity logs match your current search criteria or no logs found.</p>
+            <p className="text-center text-muted-foreground py-10">No activity logs match your current search criteria or no logs found.</p>
           )}
         </CardContent>
       </Card>
