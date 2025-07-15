@@ -84,8 +84,8 @@ export default function StudentIdCardPage() {
   }
 
   return (
-    <div className="bg-muted/30 min-h-screen">
-       <div className="flex items-center justify-between mb-6 p-4 print:hidden" id="page-header">
+    <div className="space-y-6">
+       <div className="flex items-center justify-between mb-6 print:hidden" id="page-header">
          <div>
           <h2 className="text-3xl font-semibold tracking-tight text-primary">Student ID Card</h2>
           <p className="text-muted-foreground">Viewing ID card for {student?.name}.</p>
@@ -97,32 +97,40 @@ export default function StudentIdCardPage() {
                 Back to List
               </Link>
             </Button>
-             <Button onClick={handlePrint} size="lg">
-              <Printer className="mr-2 h-4 w-4" /> Print ID Card
-            </Button>
         </div>
       </div>
       
-      <div className="p-4 md:p-8 flex justify-center items-center">
-        {student && <StudentIdCard student={student} />}
-      </div>
-      
-      <div className="mt-6 flex justify-center print:hidden">
-        <Button onClick={handlePrint} size="lg" className="text-lg py-6 px-8">
-          <Printer className="mr-3 h-5 w-5" />
-          Print This ID Card
-        </Button>
+      <div id="printable-area" className="flex flex-col items-center justify-center">
+        <div className="p-4 md:p-8 flex justify-center items-center">
+            {student && <StudentIdCard student={student} />}
+        </div>
+        
+        <div className="mt-6 flex justify-center print:hidden">
+            <Button onClick={handlePrint} size="lg" className="text-lg py-6 px-8">
+            <Printer className="mr-3 h-5 w-5" />
+            Print This ID Card
+            </Button>
+        </div>
       </div>
 
       <style jsx global>{`
         @media print {
-          body {
-            background: none !important;
-            -webkit-print-color-adjust: exact !important; 
-            print-color-adjust: exact !important; 
+          body > * {
+            display: none !important;
           }
-          .print\\:hidden { display: none !important; }
-          .min-h-screen { min-height: 0 !important; }
+          body > #printable-area, 
+          body > #printable-area * {
+            display: block !important;
+          }
+          #printable-area {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
+          .print\\:hidden { 
+            display: none !important; 
+          }
         }
       `}</style>
     </div>
