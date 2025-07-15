@@ -274,6 +274,17 @@ export function QrScannerClient() {
                   <SelectContent><SelectItem value="BREAKFAST">Breakfast</SelectItem><SelectItem value="LUNCH">Lunch</SelectItem><SelectItem value="DINNER">Dinner</SelectItem></SelectContent>
                 </Select>
               </div>
+
+               <div className="space-y-2">
+                <Label htmlFor="manual-check" className="flex items-center gap-2"><Search className="h-4 w-4 text-muted-foreground" />Manual Status Check</Label>
+                <div className="flex gap-2">
+                    <Input id="manual-check" placeholder="Enter Student ID" value={manualStudentId} onChange={e => setManualStudentId(e.target.value)} disabled={isProcessing} />
+                    <Button onClick={handleManualCheck} disabled={isProcessing || !manualStudentId}>
+                        {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <Search className="h-4 w-4"/>}
+                    </Button>
+                </div>
+              </div>
+
               <div className="aspect-video w-full bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-primary/50 overflow-hidden relative">
                 <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
                 <canvas ref={canvasRef} style={{ display: 'none' }} />
@@ -293,15 +304,6 @@ export function QrScannerClient() {
                           </div>
                       </div>
                     )}
-                    <div className="absolute bottom-4 left-4 right-4 space-y-2 bg-background/80 p-3 rounded-md">
-                        <Label htmlFor="manual-check" className="flex items-center gap-2"><Search className="h-4 w-4 text-muted-foreground" />Manual Status Check</Label>
-                        <div className="flex gap-2">
-                            <Input id="manual-check" placeholder="Enter Student ID" value={manualStudentId} onChange={e => setManualStudentId(e.target.value)} disabled={isProcessing} />
-                            <Button onClick={handleManualCheck} disabled={isProcessing || !manualStudentId}>
-                                {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <Search className="h-4 w-4"/>}
-                            </Button>
-                        </div>
-                    </div>
                 </div>
               </div>
             </CardContent>
