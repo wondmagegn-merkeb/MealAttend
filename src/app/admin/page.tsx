@@ -79,7 +79,7 @@ export default function AdminDashboardPage() {
     if (!currentUser || !allActivityLogs.length) return [];
     return allActivityLogs
       .filter(log => log.userIdentifier === currentUser.userId)
-      .slice(0, 5);
+      .slice(0, 3);
   }, [currentUser, allActivityLogs]);
 
   const uniqueAdmissionYears = useMemo(() => {
@@ -292,7 +292,7 @@ export default function AdminDashboardPage() {
              <Card className="shadow-lg h-full">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><History className="h-5 w-5 text-primary"/> Your Recent Activity</CardTitle>
-                    <CardDescription>Your last 5 actions in the system.</CardDescription>
+                    <CardDescription>Your last 3 actions in the system.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {userActivity.length > 0 ? (
