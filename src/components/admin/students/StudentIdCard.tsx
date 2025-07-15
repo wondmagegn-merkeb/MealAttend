@@ -46,7 +46,7 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
                     alt={`Photo of ${student.name}`}
                     width={100}
                     height={100}
-                    className="w-full h-full object-cover rounded-md border border-gray-400"
+                    className="w-full h-full object-cover rounded-lg border border-gray-400"
                     data-ai-hint="student profile"
                  />
               </div>
@@ -59,7 +59,7 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
             </div>
           </div>
 
-          <div className="h-[21mm] w-[21mm] aspect-square border border-slate-300 rounded p-[1mm] bg-white flex items-center justify-center shrink-0">
+          <div className="h-[21mm] w-[21mm] aspect-square border border-slate-300 rounded-lg p-[1mm] bg-white flex items-center justify-center shrink-0">
              <Image
                 src={qrCodeImageUrl}
                 alt={`QR Code for ${student.name}`}
