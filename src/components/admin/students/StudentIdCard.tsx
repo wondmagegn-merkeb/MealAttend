@@ -62,7 +62,7 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
                     data-ai-hint="student profile"
                  />
               </div>
-              <div className="text-[9px] font-bold text-gray-800 dark:text-gray-100 break-words leading-tight">{student.name}</div>
+              <div className="text-[10px] font-bold text-gray-800 dark:text-gray-100 break-words leading-tight">{student.name}</div>
             </div>
             <div className="text-[8px] text-gray-700 dark:text-gray-300 space-y-[0.5mm]">
               <div><strong>ID:</strong> {student.studentId}</div>

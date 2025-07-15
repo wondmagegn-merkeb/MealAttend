@@ -85,7 +85,7 @@ export default function StudentIdCardPage() {
 
   return (
     <div className="space-y-6">
-       <div className="flex items-center justify-between mb-6 print:hidden" id="page-header">
+       <div className="flex items-center justify-between mb-6 print:hidden">
          <div>
           <h2 className="text-3xl font-semibold tracking-tight text-primary">Student ID Card</h2>
           <p className="text-muted-foreground">Viewing ID card for {student?.name}.</p>
@@ -100,12 +100,12 @@ export default function StudentIdCardPage() {
         </div>
       </div>
       
-      <div id="printable-area" className="flex flex-col items-center justify-center">
+      <div id="printable-area" className="flex flex-col items-center justify-center p-4 md:p-6 bg-muted/50 rounded-lg border">
         <div className="p-4 md:p-8 flex justify-center items-center">
             {student && <StudentIdCard student={student} />}
         </div>
         
-        <div className="mt-6 flex justify-center print:hidden">
+        <div className="mt-4 flex justify-center print:hidden">
             <Button onClick={handlePrint} size="lg" className="text-lg py-6 px-8">
             <Printer className="mr-3 h-5 w-5" />
             Print This ID Card
@@ -115,18 +115,22 @@ export default function StudentIdCardPage() {
 
       <style jsx global>{`
         @media print {
-          body > * {
-            display: none !important;
+          body * {
+            visibility: hidden;
           }
-          body > #printable-area, 
-          body > #printable-area * {
-            display: block !important;
+          #printable-area, 
+          #printable-area * {
+            visibility: visible;
           }
           #printable-area {
             position: absolute;
-            top: 50%;
             left: 50%;
+            top: 50%;
             transform: translate(-50%, -50%);
+            padding: 0 !important;
+            margin: 0 !important;
+            background: transparent !important;
+            border: none !important;
           }
           .print\\:hidden { 
             display: none !important; 
