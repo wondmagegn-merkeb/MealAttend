@@ -118,7 +118,7 @@ export default function HomePage() {
                     <h2 className="text-3xl font-semibold text-primary">Our Team</h2>
                 </div>
                  <div className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-6 mb-6">
-                    <Image src="/addisspark-logo.jpg alt="AddisSpark Logo" width={120} height={120} className="rounded-lg shadow-md" data-ai-hint="spark logo" />
+                    <Image src="/addisspark-logo.jpg" alt="AddisSpark Logo" width={120} height={120} className="rounded-lg shadow-md" data-ai-hint="spark logo" />
                     <p className="text-muted-foreground leading-relaxed flex-1">
                       MealAttend is proudly developed by <span className="font-semibold text-accent inline-flex items-center">AddisSpark <Sparkles className="ml-1 h-4 w-4" /></span>, an innovative startup dedicated to creating modern software solutions that solve real-world challenges. Our team is a blend of creative designers, skilled developers, and strategic thinkers.
                     </p>
