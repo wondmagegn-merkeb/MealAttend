@@ -36,7 +36,7 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
         <div className="flex items-center justify-between pb-[1mm] mb-[1mm] border-b border-primary/50 dark:border-primary/30 h-[12mm]">
           <div className="w-[10mm] h-[10mm] shrink-0">
             <Image 
-                src="/addisspark-logo.png" 
+                src="/addisspark-logo.jpg" 
                 alt="School Logo"
                 width={40}
                 height={40}
