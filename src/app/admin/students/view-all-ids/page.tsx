@@ -214,27 +214,29 @@ export default function ViewAllIdCardsPage() {
         </CardContent>
       </Card>
       
-      {filteredAndSortedStudents.length === 0 ? (
-        <Card className="shadow-lg print:hidden">
-             <CardHeader className="items-center text-center">
-                <AlertTriangle className="h-10 w-10 text-amber-500 mb-2" />
-                <CardTitle className="text-xl">No Matching Students</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-center">
-                  No students were found that match your current filter criteria.
-                </CardDescription>
-              </CardContent>
-        </Card>
-      ) : (
-        <div className="id-card-grid-container p-4 md:p-6 bg-muted/50 rounded-lg border">
-          {filteredAndSortedStudents.map(student => (
-            <div key={student.id} className="id-card-wrapper">
-              <StudentIdCard student={student} />
-            </div>
-          ))}
-        </div>
-      )}
+      <div id="printable-area">
+        {filteredAndSortedStudents.length === 0 ? (
+          <Card className="shadow-lg print:hidden">
+              <CardHeader className="items-center text-center">
+                  <AlertTriangle className="h-10 w-10 text-amber-500 mb-2" />
+                  <CardTitle className="text-xl">No Matching Students</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-center">
+                    No students were found that match your current filter criteria.
+                  </CardDescription>
+                </CardContent>
+          </Card>
+        ) : (
+          <div className="id-card-grid-container p-4 md:p-6 bg-muted/50 rounded-lg border">
+            {filteredAndSortedStudents.map(student => (
+              <div key={student.id} className="id-card-wrapper">
+                <StudentIdCard student={student} />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       <style jsx global>{`
         .id-card-grid-container {
@@ -257,10 +259,21 @@ export default function ViewAllIdCardsPage() {
               margin: 10mm;
             }
 
-            body > *:not(#page-container, #page-container *) {
-              display: none !important;
+            body * {
+                visibility: hidden;
+            }
+
+            #printable-area, #printable-area * {
+                visibility: visible;
             }
             
+            #printable-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+
             body {
                 background: white !important;
                 -webkit-print-color-adjust: exact !important; 
