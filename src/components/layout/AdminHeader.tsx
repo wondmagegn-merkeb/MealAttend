@@ -11,14 +11,45 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, UserCircle, Settings as SettingsIcon, Edit3 } from "lucide-react";
-import { Logo } from "@/components/shared/Logo";
+import { LogOut, UserCircle, Settings as SettingsIcon, Edit3, PanelLeft } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar"; 
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth"; 
+import { usePathname } from "next/navigation";
+import { useSidebar } from "../ui/sidebar";
+
+const getPageTitle = (pathname: string): string => {
+  if (pathname === '/admin') return 'Dashboard';
+  if (pathname.startsWith('/admin/attendance')) return 'Attendance';
+  if (pathname.startsWith('/admin/students/new')) return 'Add New Student';
+  if (pathname.startsWith('/admin/students/export')) return 'Export Students';
+  if (pathname.startsWith('/admin/students/view-all-ids')) return 'View All ID Cards';
+  if (pathname.includes('/edit')) {
+      if (pathname.startsWith('/admin/students')) return 'Edit Student';
+      if (pathname.startsWith('/admin/users')) return 'Edit User';
+      if (pathname.startsWith('/admin/departments')) return 'Edit Department';
+      if (pathname.startsWith('/admin/profile')) return 'Edit Profile';
+  }
+   if (pathname.includes('/id-card')) {
+      if (pathname.startsWith('/admin/students')) return 'Student ID Card';
+  }
+  if (pathname.startsWith('/admin/students')) return 'Students';
+  if (pathname.startsWith('/admin/users/new')) return 'Add New User';
+  if (pathname.startsWith('/admin/users')) return 'Users';
+  if (pathname.startsWith('/admin/departments/new')) return 'Add New Department';
+  if (pathname.startsWith('/admin/departments')) return 'Departments';
+  if (pathname.startsWith('/admin/activity-log')) return 'Activity Log';
+  if (pathname.startsWith('/admin/settings')) return 'Settings';
+  if (pathname.startsWith('/scan')) return 'QR Code Scanner';
+  
+  return 'MealAttend';
+};
+
 
 export function AdminHeader() {
   const { logout, currentUser } = useAuth(); 
+  const pathname = usePathname();
+  const pageTitle = getPageTitle(pathname);
 
   const userFullName = currentUser?.fullName || "User";
   const userEmail = currentUser?.email || "user@example.com";
@@ -31,9 +62,13 @@ export function AdminHeader() {
            <SidebarTrigger />
         </div>
         <div className="hidden md:block">
-          <Logo size="md" iconColorClass="text-primary" textColorClass="text-primary" />
+           <h1 className="text-xl font-semibold text-foreground">{pageTitle}</h1>
         </div>
       </div>
+      
+       <div className="flex-1 flex justify-center md:hidden">
+          <h1 className="text-xl font-semibold text-foreground">{pageTitle}</h1>
+       </div>
 
       <div className="flex items-center gap-4">
         <DropdownMenu>
