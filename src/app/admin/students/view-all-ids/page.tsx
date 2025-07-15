@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Loader2, Printer, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Loader2, Printer, AlertTriangle, CreditCard, Filter } from 'lucide-react';
 import { StudentIdCard } from '@/components/admin/students/StudentIdCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -155,62 +155,68 @@ export default function ViewAllIdCardsPage() {
   }
 
   return (
-    <div className="bg-gray-100 min-h-screen">
-      <header className="mb-6 p-4 bg-background border-b print:hidden">
-         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 max-w-7xl mx-auto">
-            <div className="flex-grow">
-              <h1 className="text-3xl font-semibold tracking-tight text-primary">All Student ID Cards</h1>
-              <p className="text-muted-foreground">Filter by grade and year, then print the selection.</p>
-            </div>
-            <div className="flex flex-col sm:flex-row items-end gap-2 w-full sm:w-auto">
-              <div className="w-full sm:w-auto">
-                <Label htmlFor="class-filter" className="text-sm font-medium">Filter by Grade</Label>
-                <Select value={selectedClass} onValueChange={setSelectedClass}>
-                  <SelectTrigger id="class-filter" className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Select Grade" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Grades</SelectItem>
-                    {uniqueClasses.map(cls => (
-                      <SelectItem key={cls} value={cls}>{cls}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-               <div className="w-full sm:w-auto">
-                <Label htmlFor="year-filter" className="text-sm font-medium">Filter by Admission Year</Label>
-                <Select value={selectedYear} onValueChange={setSelectedYear}>
-                  <SelectTrigger id="year-filter" className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Select Year" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Years</SelectItem>
-                    {uniqueYears.map(year => (
-                      <SelectItem key={year} value={year}>{year}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-             <div className="flex flex-col sm:flex-row justify-end items-center gap-2 w-full sm:w-auto">
-                <Button variant="outline" asChild className="w-full sm:w-auto">
-                    <Link href="/admin/students">
-                      <ArrowLeft className="mr-2 h-4 w-4" />
-                      Back
-                    </Link>
-                  </Button>
-                  <Button onClick={handlePrint} disabled={filteredAndSortedStudents.length === 0} className="w-full sm:w-auto">
-                    <Printer className="mr-2 h-4 w-4" />
-                    Print ({filteredAndSortedStudents.length})
-                  </Button>
-            </div>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-3xl font-semibold tracking-tight text-primary flex items-center">
+            <CreditCard className="mr-3 h-8 w-8" /> All Student ID Cards
+          </h2>
+          <p className="text-muted-foreground">Filter by grade and year, then print the selection.</p>
         </div>
-      </header>
+        <div className="flex gap-2">
+            <Button variant="outline" asChild>
+                <Link href="/admin/students">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back
+                </Link>
+            </Button>
+            <Button onClick={handlePrint} disabled={filteredAndSortedStudents.length === 0}>
+                <Printer className="mr-2 h-4 w-4" />
+                Print ({filteredAndSortedStudents.length})
+            </Button>
+        </div>
+      </div>
 
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Filter className="h-5 w-5"/> Filter Options</CardTitle>
+          <CardDescription>Select filters to apply to the ID card list below.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="class-filter">Filter by Grade</Label>
+            <Select value={selectedClass} onValueChange={setSelectedClass}>
+              <SelectTrigger id="class-filter">
+                <SelectValue placeholder="Select Grade" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Grades</SelectItem>
+                {uniqueClasses.map(cls => (
+                  <SelectItem key={cls} value={cls}>{cls}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="year-filter">Filter by Admission Year</Label>
+            <Select value={selectedYear} onValueChange={setSelectedYear}>
+              <SelectTrigger id="year-filter">
+                <SelectValue placeholder="Select Year" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Years</SelectItem>
+                {uniqueYears.map(year => (
+                  <SelectItem key={year} value={year}>{year}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+      
       {filteredAndSortedStudents.length === 0 ? (
-        <div className="flex items-center justify-center pt-10">
-            <Card className="shadow-lg mt-6 w-full max-w-lg">
-              <CardHeader className="items-center text-center">
+        <Card className="shadow-lg">
+             <CardHeader className="items-center text-center">
                 <AlertTriangle className="h-10 w-10 text-amber-500 mb-2" />
                 <CardTitle className="text-xl">No Matching Students</CardTitle>
               </CardHeader>
@@ -219,10 +225,9 @@ export default function ViewAllIdCardsPage() {
                   No students were found that match your current filter criteria.
                 </CardDescription>
               </CardContent>
-            </Card>
-        </div>
+        </Card>
       ) : (
-        <div className="id-card-grid-container p-4 md:p-6">
+        <div className="id-card-grid-container p-4 md:p-6 bg-muted/50 rounded-lg border">
           {filteredAndSortedStudents.map(student => (
             <div key={student.id} className="id-card-wrapper">
               <StudentIdCard student={student} />
@@ -245,6 +250,14 @@ export default function ViewAllIdCardsPage() {
         }
 
         @media print {
+            body > * {
+                display: none !important;
+            }
+            body > .id-card-grid-container, 
+            body > .id-card-grid-container * {
+                display: block !important;
+            }
+            
             body {
                 background: white !important;
                 -webkit-print-color-adjust: exact !important; 
@@ -259,7 +272,10 @@ export default function ViewAllIdCardsPage() {
             }
 
             .id-card-grid-container {
-                display: flex;
+                position: absolute;
+                top: 0;
+                left: 0;
+                display: flex !important;
                 flex-wrap: wrap;
                 justify-content: space-around;
                 align-content: space-around;
@@ -267,12 +283,14 @@ export default function ViewAllIdCardsPage() {
                 height: 100%;
                 padding: 0;
                 gap: 0;
+                background-color: transparent !important;
+                border: none !important;
             }
             .id-card-wrapper {
                 width: 85.6mm;
                 height: 54mm;
                 margin: 4.5mm; /* Adjust for spacing */
-                box-shadow: none;
+                box-shadow: none !important;
                 break-inside: avoid;
                 overflow: hidden;
             }
