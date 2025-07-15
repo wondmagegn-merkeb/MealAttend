@@ -5,6 +5,7 @@
   "/admin/departments/page": "app/admin/departments/page.js",
   "/admin/page": "app/admin/page.js",
   "/admin/students/page": "app/admin/students/page.js",
+  "/admin/students/view-all-ids/page": "app/admin/students/view-all-ids/page.js",
   "/admin/users/page": "app/admin/users/page.js",
   "/api/activity-log/route": "app/api/activity-log/route.js",
   "/api/attendance/route": "app/api/attendance/route.js",
