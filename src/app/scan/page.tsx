@@ -16,7 +16,7 @@ export default function ScanPage() {
                 </Button>
             </Link>
         </header>
-        <main className="flex-1 flex justify-center p-4 sm:p-8">
+        <main className="flex-1 flex justify-center p-4 sm:p-8 pt-0">
             <QrScannerClient />
         </main>
       </div>
