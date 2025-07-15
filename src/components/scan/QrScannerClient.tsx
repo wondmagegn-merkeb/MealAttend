@@ -247,7 +247,7 @@ export function QrScannerClient() {
   }, [toast, attemptAutoScan]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start w-full max-w-6xl mx-auto my-auto">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start w-full max-w-6xl mx-auto">
         {/* Left Column: Scan Result Display */}
         <div className="w-full">
             <ScanResultDisplay 
@@ -309,7 +309,7 @@ export function QrScannerClient() {
             </CardContent>
             <CardFooter className="flex flex-col gap-3">
               {isProcessing && (<div className="flex items-center text-primary"><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Processing... Please Wait</span></div>)}
-              <p className="text-xs text-muted-foreground text-center">{hasCameraPermission ? "Auto-scanning active. Point camera at QR code." : "Manual check available above."}</p>
+              {hasCameraPermission && <p className="text-xs text-muted-foreground text-center">Auto-scanning active. Point camera at QR code.</p>}
             </CardFooter>
           </Card>
         </div>
