@@ -77,7 +77,7 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
                 alt={`QR Code for ${student.name}`}
                 width={100}
                 height={100}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain rounded-md border-2 border-white dark:border-slate-600 shadow-md"
                 data-ai-hint="QR code"
             />
           </div>

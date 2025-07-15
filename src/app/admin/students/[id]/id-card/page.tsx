@@ -2,7 +2,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -84,7 +84,7 @@ export default function StudentIdCardPage() {
   }
 
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="bg-muted/30 min-h-screen">
        <div className="flex items-center justify-between mb-6 p-4 print:hidden" id="page-header">
          <div>
           <h2 className="text-3xl font-semibold tracking-tight text-primary">Student ID Card</h2>
@@ -105,6 +105,13 @@ export default function StudentIdCardPage() {
       
       <div className="p-4 md:p-8 flex justify-center items-center">
         {student && <StudentIdCard student={student} />}
+      </div>
+      
+      <div className="mt-6 flex justify-center print:hidden">
+        <Button onClick={handlePrint} size="lg" className="text-lg py-6 px-8">
+          <Printer className="mr-3 h-5 w-5" />
+          Print This ID Card
+        </Button>
       </div>
 
       <style jsx global>{`
