@@ -16,7 +16,7 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
   const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(qrDataToEncode)}&format=png`;
 
   return (
-    <div className="w-[85.6mm] h-[54mm] bg-white border border-gray-300 rounded-lg p-[4mm] flex flex-col justify-between shadow-lg relative overflow-hidden font-sans">
+    <div className="w-[85.6mm] h-[54mm] bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg p-[4mm] flex flex-col justify-between shadow-lg relative overflow-hidden font-sans">
       {/* Background pattern */}
       <div
         className="absolute inset-0 w-full h-full bg-gradient-to-br from-primary/10 via-background to-accent/5"
@@ -42,8 +42,8 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
                 data-ai-hint="university logo"
              />
           </div>
-          <div className="flex-1 text-center text-[11px] font-bold text-primary/80 -ml-[9mm] tracking-wider">{schoolName}</div>
-          <div className="text-[8px] font-bold text-primary/80">{cardTitle}</div>
+          <div className="flex-1 text-center text-[10px] font-bold text-primary/80 dark:text-primary/90 -ml-[9mm] tracking-wider">{schoolName}</div>
+          <div className="text-[8px] font-bold text-primary/80 dark:text-primary/90">{cardTitle}</div>
         </div>
 
         {/* Main Content */}
@@ -56,20 +56,20 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
                     alt={`Photo of ${student.name}`}
                     width={100}
                     height={100}
-                    className="w-full h-full object-cover rounded-md border-2 border-white shadow-md"
+                    className="w-full h-full object-cover rounded-md border-2 border-white dark:border-slate-600 shadow-md"
                     data-ai-hint="student profile"
                  />
               </div>
-              <div className="text-[11px] font-bold text-gray-800 break-words leading-tight">{student.name}</div>
+              <div className="text-[10px] font-bold text-gray-800 dark:text-gray-100 break-words leading-tight">{student.name}</div>
             </div>
-            <div className="text-[9px] text-gray-700 space-y-[0.5mm]">
+            <div className="text-[9px] text-gray-700 dark:text-gray-300 space-y-[0.5mm]">
               <div><strong>ID:</strong> {student.studentId}</div>
               <div><strong>Grade:</strong> {student.classGrade || 'N/A'}</div>
               <div><strong>Gender:</strong> {student.gender || 'N/A'}</div>
             </div>
           </div>
 
-          <div className="h-full aspect-square border border-slate-300 rounded p-[1mm] bg-white/80 flex items-center justify-center shrink-0">
+          <div className="h-full aspect-square border border-slate-300 dark:border-slate-600 rounded p-[1mm] bg-white/80 dark:bg-white/90 flex items-center justify-center shrink-0">
              <Image
                 src={qrCodeImageUrl}
                 alt={`QR Code for ${student.name}`}
