@@ -10,17 +10,14 @@ import { useAuth } from '@/hooks/useAuth';
 export function QuickActions() {
     const { currentUserRole } = useAuth();
 
-    const actions = [
-        { href: '/admin/attendance', label: 'View Attendance', icon: BookUser, role: 'User' },
-        { href: '/admin/students/new', label: 'Add New Student', icon: PlusCircle, role: 'User' },
-        { href: '/admin/students', label: 'Manage Students', icon: UsersRound, role: 'User' },
-    ];
-    
-    const adminActions = [
-        { href: '/admin/users/new', label: 'Add New User', icon: PlusCircle, role: 'Admin' },
+    const allActions = [
+        { href: '/admin/attendance', label: 'View Attendance', icon: BookUser, roles: ['Admin', 'User'] },
+        { href: '/admin/students/new', label: 'Add New Student', icon: PlusCircle, roles: ['Admin', 'User'] },
+        { href: '/admin/students', label: 'Manage Students', icon: UsersRound, roles: ['Admin', 'User'] },
+        { href: '/admin/users/new', label: 'Add New User', icon: PlusCircle, roles: ['Admin'] },
     ];
 
-    const displayActions = currentUserRole === 'Admin' ? [...actions, ...adminActions] : actions;
+    const availableActions = allActions.filter(action => currentUserRole && action.roles.includes(currentUserRole));
 
     return (
         <Card className="shadow-lg">
@@ -30,17 +27,9 @@ export function QuickActions() {
             </CardHeader>
             <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {actions.map(action => (
+                    {availableActions.map(action => (
                          <Link href={action.href} key={action.href} legacyBehavior>
                             <a className="flex flex-col items-center justify-center p-4 bg-muted/50 hover:bg-muted rounded-lg transition-colors text-center space-y-2">
-                                <action.icon className="h-8 w-8 text-primary" />
-                                <span className="text-sm font-medium text-muted-foreground">{action.label}</span>
-                            </a>
-                        </Link>
-                    ))}
-                     {currentUserRole === 'Admin' && adminActions.map(action => (
-                         <Link href={action.href} key={action.href} legacyBehavior>
-                             <a className="flex flex-col items-center justify-center p-4 bg-muted/50 hover:bg-muted rounded-lg transition-colors text-center space-y-2">
                                 <action.icon className="h-8 w-8 text-primary" />
                                 <span className="text-sm font-medium text-muted-foreground">{action.label}</span>
                             </a>
@@ -51,5 +40,3 @@ export function QuickActions() {
         </Card>
     )
 }
-
-    
