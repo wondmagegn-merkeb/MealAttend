@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, AlertTriangle, Printer } from 'lucide-react';
 import { StudentIdCard } from '@/components/admin/students/StudentIdCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
 import type { Student } from '@/types';
 
 const fetchStudent = async (id: string): Promise<Student> => {
@@ -23,9 +22,7 @@ const fetchStudent = async (id: string): Promise<Student> => {
 
 export default function StudentIdCardPage() {
   const params = useParams();
-  const router = useRouter(); 
   const searchParams = useSearchParams();
-  const { toast } = useToast();
   const studentInternalId = typeof params.id === 'string' ? params.id : undefined;
   const [autoPrintTriggered, setAutoPrintTriggered] = useState(false);
 
@@ -87,49 +84,38 @@ export default function StudentIdCardPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-xl mx-auto py-8 px-4 print:py-0 print:px-0">
-      <div className="flex items-center justify-between mb-6 print:hidden" id="page-header">
-        <div>
+    <div className="bg-gray-100 min-h-screen">
+       <div className="flex items-center justify-between mb-6 p-4 print:hidden" id="page-header">
+         <div>
           <h2 className="text-3xl font-semibold tracking-tight text-primary">Student ID Card</h2>
           <p className="text-muted-foreground">Viewing ID card for {student?.name}.</p>
         </div>
-        <Button variant="outline" asChild>
-          <Link href="/admin/students">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to List
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+            <Button variant="outline" asChild>
+              <Link href="/admin/students">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to List
+              </Link>
+            </Button>
+             <Button onClick={handlePrint} size="lg">
+              <Printer className="mr-2 h-4 w-4" /> Print ID Card
+            </Button>
+        </div>
       </div>
       
-      {student && <StudentIdCard student={student} />}
-
-      <div className="flex justify-center mt-6 print:hidden" id="print-button-container">
-        <Button onClick={handlePrint} size="lg">
-          <Printer className="mr-2 h-4 w-4" /> Print ID Card
-        </Button>
+      <div className="p-4 md:p-8 flex justify-center items-center">
+        {student && <StudentIdCard student={student} />}
       </div>
 
       <style jsx global>{`
         @media print {
           body {
-            -webkit-print-color-adjust: exact; 
-            print-color-adjust: exact; 
+            background: none !important;
+            -webkit-print-color-adjust: exact !important; 
+            print-color-adjust: exact !important; 
           }
-          .print\\:hidden {
-            display: none !important;
-          }
-          .print\\:py-0 {
-            padding-top: 0 !important;
-            padding-bottom: 0 !important;
-          }
-          .print\\:px-0 {
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-          }
-          .max-w-xl {
-            max-width: 100% !important;
-            width: 100% !important;
-          }
+          .print\\:hidden { display: none !important; }
+          .min-h-screen { min-height: 0 !important; }
         }
       `}</style>
     </div>

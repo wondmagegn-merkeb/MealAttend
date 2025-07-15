@@ -11,8 +11,8 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { Loader2, Upload } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { UserWithDepartment, Department } from '@/types';
 import { useToast } from "@/hooks/use-toast";
@@ -65,6 +65,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   const { toast } = useToast();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: availableDepartments = [], isLoading: isLoadingDepartments } = useQuery<Department[]>({
       queryKey: ['departments'],
@@ -243,10 +244,22 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                     <AvatarImage src={imagePreview || `https://placehold.co/80x80.png?text=No+Img`} alt="Profile preview" className="object-cover" data-ai-hint="user avatar" />
                     <AvatarFallback>IMG</AvatarFallback>
                 </Avatar>
-                <FormControl><Input type="file" accept="image/*" onChange={handleImageChange} className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" disabled={isLoading} /></FormControl>
+                <Input 
+                  id="picture" 
+                  type="file" 
+                  className="hidden" 
+                  ref={fileInputRef} 
+                  onChange={handleImageChange}
+                  accept="image/*"
+                  disabled={isLoading}
+                />
+                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isLoading}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  {selectedFile ? 'Change Image' : 'Upload Image'}
+                </Button>
               </div>
               <FormDescription>
-                 Select an image (max 2MB). It will be processed on submission.
+                 {selectedFile ? `Selected: ${selectedFile.name}` : "Select an image (max 2MB)."} It will be processed on submission.
               </FormDescription>
               <FormField control={form.control} name="profileImageURL" render={({ field }) => <Input type="hidden" {...field} />} />
               {form.formState.errors.profileImageURL && (<FormMessage>{(form.formState.errors.profileImageURL as any).message}</FormMessage>)}

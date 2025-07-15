@@ -25,7 +25,7 @@ export function AdminHeader() {
   const userAvatar = currentUser?.profileImageURL;
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 backdrop-blur-md px-4 sm:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 backdrop-blur-md px-4 sm:px-6">
       <div className="flex items-center gap-4">
         <div className="md:hidden">
            <SidebarTrigger />

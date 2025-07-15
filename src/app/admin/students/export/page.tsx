@@ -8,12 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Loader2, FileText, FileSpreadsheet, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import type { Student } from '@/types';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const fetchStudents = async (): Promise<Student[]> => {
     const response = await fetch('/api/students');
@@ -311,7 +312,38 @@ export default function ExportStudentsPage() {
             <p className="text-center text-muted-foreground py-4">No students match your filter criteria.</p>
           ) : (
             <>
-            <div className="overflow-x-auto rounded-md border">
+            {/* Mobile View */}
+            <div className="md:hidden space-y-4">
+                {currentTableData.map(student => (
+                <Card key={student.id} className="shadow-sm">
+                    <CardHeader>
+                    <div className="flex items-center gap-4">
+                        <Avatar className="h-10 w-10">
+                            <AvatarImage src={student.profileImageURL || undefined} alt={student.name} data-ai-hint="student profile" />
+                            <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <CardTitle className="text-base">{student.name}</CardTitle>
+                            <CardDescription>{student.studentId}</CardDescription>
+                        </div>
+                    </div>
+                    </CardHeader>
+                    <CardContent className="space-y-1 text-sm">
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Grade:</span>
+                            <span>{student.classGrade || 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Gender:</span>
+                            <span>{student.gender || 'N/A'}</span>
+                        </div>
+                    </CardContent>
+                </Card>
+                ))}
+            </div>
+
+            {/* Desktop View */}
+            <div className="hidden md:block overflow-x-auto rounded-md border">
               <table className="min-w-full divide-y divide-border text-sm">
                 <thead className="bg-muted/50">
                   <tr>
@@ -333,6 +365,7 @@ export default function ExportStudentsPage() {
                 </tbody>
               </table>
             </div>
+
             {filteredStudents.length > ITEMS_PER_PAGE_DISPLAY && (
               <div className="flex items-center justify-between pt-4 mt-4 border-t">
                 <p className="text-sm text-muted-foreground">

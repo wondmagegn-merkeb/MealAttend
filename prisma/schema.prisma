@@ -1,49 +1,54 @@
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Department {
   id           String @id @default(cuid())
   departmentId String @unique
   name         String @unique
-
-  users User[]
+  users        User[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model User {
-  id                     String    @id @default(cuid())
-  userId                 String    @unique
+  id                     String      @id @default(cuid())
+  userId                 String      @unique
   fullName               String
-  email                  String    @unique
+  email                  String      @unique
   password               String
-  role                   String
-  status                 String
+  role                   String // "Admin" or "User"
+  status                 String // "Active" or "Inactive"
   departmentId           String?
-  passwordChangeRequired Boolean   @default(true)
+  department             Department? @relation(fields: [departmentId], references: [id])
+  passwordChangeRequired Boolean     @default(false)
   profileImageURL        String?
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @updatedAt
-  department             Department?   @relation(fields: [departmentId], references: [id])
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
   activityLogs           ActivityLog[]
+  passwordResetToken   String?     @unique
+  passwordResetExpires DateTime?
 }
 
 model Student {
-  id              String    @id @default(cuid())
-  studentId       String    @unique
-  name            String
-  gender          String?
-  classGrade      String?
-  profileImageURL String?
-  qrCodeData      String?   @unique
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
+  id                String             @id @default(cuid())
+  studentId         String             @unique
+  name              String
+  gender            String?
+  classGrade        String?
+  profileImageURL   String?
+  qrCodeData        String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
   attendanceRecords AttendanceRecord[]
 }
 
@@ -51,27 +56,27 @@ model AttendanceRecord {
   id                 String   @id @default(cuid())
   attendanceId       String   @unique
   studentId          String
-  mealType           String
-  status             String
+  student            Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  mealType           String // "BREAKFAST", "LUNCH", "DINNER"
+  status             String // "PRESENT", "ABSENT"
   recordDate         DateTime
-  scannedAtTimestamp DateTime
-
-  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  scannedAtTimestamp DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
 model ActivityLog {
   id                String   @id @default(cuid())
   logId             String   @unique
-  userIdentifier    String
-  userId            String?
+  userIdentifier    String   // This could be a userId or an email for failed logins
+  userId            String?  // Foreign key to the User table
+  user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   action            String
   details           String?
   activityTimestamp DateTime @default(now())
-
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model IdCounter {
-  type  String @id
+  type  String @id // e.g., 'STUDENT', 'USER', 'DEPARTMENT'
   count Int
 }

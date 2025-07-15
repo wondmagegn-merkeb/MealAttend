@@ -21,8 +21,6 @@ interface AuthGuardProps {
 export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
   const { 
     isAuthenticated, 
-    setIsAuthenticated, 
-    currentUserId, 
     currentUserRole, 
     isPasswordChangeRequired 
   } = useAuth();
@@ -30,50 +28,52 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
   const pathname = usePathname();
 
   useEffect(() => {
+    // Wait until the auth state is determined.
     if (isAuthenticated === null) {
-      // Still determining auth state, do nothing until it's resolved by useAuth's own useEffect
       return;
     }
 
-    if (!isAuthenticated && !AUTH_FLOW_PATHS.includes(pathname)) {
+    const isAuthFlowPage = AUTH_FLOW_PATHS.includes(pathname);
+
+    // If not authenticated and not on a public auth flow page, redirect to login.
+    if (!isAuthenticated && !isAuthFlowPage) {
       router.replace('/auth/login');
       return;
     }
 
     if (isAuthenticated) {
+      // If password change is required, force user to the change password page.
       if (isPasswordChangeRequired && pathname !== '/auth/change-password') {
         router.replace('/auth/change-password');
         return;
       }
-
-      if (!isPasswordChangeRequired && pathname === '/auth/change-password') {
-        // If somehow user lands on change-password but doesn't need to, redirect
-        router.replace('/admin');
-        return;
-      }
       
-      if (PUBLIC_PATHS.includes(pathname)) {
-        // If logged in and on a public-only page like login, redirect to dashboard
+      // If on an auth flow page but password change is NOT required, redirect to dashboard.
+      if (!isPasswordChangeRequired && isAuthFlowPage) {
         router.replace('/admin');
         return;
       }
 
+      // If the page requires a specific role and the user doesn't have it, deny access.
       if (requiredRole && currentUserRole !== requiredRole) {
-        // User is authenticated but doesn't have the required role
         toast({
           title: "Access Denied",
           description: "You do not have permission to view this page.",
           variant: "destructive"
         });
-        router.replace('/admin'); // Or a dedicated access-denied page
+        router.replace('/admin');
         return;
       }
     }
-  }, [isAuthenticated, pathname, router, setIsAuthenticated, requiredRole, currentUserRole, currentUserId, isPasswordChangeRequired]);
+  }, [isAuthenticated, isPasswordChangeRequired, currentUserRole, pathname, router, requiredRole]);
 
+  // Show a loading screen while auth state is being determined or a redirect is imminent.
+  const isLoading = isAuthenticated === null || 
+                   (!isAuthenticated && !AUTH_FLOW_PATHS.includes(pathname)) ||
+                   (isAuthenticated && isPasswordChangeRequired && pathname !== '/auth/change-password') ||
+                   (isAuthenticated && requiredRole && currentUserRole !== requiredRole);
 
-  // Show a full-screen loader while authentication state is being determined.
-  if (isAuthenticated === null && !AUTH_FLOW_PATHS.includes(pathname)) {
+  if (isLoading) {
     return (
       <div className="flex flex-col justify-center items-center h-screen bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
@@ -81,28 +81,7 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
       </div>
     );
   }
-  
-  // Show a loader while redirecting for password change.
-  if (isAuthenticated === true && isPasswordChangeRequired && pathname !== '/auth/change-password') {
-     return (
-      <div className="flex flex-col justify-center items-center h-screen bg-background">
-        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <p className="text-muted-foreground">Redirecting to update password...</p>
-      </div>
-    );
-  }
 
-  // Show a loader while redirecting due to role mismatch.
-  if (isAuthenticated === true && requiredRole && currentUserRole !== requiredRole && !AUTH_FLOW_PATHS.includes(pathname) ) {
-     return (
-      <div className="flex flex-col justify-center items-center h-screen bg-background">
-        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <p className="text-muted-foreground">Checking permissions...</p>
-      </div>
-    );
-  }
-
-  // If authenticated (and password change not required or on the change page),
-  // or on a public path, or role check passes, render children.
+  // If all checks pass, render the children.
   return <>{children}</>;
 }

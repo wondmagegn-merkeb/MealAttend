@@ -16,8 +16,9 @@ import React from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { Department } from "@/types";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
-type SortableDepartmentKeys = 'id' | 'name'; 
+type SortableDepartmentKeys = 'departmentId' | 'name'; 
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -79,19 +80,44 @@ export function DepartmentsTable({ departments, onEdit, onDelete, sortConfig, on
 
   return (
     <TooltipProvider>
-      <div className="rounded-lg border shadow-sm bg-card">
+      {/* Mobile View */}
+      <div className="md:hidden space-y-4">
+        {departments.map((department) => (
+          <Card key={department.id} className="shadow-md">
+            <CardHeader>
+              <CardTitle className="text-lg">{department.name}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm text-muted-foreground">
+                <span className="font-semibold">ID:</span> {department.departmentId}
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={() => onEdit(department)}>
+                <Edit className="mr-2 h-4 w-4" /> Edit
+              </Button>
+              <Button variant="destructive" size="sm" onClick={() => handleDeleteClick(department)}>
+                <Trash2 className="mr-2 h-4 w-4" /> Delete
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+
+      {/* Desktop View */}
+      <div className="hidden md:block rounded-lg border shadow-sm bg-card">
         <Table>
           <TableHeader>
             <TableRow>
-              <SortableTableHead columnKey="id" className="w-[250px]">Department ID</SortableTableHead>
+              <SortableTableHead columnKey="departmentId">Department ID</SortableTableHead>
               <SortableTableHead columnKey="name">Name</SortableTableHead>
-              <TableHead className="text-right w-[100px]">Actions</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {departments.map((department) => (
               <TableRow key={department.id}>
-                <TableCell className="font-mono text-xs">{department.id}</TableCell>
+                <TableCell className="font-mono text-xs">{department.departmentId}</TableCell>
                 <TableCell className="font-medium">{department.name}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end items-center gap-1">

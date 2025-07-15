@@ -30,14 +30,33 @@ export default function ForgotPasswordPage() {
       return;
     }
 
-    setTimeout(() => {
-      toast({
-        title: "Reset Code Sent (Simulated)",
-        description: `If an account exists for ${email}, a reset code has been sent. Please check your inbox.`,
-      });
-      router.push(`/auth/reset-password?email=${encodeURIComponent(email)}`);
-      setIsLoading(false);
-    }, 1000);
+    try {
+        const response = await fetch('/api/auth/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to send reset email.');
+        }
+
+        toast({
+            title: "Reset Link Sent",
+            description: data.message,
+        });
+
+    } catch (error: any) {
+        toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive",
+        });
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   return (
@@ -52,7 +71,7 @@ export default function ForgotPasswordPage() {
               </div>
               <CardTitle className="text-3xl font-bold">Forgot Password?</CardTitle>
               <CardDescription className="text-muted-foreground">
-                No worries! Enter your email address below and we&apos;ll (simulate) send you a code to reset your password.
+                No worries! Enter your email address below and we&apos;ll send you a link to reset your password.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
@@ -76,7 +95,7 @@ export default function ForgotPasswordPage() {
                   ) : (
                     <Mail className="mr-2 h-5 w-5" />
                   )}
-                  Send Reset Code
+                  Send Reset Link
                 </Button>
               </form>
             </CardContent>

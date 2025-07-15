@@ -22,12 +22,12 @@ const navItemsBase = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, tooltip: 'Dashboard Overview' },
   { href: '/admin/attendance', label: 'Attendance', icon: BookUser, tooltip: 'Manage Attendance Records' },
   { href: '/admin/students', label: 'Students', icon: UsersRound, tooltip: 'Manage Students' }, 
+  { href: '/admin/activity-log', label: 'Activity Log', icon: History, tooltip: 'View User Activity' },
 ];
 
 const adminOnlyNavItems = [
   { href: '/admin/users', label: 'Users', icon: UsersIcon, tooltip: 'Manage Users (Admin)' },
   { href: '/admin/departments', label: 'Departments', icon: DepartmentIcon, tooltip: 'Manage Departments (Admin)' },
-  { href: '/admin/activity-log', label: 'Activity Log', icon: History, tooltip: 'View User Activity (Admin)' },
 ];
 
 const navItemsSettings = [
@@ -40,7 +40,7 @@ export function AdminSidebar() {
 
   let navItems = [...navItemsBase];
   if (currentUserRole === 'Admin') {
-    navItems.push(...adminOnlyNavItems);
+    navItems.splice(3, 0, ...adminOnlyNavItems); // Insert admin items before activity log
   }
   navItems.push(...navItemsSettings);
 

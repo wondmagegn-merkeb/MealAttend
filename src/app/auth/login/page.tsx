@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, LogIn, Salad, Eye, EyeOff } from 'lucide-react';
+import { Loader2, LogIn, Salad, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { REMEMBERED_EMAIL_KEY } from '@/lib/constants';
 
@@ -148,7 +148,13 @@ export default function LoginPage() {
                 </Button>
               </form>
             </CardContent>
-            <CardFooter className="flex-col items-center space-y-2 pt-6 p-0" />
+            <CardFooter className="flex justify-center pt-6 p-0">
+                <Link href="/" legacyBehavior>
+                  <Button variant="link" className="text-sm text-muted-foreground">
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home
+                  </Button>
+                </Link>
+            </CardFooter>
           </Card>
         </div>
       </div>

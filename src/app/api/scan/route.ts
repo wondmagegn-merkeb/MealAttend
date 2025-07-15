@@ -10,14 +10,22 @@ export const dynamic = 'force-dynamic';
 // Handle a QR code scan and record attendance
 export async function POST(request: Request) {
   try {
-    const { qrCodeData, mealType } = await request.json();
+    const { qrCodeData, mealType, studentId: manualStudentId } = await request.json();
 
-    if (!qrCodeData || !mealType) {
-      return NextResponse.json({ message: 'Missing qrCodeData or mealType' }, { status: 400 });
+    if (!mealType || (!qrCodeData && !manualStudentId)) {
+      return NextResponse.json({ message: 'Missing identifier (qrCodeData or studentId) or mealType' }, { status: 400 });
+    }
+    
+    let findCondition;
+    if (qrCodeData) {
+      findCondition = { qrCodeData: qrCodeData };
+    } else {
+      // Find student by their internal ID ('stu_...'), not the human-readable one.
+      findCondition = { id: manualStudentId };
     }
 
     const student = await prisma.student.findFirst({
-        where: { qrCodeData: qrCodeData },
+        where: findCondition,
     });
 
     if (!student) {

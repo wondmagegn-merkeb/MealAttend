@@ -28,6 +28,8 @@ const fetchDashboardData = async (): Promise<{ students: Student[], users: User[
         fetch('/api/activity-log')
     ]);
 
+    console.log("Dashboard data fetched successfully");
+
     if (!studentsRes.ok || !usersRes.ok || !attendanceRes.ok || !activityRes.ok) {
         throw new Error('Failed to fetch all dashboard data');
     }
@@ -321,7 +323,7 @@ export default function AdminDashboardPage() {
           <CardContent>
             {dailyAttendanceData.length > 0 && dailyAttendanceData.some(d => d.count > 0) ? (
               <ChartContainer config={attendanceChartConfig} className="h-[300px] w-full">
-                <LineChart data={dailyAttendanceData} accessibilityLayer margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                <LineChart data={dailyAttendanceData} accessibilityLayer margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                   <CartesianGrid vertical={false} strokeDasharray="3 3"/><XAxis dataKey="day" tickLine={false} tickMargin={10} axisLine={false} /><YAxis allowDecimals={false} tickLine={false} axisLine={false} width={30} /><ChartTooltip content={<ChartTooltipContent />} /><Line type="monotone" dataKey="count" stroke="var(--color-count)" strokeWidth={2} dot={{ r: 4, fill: "var(--color-count)" }} activeDot={{ r: 6, stroke: "var(--background)", fill: "var(--color-count)", strokeWidth: 2 }} />
                 </LineChart>
               </ChartContainer>
@@ -333,7 +335,7 @@ export default function AdminDashboardPage() {
           <CardContent>
             {monthlyAttendanceData.length > 0 && monthlyAttendanceData.some(m => m.count > 0) ? (
             <ChartContainer config={attendanceChartConfig} className="h-[300px] w-full">
-              <LineChart data={monthlyAttendanceData} accessibilityLayer margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+              <LineChart data={monthlyAttendanceData} accessibilityLayer margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                 <CartesianGrid vertical={false} strokeDasharray="3 3" /><XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} /><YAxis allowDecimals={false} tickLine={false} axisLine={false} width={30} /><ChartTooltip content={<ChartTooltipContent />} /><RechartsLegend content={<ChartLegendContent />} /><Line type="monotone" dataKey="count" stroke="var(--color-count)" strokeWidth={2} dot={{ r: 4, fill: "var(--color-count)" }} activeDot={{ r: 6, stroke: "var(--background)", fill: "var(--color-count)", strokeWidth: 2 }}/>
               </LineChart>
             </ChartContainer>

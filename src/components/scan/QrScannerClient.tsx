@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CheckCircle, AlertTriangle, Info, Loader2, Utensils, ScanLine, Search } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Info, Loader2, Utensils, ScanLine, Search, XCircle, UserPlus } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from 'date-fns';
 import jsQR from 'jsqr';
@@ -26,6 +26,59 @@ interface ResultState {
     type: 'success' | 'info' | 'error' | 'already_recorded';
 }
 
+const playBeep = () => {
+  try {
+    if (typeof window !== 'undefined' && window.AudioContext) {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      gainNode.gain.value = 0.1; 
+      oscillator.frequency.value = 880; 
+      oscillator.type = 'sine';
+
+      oscillator.start();
+      
+      setTimeout(() => {
+        oscillator.stop();
+        audioContext.close();
+      }, 150);
+    }
+  } catch (e) {
+    console.error("Could not play beep sound:", e);
+  }
+};
+
+const playWarningBeep = () => {
+  try {
+    if (typeof window !== 'undefined' && window.AudioContext) {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      gainNode.gain.value = 0.1; 
+      oscillator.frequency.value = 440; // Lower pitch for warning
+      oscillator.type = 'sawtooth'; // Harsher sound for warning
+
+      oscillator.start();
+      
+      setTimeout(() => {
+        oscillator.stop();
+        audioContext.close();
+      }, 250); // Slightly longer duration
+    }
+  } catch (e) {
+    console.error("Could not play warning beep sound:", e);
+  }
+};
+
+
 export function QrScannerClient() {
   const { toast } = useToast();
   const { currentUserId } = useAuth();
@@ -40,28 +93,29 @@ export function QrScannerClient() {
   const [lastResult, setLastResult] = useState<ResultState | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const processScanOrCheck = useCallback(async (identifier: { qrCodeData?: string; studentId?: string }) => {
+  const processScanOrCheck = useCallback(async (identifier: { qrCodeData?: string; studentId?: string }, isCheckOnly = false) => {
     if (isProcessing) return;
     setIsProcessing(true);
     setLastScanTime(Date.now());
     
     let response;
     try {
+      const endpoint = isCheckOnly ? '/api/attendance/check' : '/api/scan';
+      
+      let body: any = { mealType: selectedMealType };
       if (identifier.qrCodeData) {
-        response = await fetch('/api/scan', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ qrCodeData: identifier.qrCodeData, mealType: selectedMealType }),
-        });
+        body.qrCodeData = identifier.qrCodeData;
       } else if (identifier.studentId) {
-        response = await fetch('/api/attendance/check', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ studentId: identifier.studentId, mealType: selectedMealType }),
-        });
+        body.studentId = identifier.studentId;
       } else {
-        throw new Error("No identifier provided.");
+         throw new Error("No identifier provided.");
       }
+
+      response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
 
       const result = await response.json();
 
@@ -71,11 +125,14 @@ export function QrScannerClient() {
 
       if (result.success) {
           if (result.type === 'success') {
+              playBeep();
               toast({ title: "Attendance Recorded!", description: `${result.student?.name} marked as present for ${selectedMealType}.` });
               logUserActivity(currentUserId, "ATTENDANCE_RECORD_SUCCESS", `Student: ${result.student?.name}, Meal: ${selectedMealType}`);
           } else if (result.type === 'already_recorded') {
+               playWarningBeep();
                toast({ title: "Already Recorded", description: `${result.student?.name} has already been recorded.` });
           } else if (result.type === 'info') {
+               playBeep();
                toast({ title: "Student Found", description: `${result.student?.name} has not yet been recorded for this meal.` });
           }
           setLastResult({ student: result.student || null, record: result.record || null, message: result.message, type: result.type });
@@ -85,7 +142,7 @@ export function QrScannerClient() {
     } catch (error: any) {
         const errorMessage = error.message || 'Failed to process request.';
         toast({ title: "Scan/Search Error", description: errorMessage, variant: "destructive" });
-        logUserActivity(currentUserId, "ATTENDANCE_FAILURE", `Identifier: ${identifier.qrCodeData || identifier.studentId}. Error: ${errorMessage}`);
+        logUserActivity(currentUserId, "ATTENDANCE_FAILURE", `Identifier: ${JSON.stringify(identifier)}. Error: ${errorMessage}`);
         setLastResult({ student: null, record: null, message: errorMessage, type: 'error' });
     } finally {
         setIsProcessing(false);
@@ -98,8 +155,14 @@ export function QrScannerClient() {
         toast({ title: "Student ID Required", description: "Please enter a student ID to search." });
         return;
     }
-    processScanOrCheck({ studentId: manualStudentId });
-  }
+    // Perform a 'check' only, which won't create a record
+    processScanOrCheck({ studentId: manualStudentId }, true);
+  };
+  
+  const handleManualAdd = (studentInternalId: string) => {
+    // Perform a 'scan' action, which creates a record
+    processScanOrCheck({ studentId: studentInternalId }, false);
+  };
 
   const attemptAutoScan = useCallback(() => {
     if (!videoRef.current || !canvasRef.current || videoRef.current.paused || videoRef.current.ended) {
@@ -122,7 +185,7 @@ export function QrScannerClient() {
       const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
       const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
       if (code && code.data) {
-        processScanOrCheck({ qrCodeData: code.data });
+        processScanOrCheck({ qrCodeData: code.data }, false);
       }
     }
   }, [lastScanTime, processScanOrCheck]);
@@ -236,19 +299,31 @@ export function QrScannerClient() {
       </Card>
 
       <div className="mt-6 w-full">
-        <ScanResultDisplay result={lastResult} />
+        <ScanResultDisplay 
+          result={lastResult}
+          onClear={() => setLastResult(null)}
+          onAdd={handleManualAdd}
+          isProcessing={isProcessing}
+        />
       </div>
     </div>
   );
 }
 
-function ScanResultDisplay({ result }: { result: ResultState | null }) {
+interface ScanResultDisplayProps {
+  result: ResultState | null;
+  onClear: () => void;
+  onAdd: (studentInternalId: string) => void;
+  isProcessing: boolean;
+}
+
+function ScanResultDisplay({ result, onClear, onAdd, isProcessing }: ScanResultDisplayProps) {
     if (!result) return null;
 
     const getBorderColor = () => {
         switch (result.type) {
             case 'success': return 'border-green-500';
-            case 'already_recorded': return 'border-amber-500';
+            case 'already_recorded': return 'border-destructive';
             case 'info': return 'border-blue-500';
             case 'error': return 'border-destructive';
             default: return 'border-muted';
@@ -258,7 +333,7 @@ function ScanResultDisplay({ result }: { result: ResultState | null }) {
     const getIcon = () => {
        switch (result.type) {
             case 'success': return <CheckCircle className="h-6 w-6 text-green-500" />;
-            case 'already_recorded': return <Info className="h-6 w-6 text-amber-500" />;
+            case 'already_recorded': return <AlertTriangle className="h-6 w-6 text-destructive" />;
             case 'info': return <Info className="h-6 w-6 text-blue-500" />;
             case 'error': return <AlertTriangle className="h-6 w-6 text-destructive" />;
             default: return null;
@@ -284,7 +359,7 @@ function ScanResultDisplay({ result }: { result: ResultState | null }) {
                         </div>
                     </div>
                 ) : null}
-                <Alert variant={result.type === 'error' ? 'destructive' : 'default'} className="bg-muted/50">
+                <Alert variant={result.type === 'error' || result.type === 'already_recorded' ? 'destructive' : 'default'} className="bg-muted/50">
                     <AlertTitle>{result.message}</AlertTitle>
                     {result.record && result.record.scannedAtTimestamp && (
                         <AlertDescription>
@@ -293,8 +368,17 @@ function ScanResultDisplay({ result }: { result: ResultState | null }) {
                     )}
                 </Alert>
             </CardContent>
+            {result.type === 'info' && result.student && (
+                <CardFooter className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={onClear} disabled={isProcessing}>
+                        <XCircle className="mr-2 h-4 w-4" /> Cancel
+                    </Button>
+                    <Button onClick={() => onAdd(result.student!.id)} disabled={isProcessing}>
+                        {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <UserPlus className="mr-2 h-4 w-4" />}
+                        Add as Present
+                    </Button>
+                </CardFooter>
+            )}
         </Card>
     );
 }
-
-    

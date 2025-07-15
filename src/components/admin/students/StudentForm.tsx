@@ -23,9 +23,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2 } from "lucide-react"; 
+import { Loader2, Upload } from "lucide-react"; 
 import { Card, CardContent } from "@/components/ui/card";
 import type { Student } from "@prisma/client";
 import { useToast } from "@/hooks/use-toast";
@@ -86,6 +86,8 @@ export function StudentForm({
   const { toast } = useToast();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   const { classNumber: initialClassNumber, classAlphabet: initialClassAlphabet } = initialData?.classGrade
     ? parseClassGrade(initialData.classGrade)
@@ -309,23 +311,22 @@ export function StudentForm({
                   />
                   <AvatarFallback>IMG</AvatarFallback>
                 </Avatar>
-                <FormControl>
-                  <Input
-                    type="file"
-                    accept="image/*"
+                 <Input 
+                    id="picture" 
+                    type="file" 
+                    className="hidden" 
+                    ref={fileInputRef} 
                     onChange={handleImageChange}
-                    className="block w-full text-sm text-slate-500
-                      file:mr-4 file:py-2 file:px-4
-                      file:rounded-full file:border-0
-                      file:text-sm file:font-semibold
-                      file:bg-primary/10 file:text-primary
-                      hover:file:bg-primary/20"
+                    accept="image/*"
                     disabled={isLoading}
                   />
-                </FormControl>
+                  <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isLoading}>
+                    <Upload className="mr-2 h-4 w-4" />
+                    {selectedFile ? 'Change Image' : 'Upload Image'}
+                  </Button>
               </div>
               <FormDescription>
-                Select an image (max 2MB). It will be processed on submission.
+                {selectedFile ? `Selected: ${selectedFile.name}` : "Select an image (max 2MB)."} It will be processed on submission.
               </FormDescription>
               <FormField
                 control={form.control}

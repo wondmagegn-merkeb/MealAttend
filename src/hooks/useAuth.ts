@@ -168,6 +168,7 @@ export function useAuth(): AuthContextType {
         }
         
         const updatedUser: UserWithDepartment = data.user;
+        // Update state and local storage for immediate UI feedback
         setCurrentUser(updatedUser);
         localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(updatedUser));
         logUserActivity(currentUser.userId, "PROFILE_UPDATE_SUCCESS");

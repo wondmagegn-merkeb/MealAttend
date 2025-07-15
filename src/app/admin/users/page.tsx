@@ -153,9 +153,9 @@ export default function UsersPage() {
           <CardTitle>User List</CardTitle>
           <CardDescription>Browse and manage all registered users.</CardDescription>
            <div className="mt-4 flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-grow">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input type="search" placeholder="Search by ID, name, email, etc..." value={searchTerm} onChange={handleSearchChange} className="pl-10 w-full" />
+              <Input type="search" placeholder="Search by ID, name, email, etc..." value={searchTerm} onChange={handleSearchChange} className="pl-10 w-full sm:w-64 md:w-72" />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full sm:w-[180px]">

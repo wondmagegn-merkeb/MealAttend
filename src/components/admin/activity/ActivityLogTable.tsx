@@ -13,6 +13,7 @@ import { ChevronsUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { format, parseISO } from 'date-fns';
 import { cn } from "@/lib/utils";
 import type { UserActivityLog } from "@/types";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 type SortableActivityLogKeys = 'activityTimestamp' | 'userIdentifier' | 'action';
 type SortDirection = 'ascending' | 'descending';
@@ -58,29 +59,54 @@ export function ActivityLogTable({ logs, sortConfig, onSort }: ActivityLogTableP
   }
 
   return (
-    <div className="rounded-lg border shadow-sm bg-card">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <SortableTableHead columnKey="activityTimestamp" className="w-[200px]">Timestamp</SortableTableHead>
-            <SortableTableHead columnKey="userIdentifier" className="w-[250px]">User ID</SortableTableHead>
-            <SortableTableHead columnKey="action">Action</SortableTableHead>
-            <TableHead>Details</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {logs.map((log) => (
-            <TableRow key={log.id}>
-              <TableCell className="font-mono text-xs">
-                {format(parseISO(log.activityTimestamp as unknown as string), "MMM dd, yyyy, hh:mm:ss a")}
-              </TableCell>
-              <TableCell className="font-medium">{log.userIdentifier}</TableCell>
-              <TableCell>{log.action}</TableCell>
-              <TableCell className="text-sm text-muted-foreground">{log.details || 'N/A'}</TableCell>
+    <>
+      {/* Mobile View */}
+      <div className="md:hidden space-y-4">
+        {logs.map((log) => (
+          <Card key={log.id} className="shadow-md">
+            <CardHeader>
+              <CardTitle className="text-lg">{log.action}</CardTitle>
+              <CardDescription>{format(parseISO(log.activityTimestamp as unknown as string), "MMM dd, yyyy, hh:mm:ss a")}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div>
+                <span className="font-semibold text-muted-foreground">User: </span>
+                <span>{log.userIdentifier}</span>
+              </div>
+              <div>
+                <span className="font-semibold text-muted-foreground">Details: </span>
+                <span className="text-muted-foreground">{log.details || 'N/A'}</span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Desktop View */}
+      <div className="hidden md:block rounded-lg border shadow-sm bg-card">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <SortableTableHead columnKey="activityTimestamp">Timestamp</SortableTableHead>
+              <SortableTableHead columnKey="userIdentifier">User ID</SortableTableHead>
+              <SortableTableHead columnKey="action">Action</SortableTableHead>
+              <TableHead>Details</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {logs.map((log) => (
+              <TableRow key={log.id}>
+                <TableCell className="font-mono text-xs whitespace-nowrap">
+                  {format(parseISO(log.activityTimestamp as unknown as string), "MMM dd, yyyy, hh:mm:ss a")}
+                </TableCell>
+                <TableCell className="font-medium">{log.userIdentifier}</TableCell>
+                <TableCell>{log.action}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">{log.details || 'N/A'}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </>
   );
 }
