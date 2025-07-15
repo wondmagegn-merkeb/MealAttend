@@ -11,49 +11,56 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, UserCircle, Settings as SettingsIcon, Edit3, PanelLeft } from "lucide-react";
+import { LogOut, UserCircle, Settings as SettingsIcon, Edit3, PanelLeft, LayoutDashboard, BookCopy } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar"; 
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth"; 
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../ui/sidebar";
 
-const getPageTitle = (pathname: string): string => {
-  if (pathname === '/admin') return 'Dashboard';
-  if (pathname.startsWith('/admin/attendance')) return 'Attendance';
-  if (pathname.startsWith('/admin/students/new')) return 'Add New Student';
-  if (pathname.startsWith('/admin/students/export')) return 'Export Students';
-  if (pathname.startsWith('/admin/students/view-all-ids')) return 'View All ID Cards';
+const getPageConfig = (pathname: string): { title: string, icon: React.ReactNode | null } => {
+  if (pathname === '/admin') return { title: 'Dashboard', icon: <LayoutDashboard className="h-6 w-6" /> };
+  if (pathname.startsWith('/admin/attendance')) return { title: 'Attendance', icon: <BookCopy className="h-6 w-6" /> };
+  if (pathname.startsWith('/admin/settings')) return { title: 'Settings', icon: <SettingsIcon className="h-6 w-6" /> };
+  
+  if (pathname.startsWith('/admin/students/new')) return { title: 'Add New Student', icon: null };
+  if (pathname.startsWith('/admin/students/export')) return { title: 'Export Students', icon: null };
+  if (pathname.startsWith('/admin/students/view-all-ids')) return { title: 'View All ID Cards', icon: null };
   if (pathname.includes('/edit')) {
-      if (pathname.startsWith('/admin/students')) return 'Edit Student';
-      if (pathname.startsWith('/admin/users')) return 'Edit User';
-      if (pathname.startsWith('/admin/departments')) return 'Edit Department';
-      if (pathname.startsWith('/admin/profile')) return 'Edit Profile';
+      if (pathname.startsWith('/admin/students')) return { title: 'Edit Student', icon: null };
+      if (pathname.startsWith('/admin/users')) return { title: 'Edit User', icon: null };
+      if (pathname.startsWith('/admin/departments')) return { title: 'Edit Department', icon: null };
+      if (pathname.startsWith('/admin/profile')) return { title: 'Edit Profile', icon: null };
   }
    if (pathname.includes('/id-card')) {
-      if (pathname.startsWith('/admin/students')) return 'Student ID Card';
+      if (pathname.startsWith('/admin/students')) return { title: 'Student ID Card', icon: null };
   }
-  if (pathname.startsWith('/admin/students')) return 'Students';
-  if (pathname.startsWith('/admin/users/new')) return 'Add New User';
-  if (pathname.startsWith('/admin/users')) return 'Users';
-  if (pathname.startsWith('/admin/departments/new')) return 'Add New Department';
-  if (pathname.startsWith('/admin/departments')) return 'Departments';
-  if (pathname.startsWith('/admin/activity-log')) return 'Activity Log';
-  if (pathname.startsWith('/admin/settings')) return 'Settings';
-  if (pathname.startsWith('/scan')) return 'QR Code Scanner';
+  if (pathname.startsWith('/admin/students')) return { title: 'Students', icon: null };
+  if (pathname.startsWith('/admin/users/new')) return { title: 'Add New User', icon: null };
+  if (pathname.startsWith('/admin/users')) return { title: 'Users', icon: null };
+  if (pathname.startsWith('/admin/departments/new')) return { title: 'Add New Department', icon: null };
+  if (pathname.startsWith('/admin/departments')) return { title: 'Departments', icon: null };
+  if (pathname.startsWith('/admin/activity-log')) return { title: 'Activity Log', icon: null };
+  if (pathname.startsWith('/scan')) return { title: 'QR Code Scanner', icon: null };
   
-  return 'MealAttend';
+  return { title: 'MealAttend', icon: null };
 };
 
 
 export function AdminHeader() {
   const { logout, currentUser } = useAuth(); 
   const pathname = usePathname();
-  const pageTitle = getPageTitle(pathname);
+  const { title, icon } = getPageConfig(pathname);
 
   const userFullName = currentUser?.fullName || "User";
   const userEmail = currentUser?.email || "user@example.com";
   const userAvatar = currentUser?.profileImageURL;
+
+  const PageTitle = () => (
+    <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
+      {icon} {title}
+    </h1>
+  );
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-card/95 backdrop-blur-md px-4 sm:px-6">
@@ -62,12 +69,12 @@ export function AdminHeader() {
            <SidebarTrigger />
         </div>
         <div className="hidden md:block">
-           <h1 className="text-xl font-semibold text-foreground">{pageTitle}</h1>
+           <PageTitle />
         </div>
       </div>
       
        <div className="flex-1 flex justify-center md:hidden">
-          <h1 className="text-xl font-semibold text-foreground">{pageTitle}</h1>
+          <PageTitle />
        </div>
 
       <div className="flex items-center gap-4">
