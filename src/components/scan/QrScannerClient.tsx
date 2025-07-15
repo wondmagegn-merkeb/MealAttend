@@ -277,37 +277,37 @@ export function QrScannerClient() {
               <div className="aspect-video w-full bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-primary/50 overflow-hidden relative">
                 <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
                 <canvas ref={canvasRef} style={{ display: 'none' }} />
-                {hasCameraPermission === null && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground p-4 text-center bg-black/50">
-                    <Loader2 className="h-16 w-16 animate-spin mb-2" />
-                    <p>Requesting camera access...</p>
-                  </div>
-                )}
-                 {hasCameraPermission === false && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-destructive p-4 text-center bg-black/50">
-                    <AlertTriangle className="h-16 w-16 mb-2" />
-                    <p className="font-bold">Camera Access Required</p>
-                    <p className="text-xs mt-1">Check browser settings to grant permission.</p>
-                  </div>
-                )}
+                 <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-black/50 backdrop-blur-sm">
+                    {hasCameraPermission === null && (
+                      <div className="text-muted-foreground">
+                          <Loader2 className="h-16 w-16 animate-spin mb-2 mx-auto" />
+                          <p>Requesting camera access...</p>
+                      </div>
+                    )}
+                    {hasCameraPermission === false && (
+                      <div className="text-destructive space-y-4">
+                          <AlertTriangle className="h-16 w-16 mx-auto" />
+                          <div>
+                            <p className="font-bold">Camera Access Required</p>
+                            <p className="text-xs mt-1">Check browser settings to grant permission.</p>
+                          </div>
+                      </div>
+                    )}
+                    <div className="absolute bottom-4 left-4 right-4 space-y-2 bg-background/80 p-3 rounded-md">
+                        <Label htmlFor="manual-check" className="flex items-center gap-2"><Search className="h-4 w-4 text-muted-foreground" />Manual Status Check</Label>
+                        <div className="flex gap-2">
+                            <Input id="manual-check" placeholder="Enter Student ID" value={manualStudentId} onChange={e => setManualStudentId(e.target.value)} disabled={isProcessing} />
+                            <Button onClick={handleManualCheck} disabled={isProcessing || !manualStudentId}>
+                                {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <Search className="h-4 w-4"/>}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
               </div>
-              
-              <CardDescription className='text-center'>OR</CardDescription>
-
-              <div className="space-y-2">
-                 <Label htmlFor="manual-check" className="flex items-center gap-2"><Search className="h-4 w-4 text-muted-foreground" />Manual Status Check</Label>
-                 <div className="flex gap-2">
-                    <Input id="manual-check" placeholder="Enter Student ID" value={manualStudentId} onChange={e => setManualStudentId(e.target.value)} disabled={isProcessing} />
-                    <Button onClick={handleManualCheck} disabled={isProcessing || !manualStudentId}>
-                        {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <Search className="h-4 w-4"/>}
-                    </Button>
-                 </div>
-              </div>
-
             </CardContent>
             <CardFooter className="flex flex-col gap-3">
               {isProcessing && (<div className="flex items-center text-primary"><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Processing... Please Wait</span></div>)}
-              <p className="text-xs text-muted-foreground text-center">{hasCameraPermission ? "Auto-scanning active. Point camera at QR code." : "Waiting for camera..."}</p>
+              <p className="text-xs text-muted-foreground text-center">{hasCameraPermission ? "Auto-scanning active. Point camera at QR code." : "Manual check available above."}</p>
             </CardFooter>
           </Card>
         </div>
