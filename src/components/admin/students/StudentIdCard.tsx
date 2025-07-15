@@ -32,8 +32,8 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
                 data-ai-hint="university logo"
              />
           </div>
-          <div className="flex-1 text-center text-xs font-bold text-blue-800 -ml-[9mm]">{schoolName}</div>
-          <div className="text-[7px] font-bold text-blue-800">{cardTitle}</div>
+          <div className="flex-1 text-center text-sm font-bold text-blue-800 -ml-[9mm]">{schoolName}</div>
+          <div className="text-[8px] font-bold text-blue-800">{cardTitle}</div>
         </div>
 
         {/* Main Content */}
@@ -50,9 +50,9 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
                     data-ai-hint="student profile"
                  />
               </div>
-              <div className="text-[9px] font-bold text-slate-800 break-words">{student.name}</div>
+              <div className="text-base font-bold text-slate-800 break-words">{student.name}</div>
             </div>
-            <div className="text-[7.5px] text-slate-700 space-y-[1mm]">
+            <div className="text-[9px] text-slate-700 space-y-[1mm]">
               <div><strong>ID:</strong> {student.studentId}</div>
               <div><strong>Grade:</strong> {student.classGrade || 'N/A'}</div>
               <div><strong>Gender:</strong> {student.gender || 'N/A'}</div>
