@@ -305,11 +305,15 @@ export function QrScannerClient() {
                       </div>
                     )}
                 </div>
+                 {hasCameraPermission && (
+                  <div className="absolute inset-0 pointer-events-none">
+                    <div className="absolute top-0 left-0 w-full h-1.5 bg-red-500/70 shadow-[0_0_10px_2px] shadow-red-500 animate-scan-line"></div>
+                  </div>
+                )}
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-3">
               {isProcessing && (<div className="flex items-center text-primary"><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Processing... Please Wait</span></div>)}
-              {hasCameraPermission && <p className="text-xs text-muted-foreground text-center">Auto-scanning active. Point camera at QR code.</p>}
             </CardFooter>
           </Card>
         </div>
