@@ -19,24 +19,22 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
     <div className="w-[85.6mm] h-[54mm] bg-white border border-gray-300 rounded-lg p-[4mm] flex flex-col justify-between shadow-lg relative overflow-hidden font-sans">
       {/* Background pattern */}
       <div
-        className="absolute inset-0 w-full h-full bg-gradient-to-br from-primary/20 via-blue-50 to-white"
-        style={{
-          clipPath: 'polygon(0 0, 100% 0, 100% 80%, 0 100%)'
-        }}
+        className="absolute inset-0 w-full h-full bg-gradient-to-br from-primary/10 via-background to-accent/5"
       ></div>
-      <div
-        className="absolute inset-0 w-full h-full bg-gradient-to-tl from-accent/10 via-transparent to-transparent"
-        style={{
-          clipPath: 'polygon(0 0, 100% 0, 0 100%)'
-        }}
+       <div 
+        className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-accent/10 rounded-full"
       ></div>
+       <div 
+        className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-primary/10 rounded-full"
+      ></div>
+
 
       <div className="relative z-10 flex flex-col h-full">
         {/* Header */}
         <div className="flex items-center justify-between pb-[1mm] mb-[1mm] border-b border-primary/50 h-[12mm]">
           <div className="w-[10mm] h-[10mm] shrink-0">
             <Image 
-                src="https://placehold.co/40x40/1d4ed8/ffffff.png?text=TU" 
+                src="/addisspark-logo.png" 
                 alt="School Logo"
                 width={40}
                 height={40}
@@ -44,7 +42,7 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
                 data-ai-hint="university logo"
              />
           </div>
-          <div className="flex-1 text-center text-[10px] font-bold text-primary/80 -ml-[9mm] tracking-wider">{schoolName}</div>
+          <div className="flex-1 text-center text-[11px] font-bold text-primary/80 -ml-[9mm] tracking-wider">{schoolName}</div>
           <div className="text-[8px] font-bold text-primary/80">{cardTitle}</div>
         </div>
 
@@ -52,7 +50,7 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
         <div className="flex flex-1 mt-[1mm] items-stretch gap-[3mm]">
           <div className="flex-1 flex flex-col justify-start h-full">
             <div className="flex items-center mb-[2mm]">
-              <div className="w-[18mm] h-[18mm] shrink-0 mr-[3mm]">
+              <div className="w-[18mm] h-[18mm] shrink-0 mr-[1mm]">
                  <Image 
                     src={student.profileImageURL || `https://placehold.co/100x100.png?text=${student.name.split(' ').map(n=>n[0]).join('')}`}
                     alt={`Photo of ${student.name}`}
@@ -62,9 +60,9 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
                     data-ai-hint="student profile"
                  />
               </div>
-              <div className="text-[12px] font-bold text-gray-800 break-words leading-tight">{student.name}</div>
+              <div className="text-[11px] font-bold text-gray-800 break-words leading-tight">{student.name}</div>
             </div>
-            <div className="text-[10px] text-gray-700 space-y-[1.5mm]">
+            <div className="text-[9px] text-gray-700 space-y-[0.5mm]">
               <div><strong>ID:</strong> {student.studentId}</div>
               <div><strong>Grade:</strong> {student.classGrade || 'N/A'}</div>
               <div><strong>Gender:</strong> {student.gender || 'N/A'}</div>
