@@ -155,8 +155,8 @@ export default function ViewAllIdCardsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="space-y-6" id="page-container">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 print:hidden">
         <div>
           <h2 className="text-3xl font-semibold tracking-tight text-primary flex items-center">
             <CreditCard className="mr-3 h-8 w-8" /> All Student ID Cards
@@ -177,7 +177,7 @@ export default function ViewAllIdCardsPage() {
         </div>
       </div>
 
-      <Card className="shadow-lg">
+      <Card className="shadow-lg print:hidden">
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><Filter className="h-5 w-5"/> Filter Options</CardTitle>
           <CardDescription>Select filters to apply to the ID card list below.</CardDescription>
@@ -215,7 +215,7 @@ export default function ViewAllIdCardsPage() {
       </Card>
       
       {filteredAndSortedStudents.length === 0 ? (
-        <Card className="shadow-lg">
+        <Card className="shadow-lg print:hidden">
              <CardHeader className="items-center text-center">
                 <AlertTriangle className="h-10 w-10 text-amber-500 mb-2" />
                 <CardTitle className="text-xl">No Matching Students</CardTitle>
@@ -239,7 +239,7 @@ export default function ViewAllIdCardsPage() {
       <style jsx global>{`
         .id-card-grid-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, 85.6mm);
+            grid-template-columns: repeat(auto-fill, minmax(85.6mm, 1fr));
             gap: 10mm;
             justify-content: center;
         }
@@ -247,15 +247,18 @@ export default function ViewAllIdCardsPage() {
         .id-card-wrapper {
             display: flex;
             justify-content: center;
+            width: 85.6mm;
+            height: 54mm;
         }
 
         @media print {
-            body > * {
-                display: none !important;
+            @page {
+              size: A4 portrait;
+              margin: 10mm;
             }
-            body > .id-card-grid-container, 
-            body > .id-card-grid-container * {
-                display: block !important;
+
+            body > *:not(#page-container, #page-container *) {
+              display: none !important;
             }
             
             body {
@@ -263,36 +266,25 @@ export default function ViewAllIdCardsPage() {
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
             }
-            .print\\:hidden { display: none !important; }
-            .bg-gray-100 { background-color: white !important; }
 
-            @page {
-              size: A4 landscape;
-              margin: 10mm;
+            .print\\:hidden { 
+              display: none !important; 
             }
 
             .id-card-grid-container {
-                position: absolute;
-                top: 0;
-                left: 0;
-                display: flex !important;
-                flex-wrap: wrap;
-                justify-content: space-around;
-                align-content: space-around;
-                width: 100%;
-                height: 100%;
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: repeat(5, auto);
+                gap: 10mm;
                 padding: 0;
-                gap: 0;
+                margin: 0;
                 background-color: transparent !important;
                 border: none !important;
             }
+
             .id-card-wrapper {
-                width: 85.6mm;
-                height: 54mm;
-                margin: 4.5mm; /* Adjust for spacing */
-                box-shadow: none !important;
                 break-inside: avoid;
-                overflow: hidden;
+                box-shadow: none !important;
             }
         }
       `}</style>
