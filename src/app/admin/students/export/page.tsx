@@ -72,7 +72,7 @@ export default function ExportStudentsPage() {
       const classA = parseClass(a);
       const classB = parseClass(b);
       if (classA.number !== classB.number) return classA.number - classB.number;
-      return classA.letter.localeCompare(classB.letter);
+      return classA.letter.localeCompare(b.letter);
     });
   }, [allStudents]);
 
@@ -101,7 +101,7 @@ export default function ExportStudentsPage() {
       const classA = parseClass(a.classGrade);
       const classB = parseClass(b.classGrade);
       if (classA.number !== classB.number) return classA.number - classB.number;
-      if (classA.letter !== classB.letter) return classA.letter.localeCompare(classB.letter);
+      if (classA.letter !== classB.letter) return classA.letter.localeCompare(b.letter);
       return a.name.localeCompare(b.name);
     });
 
@@ -347,10 +347,10 @@ export default function ExportStudentsPage() {
               <table className="min-w-full divide-y divide-border text-sm">
                 <thead className="bg-muted/50">
                   <tr>
-                    <th className="px-4 py-2 text-left font-medium text-muted-foreground">Student ID</th>
-                    <th className="px-4 py-2 text-left font-medium text-muted-foreground">Name</th>
-                    <th className="px-4 py-2 text-left font-medium text-muted-foreground">Gender</th>
-                    <th className="px-4 py-2 text-left font-medium text-muted-foreground">Grade</th>
+                    <th className="px-4 py-2 text-left font-medium text-muted-foreground whitespace-nowrap">Student ID</th>
+                    <th className="px-4 py-2 text-left font-medium text-muted-foreground whitespace-nowrap">Name</th>
+                    <th className="px-4 py-2 text-left font-medium text-muted-foreground whitespace-nowrap">Gender</th>
+                    <th className="px-4 py-2 text-left font-medium text-muted-foreground whitespace-nowrap">Grade</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border bg-background">

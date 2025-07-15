@@ -64,7 +64,7 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
 
   const SortableTableHead = ({ columnKey, children }: { columnKey: SortableStudentKeys, children: React.ReactNode }) => (
     <TableHead
-      className="cursor-pointer hover:bg-muted/50 transition-colors group"
+      className="cursor-pointer hover:bg-muted/50 transition-colors group whitespace-nowrap"
       onClick={() => onSort(columnKey)}
     >
       <div className="flex items-center">
@@ -130,7 +130,7 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
       </div>
 
       {/* Desktop View */}
-      <div className="hidden md:block rounded-lg border shadow-sm bg-card">
+      <div className="hidden md:block rounded-lg border shadow-sm bg-card overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -139,14 +139,14 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
               <SortableTableHead columnKey="classGrade">Grade</SortableTableHead>
               <SortableTableHead columnKey="gender">Gender</SortableTableHead>
               <SortableTableHead columnKey="createdAt">Created At</SortableTableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {students.map((student) => (
               <TableRow key={student.id}>
-                <TableCell className="font-medium">{student.studentId}</TableCell>
-                <TableCell>
+                <TableCell className="font-medium whitespace-nowrap">{student.studentId}</TableCell>
+                <TableCell className="whitespace-nowrap">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9">
                       <AvatarImage 
@@ -161,12 +161,12 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>{student.classGrade || 'N/A'}</TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">{student.classGrade || 'N/A'}</TableCell>
+                <TableCell className="whitespace-nowrap">
                   {student.gender ? <Badge variant="secondary">{student.gender}</Badge> : 'N/A'}
                 </TableCell>
-                <TableCell>{new Date(student.createdAt).toLocaleDateString()}</TableCell>
-                <TableCell className="text-right">
+                <TableCell className="whitespace-nowrap">{new Date(student.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell className="text-right whitespace-nowrap">
                   <div className="flex justify-end items-center gap-1">
                     <Tooltip>
                       <TooltipTrigger asChild>

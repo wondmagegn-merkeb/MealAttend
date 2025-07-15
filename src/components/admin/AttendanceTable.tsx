@@ -45,7 +45,7 @@ export function AttendanceTable({
 
   const SortableTableHead = ({ columnKey, children, className }: { columnKey: SortableAttendanceKeys, children: React.ReactNode, className?: string }) => (
     <TableHead
-      className={cn("cursor-pointer hover:bg-muted/50 transition-colors group", className)}
+      className={cn("cursor-pointer hover:bg-muted/50 transition-colors group whitespace-nowrap", className)}
       onClick={() => onSort(columnKey)}
     >
       <div className="flex items-center">
@@ -110,7 +110,7 @@ export function AttendanceTable({
       </div>
 
       {/* Desktop View */}
-      <div className="hidden md:block rounded-lg border shadow-sm bg-card">
+      <div className="hidden md:block rounded-lg border shadow-sm bg-card overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -125,8 +125,8 @@ export function AttendanceTable({
           <TableBody>
             {records.map((record) => (
               <TableRow key={record.id}>
-                <TableCell className="font-medium">{record.student.studentId}</TableCell>
-                <TableCell>
+                <TableCell className="font-medium whitespace-nowrap">{record.student.studentId}</TableCell>
+                <TableCell className="whitespace-nowrap">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9">
                       <AvatarImage src={record.student.profileImageURL || undefined} alt={record.student.name} data-ai-hint="student profile" />
@@ -137,10 +137,10 @@ export function AttendanceTable({
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>{format(parseISO(record.recordDate as unknown as string), 'yyyy-MM-dd')}</TableCell>
-                <TableCell>{record.mealType.charAt(0) + record.mealType.slice(1).toLowerCase()}</TableCell>
-                <TableCell>{record.scannedAtTimestamp ? format(parseISO(record.scannedAtTimestamp as unknown as string), 'hh:mm a') : 'N/A'}</TableCell>
-                <TableCell className="text-right">
+                <TableCell className="whitespace-nowrap">{format(parseISO(record.recordDate as unknown as string), 'yyyy-MM-dd')}</TableCell>
+                <TableCell className="whitespace-nowrap">{record.mealType.charAt(0) + record.mealType.slice(1).toLowerCase()}</TableCell>
+                <TableCell className="whitespace-nowrap">{record.scannedAtTimestamp ? format(parseISO(record.scannedAtTimestamp as unknown as string), 'hh:mm a') : 'N/A'}</TableCell>
+                <TableCell className="text-right whitespace-nowrap">
                   <Badge
                     variant={record.status === "PRESENT" ? "default" : "destructive"}
                     className={`capitalize ${record.status === "PRESENT" ? 'bg-green-500/20 text-green-700 border-green-500/30 hover:bg-green-500/30' : 'bg-red-500/20 text-red-700 border-red-500/30 hover:bg-red-500/30'}`}

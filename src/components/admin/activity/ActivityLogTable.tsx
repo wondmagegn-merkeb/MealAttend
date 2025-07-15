@@ -40,7 +40,7 @@ export function ActivityLogTable({ logs, sortConfig, onSort }: ActivityLogTableP
 
   const SortableTableHead = ({ columnKey, children, className }: { columnKey: SortableActivityLogKeys, children: React.ReactNode, className?: string }) => (
     <TableHead
-      className={cn("cursor-pointer hover:bg-muted/50 transition-colors group", className)}
+      className={cn("cursor-pointer hover:bg-muted/50 transition-colors group whitespace-nowrap", className)}
       onClick={() => onSort(columnKey)}
     >
       <div className="flex items-center">
@@ -65,13 +65,13 @@ export function ActivityLogTable({ logs, sortConfig, onSort }: ActivityLogTableP
         {logs.map((log) => (
           <Card key={log.id} className="shadow-md">
             <CardHeader>
-              <CardTitle className="text-lg">{log.action}</CardTitle>
+              <CardTitle className="text-lg">{log.action.replace(/_/g, ' ')}</CardTitle>
               <CardDescription>{format(parseISO(log.activityTimestamp as unknown as string), "MMM dd, yyyy, hh:mm:ss a")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div>
                 <span className="font-semibold text-muted-foreground">User: </span>
-                <span>{log.userIdentifier}</span>
+                <span className="break-all">{log.userIdentifier}</span>
               </div>
               <div>
                 <span className="font-semibold text-muted-foreground">Details: </span>
@@ -83,7 +83,7 @@ export function ActivityLogTable({ logs, sortConfig, onSort }: ActivityLogTableP
       </div>
 
       {/* Desktop View */}
-      <div className="hidden md:block rounded-lg border shadow-sm bg-card">
+      <div className="hidden md:block rounded-lg border shadow-sm bg-card overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -99,8 +99,8 @@ export function ActivityLogTable({ logs, sortConfig, onSort }: ActivityLogTableP
                 <TableCell className="font-mono text-xs whitespace-nowrap">
                   {format(parseISO(log.activityTimestamp as unknown as string), "MMM dd, yyyy, hh:mm:ss a")}
                 </TableCell>
-                <TableCell className="font-medium">{log.userIdentifier}</TableCell>
-                <TableCell>{log.action}</TableCell>
+                <TableCell className="font-medium whitespace-nowrap">{log.userIdentifier}</TableCell>
+                <TableCell className="whitespace-nowrap">{log.action.replace(/_/g, ' ')}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">{log.details || 'N/A'}</TableCell>
               </TableRow>
             ))}

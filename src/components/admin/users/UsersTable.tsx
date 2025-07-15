@@ -62,7 +62,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
 
   const SortableTableHead = ({ columnKey, children, className }: { columnKey: SortableUserKeys, children: React.ReactNode, className?: string }) => (
     <TableHead
-      className={`cursor-pointer hover:bg-muted/50 transition-colors group ${className}`}
+      className={`cursor-pointer hover:bg-muted/50 transition-colors group whitespace-nowrap ${className}`}
       onClick={() => onSort(columnKey)}
     >
       <div className="flex items-center">
@@ -133,7 +133,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
       </div>
 
       {/* Desktop View */}
-      <div className="hidden md:block rounded-lg border shadow-sm bg-card">
+      <div className="hidden md:block rounded-lg border shadow-sm bg-card overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -144,14 +144,14 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
               <SortableTableHead columnKey="role">Role</SortableTableHead>
               <SortableTableHead columnKey="status">Status</SortableTableHead>
               <SortableTableHead columnKey="createdAt">Created At</SortableTableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {users.map((user) => (
               <TableRow key={user.id}>
-                <TableCell className="font-mono text-xs">{user.userId || ''}</TableCell>
-                <TableCell>
+                <TableCell className="font-mono text-xs whitespace-nowrap">{user.userId || ''}</TableCell>
+                <TableCell className="whitespace-nowrap">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9">
                       <AvatarImage 
@@ -164,21 +164,21 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
                     <span className="font-medium">{user.fullName}</span>
                   </div>
                 </TableCell>
-                <TableCell>{user.department?.name || 'N/A'}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">{user.department?.name || 'N/A'}</TableCell>
+                <TableCell className="whitespace-nowrap">{user.email}</TableCell>
+                <TableCell className="whitespace-nowrap">
                   <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>
                     {user.role}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                     <Badge variant={user.status === 'Active' ? 'default' : 'destructive'}
                         className={user.status === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'}>
                         {user.status}
                     </Badge>
                 </TableCell>
-                <TableCell>{format(new Date(user.createdAt), "yyyy-MM-dd")}</TableCell>
-                <TableCell className="text-right">
+                <TableCell className="whitespace-nowrap">{format(new Date(user.createdAt), "yyyy-MM-dd")}</TableCell>
+                <TableCell className="text-right whitespace-nowrap">
                   <div className="flex justify-end items-center gap-1">
                     <Tooltip>
                       <TooltipTrigger asChild>

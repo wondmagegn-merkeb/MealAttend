@@ -60,7 +60,7 @@ export function DepartmentsTable({ departments, onEdit, onDelete, sortConfig, on
 
   const SortableTableHead = ({ columnKey, children, className }: { columnKey: SortableDepartmentKeys, children: React.ReactNode, className?: string }) => (
     <TableHead
-      className={cn("cursor-pointer hover:bg-muted/50 transition-colors group", className)}
+      className={cn("cursor-pointer hover:bg-muted/50 transition-colors group whitespace-nowrap", className)}
       onClick={() => onSort(columnKey)}
     >
       <div className="flex items-center">
@@ -105,20 +105,20 @@ export function DepartmentsTable({ departments, onEdit, onDelete, sortConfig, on
       </div>
 
       {/* Desktop View */}
-      <div className="hidden md:block rounded-lg border shadow-sm bg-card">
+      <div className="hidden md:block rounded-lg border shadow-sm bg-card overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <SortableTableHead columnKey="departmentId">Department ID</SortableTableHead>
               <SortableTableHead columnKey="name">Name</SortableTableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {departments.map((department) => (
               <TableRow key={department.id}>
-                <TableCell className="font-mono text-xs">{department.departmentId}</TableCell>
-                <TableCell className="font-medium">{department.name}</TableCell>
+                <TableCell className="font-mono text-xs whitespace-nowrap">{department.departmentId}</TableCell>
+                <TableCell className="font-medium whitespace-nowrap">{department.name}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end items-center gap-1">
                     <Tooltip>
@@ -158,7 +158,7 @@ export function DepartmentsTable({ departments, onEdit, onDelete, sortConfig, on
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the department
-              &quot;{departmentToDelete?.name}&quot; and remove its data. Users associated with this department will need to be reassigned.
+              &quot;{departmentToDelete?.name}&quot;.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
