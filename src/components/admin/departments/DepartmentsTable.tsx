@@ -119,7 +119,7 @@ export function DepartmentsTable({ departments, onEdit, onDelete, sortConfig, on
               <TableRow key={department.id}>
                 <TableCell className="font-mono text-xs whitespace-nowrap">{department.departmentId}</TableCell>
                 <TableCell className="font-medium whitespace-nowrap">{department.name}</TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right whitespace-nowrap">
                   <div className="flex justify-end items-center gap-1">
                     <Tooltip>
                       <TooltipTrigger asChild>

@@ -101,7 +101,7 @@ export function ActivityLogTable({ logs, sortConfig, onSort }: ActivityLogTableP
                 </TableCell>
                 <TableCell className="font-medium whitespace-nowrap">{log.userIdentifier}</TableCell>
                 <TableCell className="whitespace-nowrap">{log.action.replace(/_/g, ' ')}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">{log.details || 'N/A'}</TableCell>
+                <TableCell className="text-sm text-muted-foreground whitespace-nowrap">{log.details || 'N/A'}</TableCell>
               </TableRow>
             ))}
           </TableBody>

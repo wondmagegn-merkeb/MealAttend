@@ -15,6 +15,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import type { Student } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const fetchStudents = async (): Promise<Student[]> => {
     const response = await fetch('/api/students');
@@ -343,27 +344,27 @@ export default function ExportStudentsPage() {
             </div>
 
             {/* Desktop View */}
-            <div className="hidden md:block overflow-x-auto rounded-md border">
-              <table className="min-w-full divide-y divide-border text-sm">
-                <thead className="bg-muted/50">
-                  <tr>
-                    <th className="px-4 py-2 text-left font-medium text-muted-foreground whitespace-nowrap">Student ID</th>
-                    <th className="px-4 py-2 text-left font-medium text-muted-foreground whitespace-nowrap">Name</th>
-                    <th className="px-4 py-2 text-left font-medium text-muted-foreground whitespace-nowrap">Gender</th>
-                    <th className="px-4 py-2 text-left font-medium text-muted-foreground whitespace-nowrap">Grade</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border bg-background">
+            <div className="hidden md:block rounded-lg border shadow-sm bg-card overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="whitespace-nowrap">Student ID</TableHead>
+                    <TableHead className="whitespace-nowrap">Name</TableHead>
+                    <TableHead className="whitespace-nowrap">Gender</TableHead>
+                    <TableHead className="whitespace-nowrap">Grade</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {currentTableData.map(student => (
-                    <tr key={student.id}>
-                      <td className="px-4 py-2 whitespace-nowrap">{student.studentId}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{student.name}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{student.gender || 'N/A'}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{student.classGrade || 'N/A'}</td>
-                    </tr>
+                    <TableRow key={student.id}>
+                      <TableCell className="whitespace-nowrap">{student.studentId}</TableCell>
+                      <TableCell className="whitespace-nowrap">{student.name}</TableCell>
+                      <TableCell className="whitespace-nowrap">{student.gender || 'N/A'}</TableCell>
+                      <TableCell className="whitespace-nowrap">{student.classGrade || 'N/A'}</TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
 
             {filteredStudents.length > ITEMS_PER_PAGE_DISPLAY && (
