@@ -16,12 +16,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         <SidebarInset>
           <div className="flex flex-col h-screen">
             <AdminHeader />
-            <main className="flex-1 overflow-auto bg-secondary/50">
-              <div className="p-6 min-h-full">
+            <div className="flex-1 overflow-auto">
+              <main className="p-6 min-h-full">
                 {children}
-              </div>
-            </main>
-            <AdminFooter />
+              </main>
+              <AdminFooter />
+            </div>
           </div>
         </SidebarInset>
       </SidebarProvider>
