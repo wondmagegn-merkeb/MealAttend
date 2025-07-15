@@ -8,7 +8,7 @@ import { AuthGuard } from "@/components/auth/AuthGuard";
 export default function ScanPage() {
   return (
     <AuthGuard>
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-primary/80 to-accent/80 p-4 sm:p-8 relative">
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-primary/80 to-accent/80 p-4 sm:p-8 relative">
           <Link href="/admin" passHref legacyBehavior>
               <Button variant="ghost" className="absolute top-4 left-4 text-white hover:bg-white/20">
                   <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard

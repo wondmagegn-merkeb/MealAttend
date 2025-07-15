@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -9,7 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CheckCircle, AlertTriangle, Info, Loader2, Utensils, ScanLine, Search, XCircle, UserPlus } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Info, Loader2, Utensils, ScanLine, Search, XCircle, UserPlus, Camera } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from 'date-fns';
 import jsQR from 'jsqr';
@@ -246,66 +247,70 @@ export function QrScannerClient() {
   }, [toast, attemptAutoScan]);
 
   return (
-    <div className='w-full max-w-md'>
-      <Card className="w-full shadow-2xl">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4"><ScanLine className="h-12 w-12 text-primary" /></div>
-          <CardTitle className="text-2xl">Scan & Check Attendance</CardTitle>
-          <CardDescription>Scan a QR code or manually check a student's attendance status.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="mealType" className="flex items-center gap-2"><Utensils className="h-4 w-4 text-muted-foreground" />Meal Type</Label>
-            <Select value={selectedMealType} onValueChange={(value) => setSelectedMealType(value as MealType)} disabled={isProcessing}>
-              <SelectTrigger id="mealType"><SelectValue placeholder="Select meal type" /></SelectTrigger>
-              <SelectContent><SelectItem value="BREAKFAST">Breakfast</SelectItem><SelectItem value="LUNCH">Lunch</SelectItem><SelectItem value="DINNER">Dinner</SelectItem></SelectContent>
-            </Select>
-          </div>
-          <div className="aspect-video w-full bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-primary/50 overflow-hidden relative">
-            <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
-            <canvas ref={canvasRef} style={{ display: 'none' }} />
-            {hasCameraPermission === null && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground p-4 text-center bg-black/50">
-                <Loader2 className="h-16 w-16 animate-spin mb-2" />
-                <p>Requesting camera access...</p>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start w-full max-w-6xl mx-auto my-auto">
+        {/* Left Column: Scan Result Display */}
+        <div className="w-full">
+            <ScanResultDisplay 
+              result={lastResult}
+              onClear={() => setLastResult(null)}
+              onAdd={handleManualAdd}
+              isProcessing={isProcessing}
+            />
+        </div>
+        
+        {/* Right Column: Scanner Controls */}
+        <div className='w-full'>
+          <Card className="w-full shadow-2xl">
+            <CardHeader className="text-center">
+              <div className="flex justify-center mb-4"><ScanLine className="h-12 w-12 text-primary" /></div>
+              <CardTitle className="text-2xl">Scan & Check Attendance</CardTitle>
+              <CardDescription>Scan a QR code or manually check a student's attendance status.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="mealType" className="flex items-center gap-2"><Utensils className="h-4 w-4 text-muted-foreground" />Meal Type</Label>
+                <Select value={selectedMealType} onValueChange={(value) => setSelectedMealType(value as MealType)} disabled={isProcessing}>
+                  <SelectTrigger id="mealType"><SelectValue placeholder="Select meal type" /></SelectTrigger>
+                  <SelectContent><SelectItem value="BREAKFAST">Breakfast</SelectItem><SelectItem value="LUNCH">Lunch</SelectItem><SelectItem value="DINNER">Dinner</SelectItem></SelectContent>
+                </Select>
               </div>
-            )}
-             {hasCameraPermission === false && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-destructive p-4 text-center bg-black/50">
-                <AlertTriangle className="h-16 w-16 mb-2" />
-                <p className="font-bold">Camera Access Required</p>
-                <p className="text-xs mt-1">Check browser settings to grant permission.</p>
+              <div className="aspect-video w-full bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-primary/50 overflow-hidden relative">
+                <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
+                <canvas ref={canvasRef} style={{ display: 'none' }} />
+                {hasCameraPermission === null && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground p-4 text-center bg-black/50">
+                    <Loader2 className="h-16 w-16 animate-spin mb-2" />
+                    <p>Requesting camera access...</p>
+                  </div>
+                )}
+                 {hasCameraPermission === false && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-destructive p-4 text-center bg-black/50">
+                    <AlertTriangle className="h-16 w-16 mb-2" />
+                    <p className="font-bold">Camera Access Required</p>
+                    <p className="text-xs mt-1">Check browser settings to grant permission.</p>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          
-          <CardDescription className='text-center'>OR</CardDescription>
+              
+              <CardDescription className='text-center'>OR</CardDescription>
 
-          <div className="space-y-2">
-             <Label htmlFor="manual-check" className="flex items-center gap-2"><Search className="h-4 w-4 text-muted-foreground" />Manual Status Check</Label>
-             <div className="flex gap-2">
-                <Input id="manual-check" placeholder="Enter Student ID" value={manualStudentId} onChange={e => setManualStudentId(e.target.value)} disabled={isProcessing} />
-                <Button onClick={handleManualCheck} disabled={isProcessing || !manualStudentId}>
-                    {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <Search className="h-4 w-4"/>}
-                </Button>
-             </div>
-          </div>
+              <div className="space-y-2">
+                 <Label htmlFor="manual-check" className="flex items-center gap-2"><Search className="h-4 w-4 text-muted-foreground" />Manual Status Check</Label>
+                 <div className="flex gap-2">
+                    <Input id="manual-check" placeholder="Enter Student ID" value={manualStudentId} onChange={e => setManualStudentId(e.target.value)} disabled={isProcessing} />
+                    <Button onClick={handleManualCheck} disabled={isProcessing || !manualStudentId}>
+                        {isProcessing ? <Loader2 className="h-4 w-4 animate-spin"/> : <Search className="h-4 w-4"/>}
+                    </Button>
+                 </div>
+              </div>
 
-        </CardContent>
-        <CardFooter className="flex flex-col gap-3">
-          {isProcessing && (<div className="flex items-center text-primary"><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Processing... Please Wait</span></div>)}
-          <p className="text-xs text-muted-foreground text-center">{hasCameraPermission ? "Auto-scanning active. Point camera at QR code." : "Waiting for camera..."}</p>
-        </CardFooter>
-      </Card>
-
-      <div className="mt-6 w-full">
-        <ScanResultDisplay 
-          result={lastResult}
-          onClear={() => setLastResult(null)}
-          onAdd={handleManualAdd}
-          isProcessing={isProcessing}
-        />
-      </div>
+            </CardContent>
+            <CardFooter className="flex flex-col gap-3">
+              {isProcessing && (<div className="flex items-center text-primary"><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Processing... Please Wait</span></div>)}
+              <p className="text-xs text-muted-foreground text-center">{hasCameraPermission ? "Auto-scanning active. Point camera at QR code." : "Waiting for camera..."}</p>
+            </CardFooter>
+          </Card>
+        </div>
     </div>
   );
 }
@@ -318,22 +323,23 @@ interface ScanResultDisplayProps {
 }
 
 function ScanResultDisplay({ result, onClear, onAdd, isProcessing }: ScanResultDisplayProps) {
-    if (!result) return null;
-
+    
     const getBorderColor = () => {
+        if (!result) return 'border-muted/50';
         switch (result.type) {
             case 'success': return 'border-green-500';
-            case 'already_recorded': return 'border-destructive';
+            case 'already_recorded': return 'border-yellow-500';
             case 'info': return 'border-blue-500';
             case 'error': return 'border-destructive';
-            default: return 'border-muted';
+            default: return 'border-muted/50';
         }
     };
     
     const getIcon = () => {
+       if (!result) return <Camera className="h-6 w-6 text-muted-foreground" />;
        switch (result.type) {
             case 'success': return <CheckCircle className="h-6 w-6 text-green-500" />;
-            case 'already_recorded': return <AlertTriangle className="h-6 w-6 text-destructive" />;
+            case 'already_recorded': return <Info className="h-6 w-6 text-yellow-500" />;
             case 'info': return <Info className="h-6 w-6 text-blue-500" />;
             case 'error': return <AlertTriangle className="h-6 w-6 text-destructive" />;
             default: return null;
@@ -341,42 +347,57 @@ function ScanResultDisplay({ result, onClear, onAdd, isProcessing }: ScanResultD
     }
 
     return (
-        <Card className={`shadow-md transition-all border-2 ${getBorderColor()}`}>
+        <Card className={`shadow-md transition-all border-2 w-full min-h-[500px] flex flex-col ${getBorderColor()}`}>
             <CardHeader className='pb-4'>
-                <CardTitle className="flex items-center gap-3">{getIcon()} Last Action Result</CardTitle>
+                <CardTitle className="flex items-center gap-3">{getIcon()} Scan Result</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-                {result.student ? (
-                    <div className="flex items-center gap-4">
-                        <Avatar className="h-20 w-20 rounded-md">
-                           <AvatarImage src={result.student.profileImageURL || undefined} alt={result.student.name} data-ai-hint="student profile" />
-                           <AvatarFallback>{result.student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+            <CardContent className="flex-grow flex flex-col items-center justify-center space-y-4">
+                {result && result.student ? (
+                    <>
+                        <Avatar className="h-32 w-32 rounded-lg border-4 border-muted">
+                           <AvatarImage src={result.student.profileImageURL || undefined} alt={result.student.name} data-ai-hint="student profile" className="object-cover" />
+                           <AvatarFallback className="text-4xl">{result.student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                         </Avatar>
-                        <div className="text-sm">
-                            <p className="font-bold text-base">{result.student.name}</p>
-                            <p className="text-muted-foreground">ID: {result.student.studentId}</p>
+                        <div className="text-center">
+                            <p className="font-bold text-2xl">{result.student.name}</p>
+                            <p className="text-muted-foreground text-lg">ID: {result.student.studentId}</p>
                             <p className="text-muted-foreground">Grade: {result.student.classGrade || 'N/A'}</p>
                         </div>
+                         <Alert variant={result.type === 'error' ? 'destructive' : 'default'} className="bg-muted/50">
+                            <AlertTitle>{result.message}</AlertTitle>
+                            {result.record && result.record.scannedAtTimestamp && (
+                                <AlertDescription>
+                                    Scanned at: {format(parseISO(result.record.scannedAtTimestamp as unknown as string), 'hh:mm:ss a')}
+                                </AlertDescription>
+                            )}
+                        </Alert>
+                    </>
+                ) : (
+                    <div className="text-center text-muted-foreground">
+                        <ScanLine className="h-24 w-24 mx-auto mb-4"/>
+                        <p className="text-lg">Waiting for scan...</p>
+                        <p>The result of the next scan or search will appear here.</p>
                     </div>
-                ) : null}
-                <Alert variant={result.type === 'error' || result.type === 'already_recorded' ? 'destructive' : 'default'} className="bg-muted/50">
-                    <AlertTitle>{result.message}</AlertTitle>
-                    {result.record && result.record.scannedAtTimestamp && (
-                        <AlertDescription>
-                            Scanned at: {format(parseISO(result.record.scannedAtTimestamp as unknown as string), 'hh:mm:ss a')}
-                        </AlertDescription>
-                    )}
-                </Alert>
+                )}
             </CardContent>
-            {result.type === 'info' && result.student && (
-                <CardFooter className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={onClear} disabled={isProcessing}>
-                        <XCircle className="mr-2 h-4 w-4" /> Cancel
-                    </Button>
-                    <Button onClick={() => onAdd(result.student!.id)} disabled={isProcessing}>
-                        {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <UserPlus className="mr-2 h-4 w-4" />}
-                        Add as Present
-                    </Button>
+            {result && (
+                 <CardFooter className="flex justify-end gap-2">
+                    {result.type === 'info' && result.student && (
+                      <>
+                        <Button variant="outline" onClick={onClear} disabled={isProcessing}>
+                            <XCircle className="mr-2 h-4 w-4" /> Cancel
+                        </Button>
+                        <Button onClick={() => onAdd(result.student!.id)} disabled={isProcessing}>
+                            {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <UserPlus className="mr-2 h-4 w-4" />}
+                            Add as Present
+                        </Button>
+                      </>
+                    )}
+                    {(result.type === 'success' || result.type === 'error' || result.type === 'already_recorded') && (
+                       <Button variant="outline" onClick={onClear} disabled={isProcessing}>
+                            <XCircle className="mr-2 h-4 w-4" /> Clear
+                       </Button>
+                    )}
                 </CardFooter>
             )}
         </Card>
