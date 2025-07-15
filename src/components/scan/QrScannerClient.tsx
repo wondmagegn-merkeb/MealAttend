@@ -247,9 +247,9 @@ export function QrScannerClient() {
   }, [toast, attemptAutoScan]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start w-full max-w-6xl mx-auto">
+    <div className="flex flex-col md:grid md:grid-cols-2 gap-8 items-start w-full max-w-6xl mx-auto">
         {/* Left Column: Scan Result Display */}
-        <div className="w-full">
+        <div className="w-full order-2 md:order-1">
             <ScanResultDisplay 
               result={lastResult}
               onClear={() => setLastResult(null)}
@@ -259,7 +259,7 @@ export function QrScannerClient() {
         </div>
         
         {/* Right Column: Scanner Controls */}
-        <div className='w-full'>
+        <div className='w-full order-1 md:order-2'>
           <Card className="w-full shadow-2xl">
             <CardHeader className="text-center">
               <div className="flex justify-center mb-4"><ScanLine className="h-12 w-12 text-primary" /></div>
