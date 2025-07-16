@@ -8,30 +8,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-model SiteSettings {
-  id                    Int      @id @default(1)
-  siteName              String   @default("MealAttend")
-  headerContent         String   @default("MealAttend Information Center")
-  idPrefix              String   @default("ADERA")
-  theme                 String   @default("default")
-  showFeaturesSection   Boolean  @default(true)
-  showTeamSection       Boolean  @default(true)
-  addisSparkLogoUrl     String?
-  leoMaxwellPhotoUrl    String?
-  owenGrantPhotoUrl     String?
-  eleanorVancePhotoUrl  String?
-  sofiaReyesPhotoUrl    String?
-  calebFinnPhotoUrl     String?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  defaultAdminPassword  String?
-  defaultUserPassword   String?
-  idCardLogoUrl         String?
-  idCardSchoolName      String?
-  idCardTitle           String?
+  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
 model Department {
@@ -39,48 +17,44 @@ model Department {
   departmentId String @unique
   name         String @unique
   users        User[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
 }
 
 model User {
-  id                      String    @id @default(cuid())
-  userId                  String    @unique
-  fullName                String
-  email                   String    @unique
-  password                String
-  role                    String    @default("User") // "Super Admin", "Admin", "User"
-  status                  String    @default("Active") // "Active", "Inactive"
-  departmentId            String?
-  department              Department? @relation(fields: [departmentId], references: [id])
-  passwordChangeRequired  Boolean   @default(true)
-  profileImageURL         String?
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
-  passwordResetToken      String?   @unique
-  passwordResetExpires    DateTime?
-
-  createdById String?
-  createdBy   User?     @relation("UserCreations", fields: [createdById], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  createdUsers User[]   @relation("UserCreations")
+  id                       String    @id @default(cuid())
+  userId                   String    @unique
+  fullName                 String
+  email                    String    @unique
+  password                 String
+  role                     String
+  status                   String
+  passwordChangeRequired   Boolean   @default(true)
+  profileImageURL          String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+  passwordResetToken       String?
+  passwordResetExpires     DateTime?
+  departmentId             String?
+  department               Department? @relation(fields: [departmentId], references: [id])
+  createdById              String?
+  createdBy                User?     @relation("UserCreations", fields: [createdById], references: [id])
+  createdUsers             User[]    @relation("UserCreations")
+  createdStudents          Student[] @relation("StudentCreations")
+  attendanceScans          AttendanceRecord[]
+  activityLogs             ActivityLog[]
 
   // Permissions
-  canReadStudents       Boolean @default(false)
-  canWriteStudents      Boolean @default(false)
-  canCreateStudents     Boolean @default(false)
-  canDeleteStudents     Boolean @default(false)
-  canExportStudents     Boolean @default(false)
-  canReadAttendance     Boolean @default(false)
-  canExportAttendance   Boolean @default(false)
-  canReadActivityLog    Boolean @default(false)
-  canReadUsers          Boolean @default(false)
-  canWriteUsers         Boolean @default(false)
-  canReadDepartments    Boolean @default(false)
-  canWriteDepartments   Boolean @default(false)
-  
-  studentsCreated       Student[] @relation("StudentCreations")
-  attendanceScannedBy   AttendanceRecord[]
-  activityLogs          ActivityLog[]
+  canReadStudents          Boolean   @default(false)
+  canWriteStudents         Boolean   @default(false)
+  canCreateStudents        Boolean   @default(false)
+  canDeleteStudents        Boolean   @default(false)
+  canExportStudents        Boolean   @default(false)
+  canReadAttendance        Boolean   @default(false)
+  canExportAttendance      Boolean   @default(false)
+  canReadActivityLog       Boolean   @default(false)
+  canReadUsers             Boolean   @default(false)
+  canWriteUsers            Boolean   @default(false)
+  canReadDepartments       Boolean   @default(false)
+  canWriteDepartments      Boolean   @default(false)
 }
 
 model Student {
@@ -90,13 +64,11 @@ model Student {
   gender            String?
   classGrade        String?
   profileImageURL   String?
-  qrCodeData        String?  @unique
+  qrCodeData        String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  
   createdById       String?
-  createdBy         User?    @relation("StudentCreations", fields: [createdById], references: [id], onDelete: SetNull, onUpdate: NoAction)
-  
+  createdBy         User?    @relation("StudentCreations", fields: [createdById], references: [id], onDelete: SetNull)
   attendanceRecords AttendanceRecord[]
 }
 
@@ -105,41 +77,49 @@ model AttendanceRecord {
   attendanceId       String   @unique
   studentId          String
   student            Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  mealType           String   // "BREAKFAST", "LUNCH", "DINNER"
-  status             String   @default("PRESENT") // "PRESENT", "ABSENT"
-  recordDate         DateTime @db.Date
+  mealType           String
+  status             String
+  recordDate         DateTime
   scannedAtTimestamp DateTime?
-  
-  scannedById String?
-  scannedBy   User?   @relation(fields: [scannedById], references: [id], onDelete: SetNull)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  @@unique([studentId, mealType, recordDate])
+  scannedById        String?
+  scannedBy          User?    @relation(fields: [scannedById], references: [id], onDelete: SetNull)
 }
 
 model ActivityLog {
-  id                 String   @id @default(cuid())
-  logId              String   @unique
-  userIdentifier     String   // Stores the email or userId of the actor
-  userId             String?
-  user               User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  action             String
-  details            String?
-  activityTimestamp  DateTime @default(now())
+  id                String   @id @default(cuid())
+  logId             String   @unique
+  userIdentifier    String
+  userId            String?
+  user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action            String
+  details           String?
+  activityTimestamp DateTime @default(now())
 }
 
-
 model IdCounter {
-  type  IdType @unique
+  type  String @id
   count Int
 }
 
-enum IdType {
-  STUDENT
-  USER
-  DEPARTMENT
-  ATTENDANCE
-  ACTIVITY_LOG
+model SiteSettings {
+  id                     Int       @id @default(1)
+  siteName               String    @default("MealAttend")
+  headerContent          String    @default("MealAttend Information Center")
+  idPrefix               String    @default("ADERA")
+  theme                  String    @default("default")
+  showFeaturesSection    Boolean   @default(true)
+  showTeamSection        Boolean   @default(true)
+  addisSparkLogoUrl      String?
+  leoMaxwellPhotoUrl     String?
+  owenGrantPhotoUrl      String?
+  eleanorVancePhotoUrl   String?
+  sofiaReyesPhotoUrl     String?
+  calebFinnPhotoUrl      String?
+  defaultAdminPassword   String?
+  defaultUserPassword    String?
+  idCardLogoUrl          String?
+  idCardSchoolName       String?
+  idCardTitle            String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 }
