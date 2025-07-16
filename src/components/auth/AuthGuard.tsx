@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 import type { User } from '@/types/user';
 import { toast } from '@/hooks/use-toast';
+import { Logo } from '../shared/Logo';
 
 const PUBLIC_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-password'];
 const AUTH_FLOW_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-password', '/auth/change-password'];
@@ -76,8 +77,13 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
   if (isLoading) {
     return (
       <div className="flex flex-col justify-center items-center h-screen bg-background">
-        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <p className="text-muted-foreground">Verifying access...</p>
+        <div className="text-center space-y-4">
+            <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+            <div className="flex flex-col items-center">
+                <Logo size="lg" textColorClass="text-primary" />
+                <p className="text-muted-foreground mt-2">Verifying access...</p>
+            </div>
+        </div>
       </div>
     );
   }
@@ -85,3 +91,5 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
   // If all checks pass, render the children.
   return <>{children}</>;
 }
+
+    

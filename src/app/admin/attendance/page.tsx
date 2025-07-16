@@ -62,7 +62,7 @@ const parseClass = (classStr: string | null | undefined): { number: number; lett
 };
 
 const transformAttendanceForExport = (records: AttendanceRecordWithStudent[]): ExportAttendanceRecord[] => {
-  const groupedRecords: Record<string, Partial<ExportAttendanceRecord> & { studentName?: string, scannedBy?: string }> = {};
+  const groupedRecords: Record<string, Partial<ExportAttendanceRecord> & { studentName?: string, scannedBySet: Set<string> }> = {};
 
   records.forEach(record => {
     const recordDateStr = format(parseISO(record.recordDate as unknown as string), 'yyyy-MM-dd');
@@ -73,22 +73,25 @@ const transformAttendanceForExport = (records: AttendanceRecordWithStudent[]): E
         studentId: record.student.studentId,
         studentName: record.student.name,
         date: recordDateStr,
-        breakfast: "N/A",
-        lunch: "N/A",
-        dinner: "N/A",
-        scannedBy: record.scannedBy?.fullName || "N/A",
+        breakfast: "Absent",
+        lunch: "Absent",
+        dinner: "Absent",
+        scannedBySet: new Set(),
       };
     }
 
     let mealStatus;
     if (record.status === "PRESENT") {
-      mealStatus = record.scannedAtTimestamp ? `Present (${format(parseISO(record.scannedAtTimestamp as unknown as string), 'hh:mm a')})` : 'Present';
+        mealStatus = record.scannedAtTimestamp ? `Present (${format(parseISO(record.scannedAtTimestamp as unknown as string), 'hh:mm a')})` : 'Present';
+        if (record.scannedBy?.fullName) {
+            groupedRecords[key].scannedBySet.add(record.scannedBy.fullName);
+        }
     } else if (record.status === "ABSENT") {
-      mealStatus = `Absent`;
+        mealStatus = `Absent`;
     } else {
-      mealStatus = "N/A";
+        mealStatus = "N/A";
     }
-    
+
     if (record.mealType === "BREAKFAST") {
       groupedRecords[key].breakfast = mealStatus;
     } else if (record.mealType === "LUNCH") {
@@ -98,7 +101,10 @@ const transformAttendanceForExport = (records: AttendanceRecordWithStudent[]): E
     }
   });
 
-  return Object.values(groupedRecords).map(item => item as ExportAttendanceRecord)
+  return Object.values(groupedRecords).map(item => ({
+      ...item,
+      scannedBy: item.scannedBySet.size > 0 ? Array.from(item.scannedBySet).join(', ') : 'N/A'
+  } as ExportAttendanceRecord))
     .sort((a, b) => {
         if (a.date < b.date) return -1;
         if (a.date > b.date) return 1;
@@ -656,3 +662,5 @@ export default function AttendancePage() {
         </AuthGuard>
     )
 }
+
+    
