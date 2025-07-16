@@ -19,8 +19,9 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import type { UserWithDepartment } from "@/types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
 
-type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'status' | 'createdAt';
+type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'status' | 'createdAt' | 'createdBy';
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -39,6 +40,7 @@ interface UsersTableProps {
 export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: UsersTableProps) {
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
   const [userToDelete, setUserToDelete] = React.useState<UserWithDepartment | null>(null);
+  const { currentUser } = useAuth();
 
   const handleDeleteClick = (user: UserWithDepartment) => {
     setUserToDelete(user);
@@ -109,11 +111,15 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Role:</span>
-                <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>{user.role}</Badge>
+                <Badge variant={user.role === 'Admin' || user.role === 'Super Admin' ? 'default' : 'secondary'}>{user.role}</Badge>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Status:</span>
                 <Badge variant={user.status === 'Active' ? 'default' : 'destructive'} className={user.status === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'}>{user.status}</Badge>
+              </div>
+               <div className="flex justify-between">
+                <span className="text-muted-foreground">Created By:</span>
+                <span>{user.createdBy?.fullName || 'N/A'}</span>
               </div>
                <div className="flex justify-between">
                 <span className="text-muted-foreground">Created:</span>
@@ -143,6 +149,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
               <SortableTableHead columnKey="email">Email</SortableTableHead>
               <SortableTableHead columnKey="role">Role</SortableTableHead>
               <SortableTableHead columnKey="status">Status</SortableTableHead>
+              {currentUser?.role === 'Super Admin' && <SortableTableHead columnKey="createdBy">Created By</SortableTableHead>}
               <SortableTableHead columnKey="createdAt">Created At</SortableTableHead>
               <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
             </TableRow>
@@ -167,7 +174,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
                 <TableCell className="whitespace-nowrap">{user.department?.name || 'N/A'}</TableCell>
                 <TableCell className="whitespace-nowrap">{user.email}</TableCell>
                 <TableCell className="whitespace-nowrap">
-                  <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>
+                  <Badge variant={user.role === 'Admin' || user.role === 'Super Admin' ? 'default' : 'secondary'}>
                     {user.role}
                   </Badge>
                 </TableCell>
@@ -177,6 +184,9 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
                         {user.status}
                     </Badge>
                 </TableCell>
+                 {currentUser?.role === 'Super Admin' && (
+                    <TableCell className="whitespace-nowrap">{user.createdBy?.fullName || 'N/A'}</TableCell>
+                 )}
                 <TableCell className="whitespace-nowrap">{format(new Date(user.createdAt), "yyyy-MM-dd")}</TableCell>
                 <TableCell className="text-right whitespace-nowrap">
                   <div className="flex justify-end items-center gap-1">

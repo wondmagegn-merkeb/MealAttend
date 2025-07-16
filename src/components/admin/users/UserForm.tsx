@@ -18,6 +18,7 @@ import type { UserWithDepartment, Department } from '@/types';
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/hooks/useAuth";
 
 
 const fetchDepartments = async (): Promise<Department[]> => {
@@ -47,7 +48,7 @@ const userFormSchema = z.object({
   fullName: z.string().min(1, { message: "Full Name is required." }),
   departmentId: z.string().min(1, { message: "Department is required." }),
   email: z.string().email({ message: "Invalid email address." }).min(1, { message: "Email is required." }),
-  role: z.enum(['Admin', 'User'], { errorMap: () => ({ message: "Please select a role." }) }),
+  role: z.enum(['Super Admin', 'Admin', 'User'], { errorMap: () => ({ message: "Please select a role." }) }),
   status: z.enum(['Active', 'Inactive'], { errorMap: () => ({ message: "Please select a status." }) }),
   profileImageURL: z.string().optional().or(z.literal("")),
   ...permissionsSchema,
@@ -81,6 +82,8 @@ const fileToDataUri = (file: File): Promise<string | null> => {
 
 export function UserForm({ onSubmit, initialData, isLoading = false, submitButtonText = "Submit", isProfileEditMode = false }: UserFormProps) {
   const { toast } = useToast();
+  const { currentUser } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -235,7 +238,10 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                     <FormLabel>Role</FormLabel>
                     <Select onValueChange={(field as any).onChange} value={(field as any).value} defaultValue={(field as any).value}>
                       <FormControl><SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger></FormControl>
-                      <SelectContent><SelectItem value="Admin">Admin</SelectItem><SelectItem value="User">User</SelectItem></SelectContent>
+                      <SelectContent>
+                          {currentUser?.role === 'Super Admin' && <SelectItem value="Admin">Admin</SelectItem>}
+                          {(currentUser?.role === 'Super Admin' || currentUser?.role === 'Admin') && <SelectItem value="User">User</SelectItem>}
+                      </SelectContent>
                     </Select>
                     <FormDescription>The user's role in the system. Admins have all permissions by default.</FormDescription><FormMessage />
                   </FormItem>

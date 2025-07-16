@@ -3,16 +3,41 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { generateNextId } from '@/lib/idGenerator';
 import { hash } from 'bcryptjs';
+import { getAuthFromRequest } from '@/lib/auth';
 
 const saltRounds = 10;
 export const dynamic = 'force-dynamic';
 
 // GET all users
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const user = await getAuthFromRequest(request);
+
+    if (!user) {
+        return NextResponse.json({ message: 'Authentication required' }, { status: 401 });
+    }
+
+    const whereClause: any = {};
+    if (user.role === 'Admin') {
+      // Admins can see the users they created
+      whereClause.createdById = user.id;
+    } else if (user.role === 'User') {
+      // Users can only see themselves (or no one, depending on policy)
+      whereClause.id = user.id;
+    }
+    // Super Admins have no whereClause, so they see everyone.
+
     const users = await prisma.user.findMany({
+      where: whereClause,
       include: {
         department: true, // Include related department data
+        createdBy: {
+          select: {
+            id: true,
+            userId: true,
+            fullName: true,
+          }
+        }
       },
       orderBy: {
         createdAt: 'desc',
@@ -36,6 +61,11 @@ export async function GET() {
 // CREATE a new user
 export async function POST(request: Request) {
   try {
+    const creator = await getAuthFromRequest(request);
+     if (!creator) {
+        return NextResponse.json({ message: 'Authentication required' }, { status: 401 });
+    }
+
     const data = await request.json();
     const { 
         fullName, email, departmentId, role, status, profileImageURL,
@@ -48,6 +78,14 @@ export async function POST(request: Request) {
 
     if (!fullName || !email || !departmentId || !role || !status) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
+    }
+    
+    // Enforce role creation rules
+    if (creator.role === 'Admin' && role === 'Admin') {
+        return NextResponse.json({ message: 'Admins cannot create other Admins.' }, { status: 403 });
+    }
+    if (creator.role === 'User') {
+        return NextResponse.json({ message: 'Users cannot create other users.' }, { status: 403 });
     }
 
     const newUserId = await generateNextId('USER');
@@ -67,6 +105,7 @@ export async function POST(request: Request) {
         status,
         profileImageURL,
         passwordChangeRequired: true,
+        createdById: creator.id,
         // Permissions
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
         canReadAttendance, canExportAttendance,

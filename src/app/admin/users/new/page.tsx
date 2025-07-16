@@ -13,9 +13,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { generateWelcomeEmail } from '@/ai/flows/send-welcome-email-flow';
 
 const createUser = async (data: UserFormData) => {
+  const token = localStorage.getItem('mealAttendAuthToken_v1');
   const response = await fetch('/api/users', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` 
+    },
     body: JSON.stringify(data),
   });
   if (!response.ok) {
@@ -30,7 +34,7 @@ export default function NewUserPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { currentUserId: actorUserId } = useAuth();
+  const { currentUserId: actorUserId, currentUser } = useAuth();
   
   const mutation = useMutation({
     mutationFn: createUser,
@@ -83,7 +87,10 @@ export default function NewUserPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-semibold tracking-tight text-primary">Add New User</h2>
-          <p className="text-muted-foreground">Fill in the details to add a new user record. A temporary password will be generated and sent via email.</p>
+          <p className="text-muted-foreground">
+            {currentUser?.role === 'Super Admin' && 'You can create Admins or Users.'}
+            {currentUser?.role === 'Admin' && 'You can create Users with specific permissions.'}
+          </p>
         </div>
         <Button variant="outline" asChild>
           <Link href="/admin/users">

@@ -2,13 +2,28 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { generateNextId } from '@/lib/idGenerator';
+import { getAuthFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 // GET all students
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const user = await getAuthFromRequest(request);
+    if (!user) {
+        return NextResponse.json({ message: 'Authentication required' }, { status: 401 });
+    }
+
+    const whereClause: any = {};
+    if (user.role === 'Admin') {
+      whereClause.createdById = user.id;
+    } else if (user.role === 'User') {
+      whereClause.createdById = user.id;
+    }
+    // Super Admin has no 'where' clause, so they get all students
+
     const students = await prisma.student.findMany({
+      where: whereClause,
       orderBy: {
         createdAt: 'desc',
       },
@@ -70,5 +85,3 @@ export async function POST(request: Request) {
     );
   }
 }
-
-    

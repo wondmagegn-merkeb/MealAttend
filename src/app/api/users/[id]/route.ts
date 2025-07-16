@@ -1,6 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getAuthFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +16,12 @@ export async function GET(request: Request, { params }: RouteParams) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: params.id },
-      include: { department: true },
+      include: { 
+        department: true,
+        createdBy: {
+          select: { id: true, userId: true, fullName: true }
+        }
+       },
     });
 
     if (!user) {
@@ -34,6 +40,11 @@ export async function GET(request: Request, { params }: RouteParams) {
 // UPDATE a user
 export async function PUT(request: Request, { params }: RouteParams) {
   try {
+     const editor = await getAuthFromRequest(request);
+     if (!editor) {
+        return NextResponse.json({ message: 'Authentication required' }, { status: 401 });
+    }
+
     const data = await request.json();
     const { 
         fullName, email, departmentId, role, status, profileImageURL,
@@ -43,6 +54,17 @@ export async function PUT(request: Request, { params }: RouteParams) {
         canReadUsers, canWriteUsers,
         canReadDepartments, canWriteDepartments
     } = data;
+    
+    // Authorization check
+    if (editor.role === 'Admin' && data.role === 'Admin') {
+         return NextResponse.json({ message: 'Admins cannot edit other Admins.' }, { status: 403 });
+    }
+    if (editor.role === 'Admin' && data.role === 'Super Admin') {
+        return NextResponse.json({ message: 'Admins cannot edit Super Admins.' }, { status: 403 });
+    }
+     if (editor.role !== 'Super Admin' && data.role === 'Super Admin') {
+      return NextResponse.json({ message: 'Only Super Admins can modify Super Admin roles.' }, { status: 403 });
+    }
 
     const updatedUser = await prisma.user.update({
       where: { id: params.id },
@@ -77,14 +99,20 @@ export async function PUT(request: Request, { params }: RouteParams) {
 export async function DELETE(request: Request, { params }: RouteParams) {
   try {
      await prisma.$transaction(async (tx) => {
+        // Delete related students first
+        await tx.student.deleteMany({
+            where: { createdById: params.id }
+        });
+        // Delete related activity logs
         await tx.activityLog.deleteMany({
             where: { userId: params.id }
         });
+        // Finally, delete the user
         await tx.user.delete({
             where: { id: params.id },
         });
     });
-    return NextResponse.json({ message: 'User deleted successfully' }, { status: 200 });
+    return NextResponse.json({ message: 'User and their created students deleted successfully' }, { status: 200 });
   } catch (error: any) {
     if ((error as any).code === 'P2025') { // Record to delete not found
       return NextResponse.json({ message: 'User not found' }, { status: 404 });

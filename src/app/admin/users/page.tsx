@@ -18,13 +18,20 @@ import type { UserWithDepartment } from '@/types';
 
 
 const fetchUsers = async (): Promise<UserWithDepartment[]> => {
-  const response = await fetch('/api/users');
+  const token = localStorage.getItem('mealAttendAuthToken_v1');
+  const response = await fetch('/api/users', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
   if (!response.ok) throw new Error('Failed to fetch users');
   return response.json();
 };
 
 const deleteUser = async (userId: string) => {
-  const response = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+  const token = localStorage.getItem('mealAttendAuthToken_v1');
+  const response = await fetch(`/api/users/${userId}`, { 
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+  });
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Failed to delete user');
@@ -32,7 +39,7 @@ const deleteUser = async (userId: string) => {
 };
 
 
-type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'status' | 'createdAt';
+type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'status' | 'createdAt' | 'createdBy';
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -45,7 +52,7 @@ const ITEMS_PER_PAGE = 5;
 export default function UsersPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { currentUserId: actorUserId } = useAuth();
+  const { currentUser, currentUserId: actorUserId } = useAuth();
   const router = useRouter();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -106,13 +113,19 @@ export default function UsersPage() {
         user.fullName.toLowerCase().includes(lowerSearchTerm) ||
         (user.department && user.department.name.toLowerCase().includes(lowerSearchTerm)) ||
         user.email.toLowerCase().includes(lowerSearchTerm) ||
-        user.role.toLowerCase().includes(lowerSearchTerm) 
+        user.role.toLowerCase().includes(lowerSearchTerm) ||
+        (user.createdBy && user.createdBy.fullName.toLowerCase().includes(lowerSearchTerm))
       );
     }
     if (sortConfig.key) {
       processedUsers.sort((a, b) => {
-        const aValue = sortConfig.key === 'department' ? a.department?.name : a[sortConfig.key!];
-        const bValue = sortConfig.key === 'department' ? b.department?.name : b[sortConfig.key!];
+        let aValue, bValue;
+        switch(sortConfig.key) {
+            case 'department': aValue = a.department?.name; bValue = b.department?.name; break;
+            case 'createdBy': aValue = a.createdBy?.fullName; bValue = b.createdBy?.fullName; break;
+            default: aValue = a[sortConfig.key!]; bValue = b[sortConfig.key!];
+        }
+
         if (aValue === undefined || aValue === null) return 1;
         if (bValue === undefined || bValue === null) return -1;
         let comparison = String(aValue).localeCompare(String(bValue));
@@ -141,7 +154,7 @@ export default function UsersPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-3xl font-semibold tracking-tight text-primary flex items-center"><UsersIcon className="mr-3 h-8 w-8" /> Manage Users</h2>
-          <p className="text-muted-foreground">Add, edit, or remove user records. Access restricted to Admins.</p>
+          <p className="text-muted-foreground">Add, edit, or remove user records.</p>
         </div>
         <Button asChild size="lg" className="shadow-md hover:shadow-lg transition-shadow">
           <Link href="/admin/users/new"><PlusCircle className="mr-2 h-5 w-5" /> Add New User</Link>
@@ -151,7 +164,9 @@ export default function UsersPage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>User List</CardTitle>
-          <CardDescription>Browse and manage all registered users.</CardDescription>
+          <CardDescription>
+            {currentUser?.role === 'Super Admin' ? 'Viewing all users in the system.' : 'Viewing users you have created.'}
+          </CardDescription>
            <div className="mt-4 flex flex-col sm:flex-row gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

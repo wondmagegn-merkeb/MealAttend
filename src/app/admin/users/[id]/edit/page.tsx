@@ -14,7 +14,10 @@ import { useAuth } from '@/hooks/useAuth';
 import type { UserWithDepartment } from '@/types';
 
 const fetchUser = async (id: string): Promise<UserWithDepartment> => {
-    const response = await fetch(`/api/users/${id}`);
+    const token = localStorage.getItem('mealAttendAuthToken_v1');
+    const response = await fetch(`/api/users/${id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
     if (!response.ok) {
         if (response.status === 404) throw new Error('User not found');
         throw new Error('Failed to fetch user');
@@ -23,9 +26,13 @@ const fetchUser = async (id: string): Promise<UserWithDepartment> => {
 };
 
 const updateUser = async ({ id, data }: { id: string, data: UserFormData }): Promise<UserWithDepartment> => {
+    const token = localStorage.getItem('mealAttendAuthToken_v1');
     const response = await fetch(`/api/users/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
         body: JSON.stringify(data),
     });
     if (!response.ok) {

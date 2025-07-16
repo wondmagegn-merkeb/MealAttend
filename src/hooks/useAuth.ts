@@ -34,28 +34,36 @@ export function useAuth(): AuthContextType {
   const currentUserRole = currentUser?.role || null;
   const currentUserId = currentUser?.userId || null;
 
-  useEffect(() => {
-    try {
-      const token = localStorage.getItem(AUTH_TOKEN_KEY);
-      const storedUserDetailsRaw = localStorage.getItem(CURRENT_USER_DETAILS_KEY);
-      
-      if (token && storedUserDetailsRaw) {
-        const storedUser: UserWithDepartment = JSON.parse(storedUserDetailsRaw);
+  const updateClientAuth = useCallback((user: UserWithDepartment | null) => {
+    if (user) {
+        localStorage.setItem(AUTH_TOKEN_KEY, `mock-jwt-for-${user.userId}`);
+        localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(user));
         setIsAuthenticated(true);
-        setCurrentUser(storedUser);
-        setIsPasswordChangeRequired(storedUser.passwordChangeRequired);
-      } else {
+        setCurrentUser(user);
+        setIsPasswordChangeRequired(user.passwordChangeRequired);
+    } else {
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        localStorage.removeItem(CURRENT_USER_DETAILS_KEY);
         setIsAuthenticated(false);
         setCurrentUser(null);
         setIsPasswordChangeRequired(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      const storedUserDetailsRaw = localStorage.getItem(CURRENT_USER_DETAILS_KEY);
+      if (storedUserDetailsRaw) {
+        const storedUser: UserWithDepartment = JSON.parse(storedUserDetailsRaw);
+        updateClientAuth(storedUser);
+      } else {
+        updateClientAuth(null);
       }
     } catch (e) {
       console.error("localStorage access error:", e);
-      setIsAuthenticated(false);
-      setCurrentUser(null);
-      setIsPasswordChangeRequired(false);
+      updateClientAuth(null);
     }
-  }, []);
+  }, [updateClientAuth]);
 
   const login = useCallback(async (email: string, password?: string): Promise<boolean> => {
     try {
@@ -64,7 +72,6 @@ export function useAuth(): AuthContextType {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-      console.log("Login response:", response);
 
       const data = await response.json();
 
@@ -74,12 +81,7 @@ export function useAuth(): AuthContextType {
       
       const user: UserWithDepartment = data.user;
       
-      localStorage.setItem(AUTH_TOKEN_KEY, `mock-jwt-for-${user.userId}`);
-      localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(user));
-      
-      setIsAuthenticated(true);
-      setCurrentUser(user);
-      setIsPasswordChangeRequired(user.passwordChangeRequired);
+      updateClientAuth(user);
       
       logUserActivity(user.userId, "LOGIN_SUCCESS");
       toast({ title: "Login Successful", description: `Welcome back, ${user.fullName}!` });
@@ -95,17 +97,12 @@ export function useAuth(): AuthContextType {
       toast({ title: "Login Failed", description: error.message, variant: "destructive" });
       return false;
     }
-  }, [toast, router]); 
+  }, [toast, router, updateClientAuth]); 
 
   const logout = useCallback(() => {
     const loggingOutUserId = currentUser?.userId || null;
     try {
-      localStorage.removeItem(AUTH_TOKEN_KEY);
-      localStorage.removeItem(CURRENT_USER_DETAILS_KEY);
-
-      setIsAuthenticated(false);
-      setCurrentUser(null);
-      setIsPasswordChangeRequired(false); 
+      updateClientAuth(null);
       
       if (loggingOutUserId) {
         logUserActivity(loggingOutUserId, "LOGOUT_SUCCESS");
@@ -115,7 +112,7 @@ export function useAuth(): AuthContextType {
     } catch (e) {
         console.error("Logout error:", e);
     }
-  }, [router, toast, currentUser]);
+  }, [router, toast, currentUser, updateClientAuth]);
 
   const changePassword = useCallback(async (newPassword: string): Promise<UserWithDepartment> => {
     if (!currentUser) {
@@ -135,16 +132,14 @@ export function useAuth(): AuthContextType {
         }
         
         const updatedUser: UserWithDepartment = data.user;
-        setCurrentUser(updatedUser);
-        localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(updatedUser));
-        setIsPasswordChangeRequired(false);
+        updateClientAuth(updatedUser);
         logUserActivity(currentUser.userId, "PASSWORD_CHANGE_SUCCESS");
         return updatedUser;
     } catch (error: any) {
         toast({ title: "Password Change Failed", description: error.message, variant: "destructive" });
         throw error;
     }
-  }, [currentUser, toast]);
+  }, [currentUser, toast, updateClientAuth]);
 
   const updateProfile = useCallback(async (profileData: ProfileEditFormData): Promise<UserWithDepartment> => {
     if (!currentUser) {
@@ -168,16 +163,14 @@ export function useAuth(): AuthContextType {
         }
         
         const updatedUser: UserWithDepartment = data.user;
-        // Update state and local storage for immediate UI feedback
-        setCurrentUser(updatedUser);
-        localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(updatedUser));
+        updateClientAuth(updatedUser);
         logUserActivity(currentUser.userId, "PROFILE_UPDATE_SUCCESS");
         return updatedUser;
     } catch (error: any) {
         toast({ title: "Profile Update Failed", description: error.message, variant: "destructive" });
         throw error;
     }
-  }, [currentUser, toast]);
+  }, [currentUser, toast, updateClientAuth]);
 
   return { 
     isAuthenticated, 

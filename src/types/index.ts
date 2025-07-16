@@ -10,7 +10,7 @@ export interface User {
   userId: string;
   fullName: string;
   email: string;
-  role: 'Admin' | 'User';
+  role: 'Super Admin' | 'Admin' | 'User';
   status: 'Active' | 'Inactive';
   departmentId: string | null;
   passwordChangeRequired: boolean;
@@ -19,6 +19,7 @@ export interface User {
   updatedAt: string;
   passwordResetToken?: string | null;
   passwordResetExpires?: string | null;
+  createdById: string | null; // ID of the user who created this user
   
   // Permissions
   canReadStudents: boolean;
@@ -37,6 +38,11 @@ export interface User {
 
 export interface UserWithDepartment extends User {
   department: Department | null;
+  createdBy: {
+    id: string;
+    userId: string;
+    fullName: string;
+  } | null;
 }
 
 export interface Student {
