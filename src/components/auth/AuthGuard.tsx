@@ -38,7 +38,7 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
     const isPublicPage = PUBLIC_PATHS.includes(pathname);
     const isAuthFlowPage = AUTH_FLOW_PATHS.includes(pathname);
 
-    // If not authenticated and not on a public page, redirect to login.
+    // If not authenticated and trying to access a protected page, redirect to login.
     if (!isAuthenticated && !isPublicPage) {
       router.replace('/auth/login');
       return;
@@ -51,7 +51,7 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
         return;
       }
       
-      // If on an auth flow page (but not change password) and logged in, redirect to dashboard.
+      // If logged in and trying to access a regular auth page (not change password), redirect to dashboard.
       if (!isPasswordChangeRequired && isAuthFlowPage && pathname !== '/auth/change-password') {
         router.replace('/admin');
         return;
@@ -60,7 +60,7 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
       const isSuperAdmin = currentUser.role === 'Super Admin';
       const isAdmin = currentUser.role === 'Admin';
 
-      // If the page requires a specific role and the user doesn't have it (and isn't a Super Admin), deny access.
+      // Role-based access check
       if (requiredRole && currentUser.role !== requiredRole && !isSuperAdmin) {
          toast({
           title: "Access Denied",
@@ -71,8 +71,7 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
         return;
       }
 
-      // If the page requires a specific permission and the user doesn't have it, deny access.
-      // Super Admins bypass permission checks.
+      // Permission-based access check
       if (permission && !isSuperAdmin && !currentUser[permission]) {
         toast({
           title: "Access Denied",
@@ -85,30 +84,8 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
     }
   }, [isAuthenticated, isPasswordChangeRequired, currentUser, pathname, router, permission, requiredRole]);
 
-  // Determine if content is ready to be shown
-  let isReady = false;
-  if (PUBLIC_PATHS.includes(pathname)) {
-    isReady = true;
-  } else if (isAuthenticated && currentUser) {
-      if (isPasswordChangeRequired && pathname === '/auth/change-password') {
-          isReady = true;
-      } else if (!isPasswordChange-required && !AUTH_FLOW_PATHS.includes(pathname)) {
-          let hasPermission = true;
-          const isSuperAdmin = currentUser.role === 'Super Admin';
-
-          if (requiredRole && currentUser.role !== requiredRole && !isSuperAdmin) {
-            hasPermission = false;
-          }
-          if (permission && !isSuperAdmin && !currentUser[permission]) {
-              hasPermission = false;
-          }
-          isReady = hasPermission;
-      }
-  } else if (!isAuthenticated && AUTH_FLOW_PATHS.includes(pathname)) {
-      isReady = true;
-  }
-  
-  if (isAuthenticated === null || !isReady) {
+  // Loading state while checking authentication
+  if (isAuthenticated === null && !PUBLIC_PATHS.includes(pathname)) {
     return (
       <div className="flex flex-col justify-center items-center h-screen bg-background">
         <div className="text-center space-y-4">
