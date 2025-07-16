@@ -10,7 +10,6 @@ import type { PermissionKey, User } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { Logo } from '../shared/Logo';
 
-const PUBLIC_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-password'];
 const AUTH_FLOW_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-password', '/auth/change-password'];
 
 
@@ -55,9 +54,12 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
         router.replace('/admin');
         return;
       }
+      
+      const isSuperAdmin = currentUser.role === 'Super Admin';
+      const isAdmin = currentUser.role === 'Admin';
 
-      // If the page requires a specific role and the user doesn't have it, deny access.
-      if (requiredRole && currentUser.role !== requiredRole && currentUser.role !== 'Super Admin') {
+      // If the page requires a specific role and the user doesn't have it (and isn't a Super Admin), deny access.
+      if (requiredRole && currentUser.role !== requiredRole && !isSuperAdmin) {
          toast({
           title: "Access Denied",
           description: "You do not have the required role to view this page.",
@@ -68,7 +70,7 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
       }
 
       // If the page requires a specific permission and the user doesn't have it (and isn't an admin), deny access.
-      if (permission && !currentUser[permission] && currentUser.role !== 'Admin' && currentUser.role !== 'Super Admin') {
+      if (permission && !currentUser[permission] && !isAdmin && !isSuperAdmin) {
         toast({
           title: "Access Denied",
           description: "You do not have permission to view this page.",
@@ -82,20 +84,23 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
 
   // Determine if content is ready to be shown
   let isReady = false;
-  if (isAuthenticated) {
+  if (isAuthenticated && currentUser) {
       if (isPasswordChangeRequired && pathname === '/auth/change-password') {
           isReady = true;
       } else if (!isPasswordChangeRequired && !AUTH_FLOW_PATHS.includes(pathname)) {
           let hasPermission = true;
-          if (requiredRole && currentUser && currentUser.role !== requiredRole && currentUser.role !== 'Super Admin') {
+          const isSuperAdmin = currentUser.role === 'Super Admin';
+          const isAdmin = currentUser.role === 'Admin';
+
+          if (requiredRole && currentUser.role !== requiredRole && !isSuperAdmin) {
             hasPermission = false;
           }
-          if (permission && currentUser && !currentUser[permission] && currentUser.role !== 'Admin' && currentUser.role !== 'Super Admin') {
+          if (permission && !currentUser[permission] && !isAdmin && !isSuperAdmin) {
               hasPermission = false;
           }
           isReady = hasPermission;
       }
-  } else if (AUTH_FLOW_PATHS.includes(pathname)) {
+  } else if (!isAuthenticated && AUTH_FLOW_PATHS.includes(pathname)) {
       isReady = true;
   }
   
