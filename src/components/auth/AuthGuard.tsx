@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
-import type { PermissionKey } from '@/types';
+import type { PermissionKey, User } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { Logo } from '../shared/Logo';
 
@@ -17,9 +17,10 @@ const AUTH_FLOW_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-pa
 interface AuthGuardProps {
   children: ReactNode;
   permission?: PermissionKey;
+  requiredRole?: User['role'];
 }
 
-export function AuthGuard({ children, permission }: AuthGuardProps) {
+export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps) {
   const { 
     isAuthenticated, 
     currentUser,
@@ -55,8 +56,19 @@ export function AuthGuard({ children, permission }: AuthGuardProps) {
         return;
       }
 
-      // If the page requires a specific permission and the user doesn't have it, deny access.
-      if (permission && !currentUser[permission]) {
+      // If the page requires a specific role and the user doesn't have it, deny access.
+      if (requiredRole && currentUser.role !== requiredRole && currentUser.role !== 'Super Admin') {
+         toast({
+          title: "Access Denied",
+          description: "You do not have the required role to view this page.",
+          variant: "destructive"
+        });
+        router.replace('/admin');
+        return;
+      }
+
+      // If the page requires a specific permission and the user doesn't have it (and isn't an admin), deny access.
+      if (permission && !currentUser[permission] && currentUser.role !== 'Admin' && currentUser.role !== 'Super Admin') {
         toast({
           title: "Access Denied",
           description: "You do not have permission to view this page.",
@@ -66,7 +78,7 @@ export function AuthGuard({ children, permission }: AuthGuardProps) {
         return;
       }
     }
-  }, [isAuthenticated, isPasswordChangeRequired, currentUser, pathname, router, permission]);
+  }, [isAuthenticated, isPasswordChangeRequired, currentUser, pathname, router, permission, requiredRole]);
 
   // Determine if content is ready to be shown
   let isReady = false;
@@ -74,11 +86,14 @@ export function AuthGuard({ children, permission }: AuthGuardProps) {
       if (isPasswordChangeRequired && pathname === '/auth/change-password') {
           isReady = true;
       } else if (!isPasswordChangeRequired && !AUTH_FLOW_PATHS.includes(pathname)) {
-          if (permission) {
-              isReady = !!currentUser?.[permission];
-          } else {
-              isReady = true;
+          let hasPermission = true;
+          if (requiredRole && currentUser && currentUser.role !== requiredRole && currentUser.role !== 'Super Admin') {
+            hasPermission = false;
           }
+          if (permission && currentUser && !currentUser[permission] && currentUser.role !== 'Admin' && currentUser.role !== 'Super Admin') {
+              hasPermission = false;
+          }
+          isReady = hasPermission;
       }
   } else if (AUTH_FLOW_PATHS.includes(pathname)) {
       isReady = true;

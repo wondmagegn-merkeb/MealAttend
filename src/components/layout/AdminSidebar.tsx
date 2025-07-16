@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, BookUser, Settings, QrCode, UsersRound, Users as UsersIcon, Building2 as DepartmentIcon, History, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, BookUser, Settings, QrCode, UsersRound, Users as UsersIcon, Building2 as DepartmentIcon, History, ShieldCheck, MonitorCog } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   SidebarContent as ShadSidebarContent,
@@ -32,13 +32,17 @@ export function AdminSidebar() {
   ];
 
   const bottomNavItems = [
+     { href: '/admin/settings/site-management', label: 'Site Management', icon: MonitorCog, tooltip: 'Manage Homepage Content', permission: 'Super Admin' },
      { href: '/admin/profile/my-permissions', label: 'My Permissions', icon: ShieldCheck, tooltip: 'View Your Permissions', permission: true },
      { href: '/admin/settings', label: 'Settings', icon: Settings, tooltip: 'Application Settings', permission: true },
   ];
 
   const isNavItemVisible = (permission: string | boolean) => {
     if (permission === true) return true;
-    if (!currentUser || typeof permission !== 'string') return false;
+    if (!currentUser) return false;
+    if (currentUser.role === 'Super Admin') return true; // Super Admin sees everything
+    if (typeof permission === 'string' && permission === 'Super Admin') return currentUser.role === 'Super Admin';
+    if (typeof permission !== 'string') return false;
     return currentUser[permission as keyof typeof currentUser] === true;
   };
   
@@ -77,7 +81,7 @@ export function AdminSidebar() {
         <div className="mt-auto">
             <SidebarSeparator />
              <SidebarMenu className="pt-2">
-                {bottomNavItems.map((item) => (
+                {bottomNavItems.filter(item => isNavItemVisible(item.permission)).map((item) => (
                     <SidebarMenuItem key={item.label}>
                     <Link href={item.href} passHref legacyBehavior>
                         <SidebarMenuButton

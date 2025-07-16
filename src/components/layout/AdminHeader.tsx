@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, UserCircle, Settings as SettingsIcon, Edit3, PanelLeft, LayoutDashboard, BookCopy, UsersRound, Users, Building2, History, UserPlus, FileDown, CreditCard, UserCog, ScanLine, ShieldCheck } from "lucide-react";
+import { LogOut, UserCircle, Settings as SettingsIcon, Edit3, PanelLeft, LayoutDashboard, BookCopy, UsersRound, Users, Building2, History, UserPlus, FileDown, CreditCard, UserCog, ScanLine, ShieldCheck, MonitorCog } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar"; 
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth"; 
@@ -22,6 +22,7 @@ const getPageConfig = (pathname: string): { title: string, icon: React.ReactNode
   // Main Navigation
   if (pathname === '/admin') return { title: 'Dashboard', icon: <LayoutDashboard className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/attendance')) return { title: 'Attendance', icon: <BookCopy className="h-6 w-6" /> };
+  if (pathname.startsWith('/admin/settings/site-management')) return { title: 'Site Management', icon: <MonitorCog className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/settings')) return { title: 'Settings', icon: <SettingsIcon className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/students')) {
     if (pathname.startsWith('/admin/students/new')) return { title: 'Add New Student', icon: <UserPlus className="h-6 w-6" /> };

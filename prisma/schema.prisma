@@ -10,111 +10,108 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ========================================
-// Models
-// ========================================
-
 model Department {
   id           String @id @default(cuid())
-  departmentId String @unique
+  departmentId String @unique // e.g., ADERA/DEP/2024/00001
   name         String @unique
   users        User[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
 }
 
 model User {
-  id                     String      @id @default(cuid())
-  userId                 String      @unique
-  fullName               String
-  email                  String      @unique
-  password               String
-  role                   String      @default("User") // 'Admin' or 'User'
-  status                 String      @default("Active") // 'Active' or 'Inactive'
-  passwordChangeRequired Boolean     @default(true)
-  profileImageURL        String?
-  createdAt              DateTime    @default(now())
-  updatedAt              DateTime    @updatedAt
-  departmentId           String?
-  department             Department? @relation(fields: [departmentId], references: [id])
+  id                       String    @id @default(cuid())
+  userId                   String    @unique // e.g., ADERA/USR/2024/00001
+  fullName                 String
+  email                    String    @unique
+  password                 String
+  role                     String    // "Super Admin", "Admin", "User"
+  status                   String    // "Active", "Inactive"
+  departmentId             String?
+  department               Department? @relation(fields: [departmentId], references: [id])
+  passwordChangeRequired   Boolean   @default(true)
+  profileImageURL          String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+  passwordResetToken       String?   @unique
+  passwordResetExpires     DateTime?
+  
+  createdById              String?
+  createdBy                User?     @relation("UserCreations", fields: [createdById], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  createdUsers             User[]    @relation("UserCreations")
+
+  createdStudents          Student[]
+  scannedAttendanceRecords AttendanceRecord[]
+  activityLogs             ActivityLog[]
 
   // Permissions
-  canReadStudents         Boolean @default(false)
-  canWriteStudents        Boolean @default(false)
-  canCreateStudents       Boolean @default(false)
-  canDeleteStudents       Boolean @default(false)
-  canExportStudents       Boolean @default(false)
-  canReadAttendance       Boolean @default(false)
-  canExportAttendance     Boolean @default(false)
-  canReadActivityLog      Boolean @default(false)
-  canReadUsers            Boolean @default(false)
-  canWriteUsers           Boolean @default(false)
-  canReadDepartments      Boolean @default(false)
-  canWriteDepartments     Boolean @default(false)
-
-
-  createdStudents      Student[] @relation("CreatedBy")
-  scannedAttendance    AttendanceRecord[] @relation("ScannedBy")
-  activityLogs         ActivityLog[]
-
-  passwordResetToken   String?
-  passwordResetExpires DateTime?
-
-  @@index([departmentId])
+  canReadStudents     Boolean @default(false)
+  canWriteStudents    Boolean @default(false)
+  canCreateStudents   Boolean @default(false)
+  canDeleteStudents   Boolean @default(false)
+  canExportStudents   Boolean @default(false)
+  canReadAttendance   Boolean @default(false)
+  canExportAttendance Boolean @default(false)
+  canReadActivityLog  Boolean @default(false)
+  canReadUsers        Boolean @default(false)
+  canWriteUsers       Boolean @default(false)
+  canReadDepartments  Boolean @default(false)
+  canWriteDepartments Boolean @default(false)
 }
 
 model Student {
-  id              String   @id @default(cuid())
-  studentId       String   @unique
-  name            String
-  gender          String? // "Male" or "Female"
-  classGrade      String?
-  profileImageURL String?
-  qrCodeData      String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id               String    @id @default(cuid())
+  studentId        String    @unique // e.g., ADERA/STU/2024/00001
+  name             String
+  gender           String?   // "Male", "Female"
+  classGrade       String?
+  profileImageURL  String?
+  qrCodeData       String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  createdById     String?
-  createdBy       User?    @relation("CreatedBy", fields: [createdById], references: [id])
+  createdById      String?
+  createdBy        User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
 
   attendanceRecords AttendanceRecord[]
-
-  @@index([createdById])
 }
 
-
 model AttendanceRecord {
-  id                 String   @id @default(cuid())
-  attendanceId       String   @unique
+  id                 String    @id @default(cuid())
+  attendanceId       String    @unique // e.g., ADERA/ATT/2024/00001
   studentId          String
-  student            Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  mealType           String
-  status             String // "PRESENT" or "ABSENT"
-  recordDate         DateTime @db.Date
+  student            Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  mealType           String    // "BREAKFAST", "LUNCH", "DINNER"
+  status             String    // "PRESENT", "ABSENT"
+  recordDate         DateTime  @db.Date
   scannedAtTimestamp DateTime?
+  
   scannedById        String?
-  scannedBy          User?    @relation("ScannedBy", fields: [scannedById], references: [id])
-
-
-  @@index([studentId])
-  @@index([scannedById])
-  @@index([recordDate])
+  scannedBy          User?     @relation(fields: [scannedById], references: [id], onDelete: SetNull)
 }
 
 model ActivityLog {
-  id                String   @id @default(cuid())
-  logId             String   @unique
-  userIdentifier    String // This could be userId or email for failed logins
+  id                String    @id @default(cuid())
+  logId             String    @unique
+  userIdentifier    String // Stores the public ID (e.g. ADERA/USR/...) or email for failed logins
+  userId            String?  // Foreign key to User model
+  user              User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
   action            String
   details           String?
-  activityTimestamp DateTime @default(now())
-  userId            String?  
-  user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([userId])
+  activityTimestamp DateTime  @default(now())
 }
 
-model IdCounter {
-  type  String @id // 'STUDENT', 'USER', 'DEPARTMENT', 'ATTENDANCE', 'ACTIVITY_LOG'
-  count Int    @default(0)
+model IDCounter {
+  type  String @id // "STUDENT", "USER", "DEPARTMENT", "ATTENDANCE", "ACTIVITY_LOG"
+  count Int
+}
+
+model SiteSettings {
+  id                   Int     @id @default(1)
+  showFeaturesSection  Boolean @default(true)
+  showTeamSection      Boolean @default(true)
+  addisSparkLogoUrl    String  @default("/addisspark-logo.jpg")
+  leoMaxwellPhotoUrl   String  @default("/leo.png")
+  owenGrantPhotoUrl    String  @default("/owen.png")
+  eleanorVancePhotoUrl String  @default("/eleanor.png")
+  sofiaReyesPhotoUrl   String  @default("/sofia.png")
+  calebFinnPhotoUrl    String  @default("/caleb.png")
 }

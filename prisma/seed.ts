@@ -255,6 +255,18 @@ async function main() {
   }
   console.log('Seeded activity logs.');
   
+  // Seed Site Settings
+  await prisma.siteSettings.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      showFeaturesSection: true,
+      showTeamSection: true,
+    }
+  });
+  console.log('Seeded site settings.');
+
   // Seed ID Counters to prevent ID conflicts with generator
   await prisma.idCounter.upsert({ where: { type: 'DEPARTMENT' }, update: { count: 4 }, create: { type: 'DEPARTMENT', count: 4 } });
   await prisma.idCounter.upsert({ where: { type: 'USER' }, update: { count: 4 }, create: { type: 'USER', count: 4 } });
