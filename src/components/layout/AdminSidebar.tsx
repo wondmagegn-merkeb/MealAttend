@@ -19,31 +19,27 @@ import { Button } from '../ui/button';
 import { useAuth } from '@/hooks/useAuth'; 
 
 const navItemsBase = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, tooltip: 'Dashboard Overview' },
-  { href: '/admin/attendance', label: 'Attendance', icon: BookUser, tooltip: 'Manage Attendance Records' },
-  { href: '/admin/students', label: 'Students', icon: UsersRound, tooltip: 'Manage Students' }, 
-  { href: '/admin/activity-log', label: 'Activity Log', icon: History, tooltip: 'View User Activity' },
+  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, tooltip: 'Dashboard Overview', roles: ['Admin'] },
+  { href: '/admin/attendance', label: 'Attendance', icon: BookUser, tooltip: 'Manage Attendance Records', roles: ['Admin'] },
+  { href: '/admin/students', label: 'Students', icon: UsersRound, tooltip: 'Manage Students', roles: ['Admin', 'User'] }, 
+  { href: '/admin/activity-log', label: 'Activity Log', icon: History, tooltip: 'View User Activity', roles: ['Admin'] },
 ];
 
 const adminOnlyNavItems = [
-  { href: '/admin/users', label: 'Users', icon: UsersIcon, tooltip: 'Manage Users (Admin)' },
-  { href: '/admin/departments', label: 'Departments', icon: DepartmentIcon, tooltip: 'Manage Departments (Admin)' },
+  { href: '/admin/users', label: 'Users', icon: UsersIcon, tooltip: 'Manage Users (Admin)', roles: ['Admin'] },
+  { href: '/admin/departments', label: 'Departments', icon: DepartmentIcon, tooltip: 'Manage Departments (Admin)', roles: ['Admin'] },
 ];
 
 const navItemsSettings = [
-  { href: '/admin/settings', label: 'Settings', icon: Settings, tooltip: 'Application Settings' },
+  { href: '/admin/settings', label: 'Settings', icon: Settings, tooltip: 'Application Settings', roles: ['Admin', 'User'] },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const { currentUserRole } = useAuth(); 
 
-  let navItems = [...navItemsBase];
-  if (currentUserRole === 'Admin') {
-    navItems.splice(3, 0, ...adminOnlyNavItems); // Insert admin items before activity log
-  }
-  navItems.push(...navItemsSettings);
-
+  const allNavItems = [...navItemsBase, ...adminOnlyNavItems, ...navItemsSettings];
+  const availableNavItems = allNavItems.filter(item => currentUserRole && item.roles.includes(currentUserRole));
 
   return (
     <>
@@ -52,7 +48,7 @@ export function AdminSidebar() {
       </ShadSidebarHeader>
       <ShadSidebarContent className="p-4">
         <SidebarMenu>
-          {navItems.map((item) => (
+          {availableNavItems.map((item) => (
             <SidebarMenuItem key={item.label}>
               <Link href={item.href} passHref legacyBehavior>
                 <SidebarMenuButton

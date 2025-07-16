@@ -7,7 +7,7 @@ import { WelcomeBanner } from "@/components/admin/WelcomeBanner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Loader2, Users, CalendarDays, LineChart as LineChartIcon, FileDown, PieChart as PieChartLucideIcon, UserCheck, AlertTriangle, History, ArrowRight } from "lucide-react";
+import { Loader2, Users, CalendarDays, LineChart as LineChartIcon, FileDown, PieChart as PieChartLucideIcon, UserCheck, AlertTriangle, History, ArrowRight, Edit3, UserPlus, CreditCard, ScanLine, BookCopy, UsersRound, Building2, Settings } from "lucide-react";
 import { LineChart, Line, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip as RechartsTooltip, Legend as RechartsLegend, PieChart, Pie, Cell } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, type ChartConfig } from "@/components/ui/chart";
 import { format, formatDistanceToNow, getDaysInMonth, getMonth, getYear, parseISO } from 'date-fns';
@@ -378,5 +378,3 @@ export default function AdminDashboardPage() {
         </AuthGuard>
     )
 }
-
-    

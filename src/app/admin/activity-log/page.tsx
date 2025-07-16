@@ -293,5 +293,3 @@ export default function ActivityLogPage() {
         </AuthGuard>
     )
 }
-
-    
