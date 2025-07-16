@@ -13,7 +13,7 @@ const departments = [
   { id: 'dept_4', departmentId: 'ADERA/DEP/2024/00004', name: 'Security' },
 ];
 
-const users = [
+const usersData = [
   {
     id: 'user_super_admin',
     userId: 'ADERA/USR/2024/00001',
@@ -28,7 +28,6 @@ const users = [
     createdAt: subDays(new Date(), 30),
     updatedAt: subDays(new Date(), 1),
     createdById: null,
-    // Super Admin has all permissions implicitly
     canReadStudents: true, canWriteStudents: true, canCreateStudents: true, canDeleteStudents: true, canExportStudents: true,
     canReadAttendance: true, canExportAttendance: true,
     canReadActivityLog: true,
@@ -49,7 +48,6 @@ const users = [
     createdAt: subDays(new Date(), 10),
     updatedAt: subDays(new Date(), 1),
     createdById: 'user_super_admin',
-    // Admin has all permissions for this demo
     canReadStudents: true, canWriteStudents: true, canCreateStudents: true, canDeleteStudents: true, canExportStudents: true,
     canReadAttendance: true, canExportAttendance: true,
     canReadActivityLog: true,
@@ -70,7 +68,6 @@ const users = [
     createdAt: subDays(new Date(), 20),
     updatedAt: subDays(new Date(), 5),
     createdById: 'user_admin',
-    // Standard user has student permissions but no others
     canReadStudents: true, canWriteStudents: true, canCreateStudents: true, canDeleteStudents: true, canExportStudents: true,
     canReadAttendance: false, canExportAttendance: false,
     canReadActivityLog: false,
@@ -82,7 +79,7 @@ const users = [
     userId: 'ADERA/USR/2024/00004',
     fullName: 'Jane Doe',
     email: 'jane.doe@example.com',
-    password: hashSync('password', saltRounds), // Password for user that needs to change it
+    password: hashSync('password', saltRounds),
     role: 'User',
     status: 'Active',
     departmentId: 'dept_3',
@@ -91,7 +88,6 @@ const users = [
     createdAt: subDays(new Date(), 5),
     updatedAt: subDays(new Date(), 2),
     createdById: 'user_admin',
-    // This user only has create/read access to students
     canReadStudents: true, canWriteStudents: false, canCreateStudents: true, canDeleteStudents: false, canExportStudents: false,
     canReadAttendance: false, canExportAttendance: false,
     canReadActivityLog: false,
@@ -100,7 +96,7 @@ const users = [
   },
 ];
 
-const students = [
+const studentsData = [
   {
     id: 'stu_1',
     studentId: 'ADERA/STU/2023/00101',
@@ -139,7 +135,7 @@ const students = [
   },
 ];
 
-const attendanceRecords = [
+const attendanceRecordsData = [
    {
     id: 'att_1',
     attendanceId: 'ADERA/ATT/2024/00001',
@@ -172,7 +168,7 @@ const attendanceRecords = [
   },
 ];
 
-const activityLogs = [
+const activityLogsData = [
   {
     id: 'log_1',
     logId: 'ADERA/LOG/2024/00001',
@@ -186,6 +182,7 @@ const activityLogs = [
     id: 'log_2',
     logId: 'ADERA/LOG/2024/00002',
     userIdentifier: 'ADERA/USR/2024/00003',
+    userId: 'user_normal',
     action: 'ATTENDANCE_RECORD_SUCCESS',
     details: 'Student: Bob Williams, Meal: LUNCH',
     activityTimestamp: subDays(new Date(), 1),
@@ -216,42 +213,69 @@ async function main() {
   console.log('Seeded departments.');
 
   // Seed Users
-  for (const user of users) {
+  for (const userData of usersData) {
+    const { departmentId, createdById, ...restOfUserData } = userData;
+    const createPayload: any = { ...restOfUserData };
+    if (departmentId) {
+        createPayload.department = { connect: { id: departmentId } };
+    }
+    if (createdById) {
+        createPayload.createdBy = { connect: { id: createdById } };
+    }
+
     await prisma.user.upsert({
-      where: { id: user.id },
+      where: { id: userData.id },
       update: {},
-      create: user,
+      create: createPayload,
     });
   }
   console.log('Seeded users.');
 
   // Seed Students
-  for (const student of students) {
+  for (const studentData of studentsData) {
+    const { createdById, ...restOfStudentData } = studentData;
+    const createPayload: any = { ...restOfStudentData };
+    if (createdById) {
+        createPayload.createdBy = { connect: { id: createdById } };
+    }
     await prisma.student.upsert({
-      where: { id: student.id },
+      where: { id: studentData.id },
       update: {},
-      create: student,
+      create: createPayload,
     });
   }
   console.log('Seeded students.');
   
   // Seed Attendance Records
-  for (const record of attendanceRecords) {
+  for (const recordData of attendanceRecordsData) {
+    const { studentId, scannedById, ...restOfRecordData } = recordData;
+    const createPayload: any = { ...restOfRecordData };
+    if (studentId) {
+        createPayload.student = { connect: { id: studentId } };
+    }
+    if (scannedById) {
+        createPayload.scannedBy = { connect: { id: scannedById } };
+    }
     await prisma.attendanceRecord.upsert({
-      where: { id: record.id },
+      where: { id: recordData.id },
       update: {},
-      create: record,
+      create: createPayload,
     });
   }
   console.log('Seeded attendance records.');
 
   // Seed Activity Logs
-  for (const log of activityLogs) {
-    await prisma.activityLog.upsert({
-      where: { id: log.id },
-      update: {},
-      create: log,
-    });
+  for (const logData of activityLogsData) {
+      const { userId, ...restOfLogData } = logData;
+      const createPayload: any = { ...restOfLogData };
+      if (userId) {
+          createPayload.user = { connect: { id: userId } };
+      }
+      await prisma.activityLog.upsert({
+          where: { id: logData.id },
+          update: {},
+          create: createPayload,
+      });
   }
   console.log('Seeded activity logs.');
   
@@ -261,8 +285,23 @@ async function main() {
     update: {},
     create: {
       id: 1,
+      siteName: "MealAttend",
+      headerContent: "MealAttend Information Center",
+      idPrefix: "ADERA",
+      theme: "default",
       showFeaturesSection: true,
       showTeamSection: true,
+      addisSparkLogoUrl: "",
+      leoMaxwellPhotoUrl: "",
+      owenGrantPhotoUrl: "",
+      eleanorVancePhotoUrl: "",
+      sofiaReyesPhotoUrl: "",
+      calebFinnPhotoUrl: "",
+      defaultAdminPassword: "",
+      defaultUserPassword: "",
+      idCardLogoUrl: "",
+      idCardSchoolName: "Tech University",
+      idCardTitle: "STUDENT ID"
     }
   });
   console.log('Seeded site settings.');
