@@ -10,8 +10,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, UserCircle, Settings as SettingsIcon, Edit3, PanelLeft, LayoutDashboard, BookCopy, UsersRound, Users, Building2, History, UserPlus, FileDown, CreditCard, UserCog, ScanLine, ShieldCheck, MonitorCog } from "lucide-react";
+import { LogOut, UserCircle, Settings as SettingsIcon, Edit3, PanelLeft, LayoutDashboard, BookCopy, UsersRound, Users, Building2, History, UserPlus, FileDown, CreditCard, UserCog, ScanLine, ShieldCheck, MonitorCog, Languages } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar"; 
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth"; 
@@ -81,7 +85,21 @@ export function AdminHeader() {
           <PageTitle />
        </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
+         <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                    <Languages />
+                    <span className="sr-only">Change language</span>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuItem>English</DropdownMenuItem>
+                <DropdownMenuItem>Amharic</DropdownMenuItem>
+                <DropdownMenuItem>Afan Oromo</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">

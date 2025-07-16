@@ -37,6 +37,8 @@ async function getSiteSettings(): Promise<SiteSettings> {
       calebFinnPhotoUrl: '',
       createdAt: new Date(),
       updatedAt: new Date(),
+      defaultAdminPassword: '',
+      defaultUserPassword: '',
     };
   } catch (error) {
     console.error("Failed to fetch site settings for layout:", error);
@@ -57,6 +59,8 @@ async function getSiteSettings(): Promise<SiteSettings> {
       calebFinnPhotoUrl: '',
       createdAt: new Date(),
       updatedAt: new Date(),
+      defaultAdminPassword: '',
+      defaultUserPassword: '',
     };
   }
 }

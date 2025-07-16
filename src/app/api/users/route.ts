@@ -90,8 +90,17 @@ export async function POST(request: Request) {
 
     const newUserId = await generateNextId('USER');
 
-    // Default password for new users.
-    const defaultPassword = 'password123';
+    const siteSettings = await prisma.siteSettings.findUnique({
+      where: { id: 1 },
+    });
+    
+    let defaultPassword = 'password123'; // System-wide fallback
+    if (role === 'Admin' && siteSettings?.defaultAdminPassword) {
+      defaultPassword = siteSettings.defaultAdminPassword;
+    } else if (role === 'User' && siteSettings?.defaultUserPassword) {
+      defaultPassword = siteSettings.defaultUserPassword;
+    }
+
     const hashedPassword = await hash(defaultPassword, saltRounds);
 
     const newUser = await prisma.user.create({

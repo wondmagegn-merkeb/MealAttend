@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Loader2, MonitorCog, Save, Image as ImageIcon, Palette, Settings, Building } from 'lucide-react';
+import { Loader2, MonitorCog, Save, Image as ImageIcon, Palette, Settings, Building, KeyRound } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import type { SiteSettings } from '@prisma/client';
@@ -32,6 +32,8 @@ const siteSettingsSchema = z.object({
   eleanorVancePhotoUrl: z.string().url({ message: 'Please enter a valid URL.' }).or(z.literal('')),
   sofiaReyesPhotoUrl: z.string().url({ message: 'Please enter a valid URL.' }).or(z.literal('')),
   calebFinnPhotoUrl: z.string().url({ message: 'Please enter a valid URL.' }).or(z.literal('')),
+  defaultAdminPassword: z.string().optional(),
+  defaultUserPassword: z.string().optional(),
 });
 
 type SiteSettingsFormData = z.infer<typeof siteSettingsSchema>;
@@ -83,6 +85,8 @@ export default function SiteManagementPage() {
       eleanorVancePhotoUrl: '',
       sofiaReyesPhotoUrl: '',
       calebFinnPhotoUrl: '',
+      defaultAdminPassword: '',
+      defaultUserPassword: '',
     },
   });
 
@@ -96,6 +100,8 @@ export default function SiteManagementPage() {
         eleanorVancePhotoUrl: settings.eleanorVancePhotoUrl || '',
         sofiaReyesPhotoUrl: settings.sofiaReyesPhotoUrl || '',
         calebFinnPhotoUrl: settings.calebFinnPhotoUrl || '',
+        defaultAdminPassword: settings.defaultAdminPassword || '',
+        defaultUserPassword: settings.defaultUserPassword || '',
       });
     }
   }, [settings, form]);
@@ -156,6 +162,17 @@ export default function SiteManagementPage() {
             </CardContent>
           </Card>
           
+           <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><KeyRound className="h-5 w-5" /> Default Passwords</CardTitle>
+              <CardDescription>Set the initial passwords for newly created users.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <FormField control={form.control} name="defaultAdminPassword" render={({ field }) => (<FormItem><FormLabel>Default Admin Password</FormLabel><FormControl><Input type="password" placeholder="Leave blank for system default" {...field} /></FormControl><FormDescription>Password for newly created Admins.</FormDescription><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="defaultUserPassword" render={({ field }) => (<FormItem><FormLabel>Default User Password</FormLabel><FormControl><Input type="password" placeholder="Leave blank for system default" {...field} /></FormControl><FormDescription>Password for newly created standard Users.</FormDescription><FormMessage /></FormItem>)} />
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5" /> Theme & Appearance</CardTitle>

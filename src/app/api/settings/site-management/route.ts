@@ -40,6 +40,8 @@ export async function GET(request: Request) {
         eleanorVancePhotoUrl: '',
         sofiaReyesPhotoUrl: '',
         calebFinnPhotoUrl: '',
+        defaultAdminPassword: '',
+        defaultUserPassword: '',
     });
   }
 }
@@ -69,6 +71,8 @@ export async function PUT(request: Request) {
         eleanorVancePhotoUrl: data.eleanorVancePhotoUrl,
         sofiaReyesPhotoUrl: data.sofiaReyesPhotoUrl,
         calebFinnPhotoUrl: data.calebFinnPhotoUrl,
+        defaultAdminPassword: data.defaultAdminPassword,
+        defaultUserPassword: data.defaultUserPassword,
       },
     });
 
