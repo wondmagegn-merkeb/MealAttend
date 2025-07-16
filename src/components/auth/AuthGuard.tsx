@@ -10,6 +10,7 @@ import type { PermissionKey, User } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { Logo } from '../shared/Logo';
 
+const PUBLIC_PATHS = ['/', '/auth/login', '/auth/forgot-password', '/auth/reset-password'];
 const AUTH_FLOW_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-password', '/auth/change-password'];
 
 
@@ -34,10 +35,11 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
       return;
     }
 
+    const isPublicPage = PUBLIC_PATHS.includes(pathname);
     const isAuthFlowPage = AUTH_FLOW_PATHS.includes(pathname);
 
-    // If not authenticated and not on a public auth flow page, redirect to login.
-    if (!isAuthenticated && !isAuthFlowPage) {
+    // If not authenticated and not on a public page, redirect to login.
+    if (!isAuthenticated && !isPublicPage) {
       router.replace('/auth/login');
       return;
     }
@@ -49,8 +51,8 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
         return;
       }
       
-      // If on an auth flow page but password change is NOT required, redirect to dashboard.
-      if (!isPasswordChangeRequired && isAuthFlowPage) {
+      // If on an auth flow page (but not change password) and logged in, redirect to dashboard.
+      if (!isPasswordChangeRequired && isAuthFlowPage && pathname !== '/auth/change-password') {
         router.replace('/admin');
         return;
       }
@@ -69,11 +71,12 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
         return;
       }
 
-      // If the page requires a specific permission and the user doesn't have it (and isn't an admin), deny access.
-      if (permission && !currentUser[permission] && !isAdmin && !isSuperAdmin) {
+      // If the page requires a specific permission and the user doesn't have it, deny access.
+      // Super Admins bypass permission checks.
+      if (permission && !isSuperAdmin && !currentUser[permission]) {
         toast({
           title: "Access Denied",
-          description: "You do not have permission to view this page.",
+          description: "You do not have permission to perform this action or view this page.",
           variant: "destructive"
         });
         router.replace('/admin');
@@ -84,18 +87,19 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
 
   // Determine if content is ready to be shown
   let isReady = false;
-  if (isAuthenticated && currentUser) {
+  if (PUBLIC_PATHS.includes(pathname)) {
+    isReady = true;
+  } else if (isAuthenticated && currentUser) {
       if (isPasswordChangeRequired && pathname === '/auth/change-password') {
           isReady = true;
-      } else if (!isPasswordChangeRequired && !AUTH_FLOW_PATHS.includes(pathname)) {
+      } else if (!isPasswordChange-required && !AUTH_FLOW_PATHS.includes(pathname)) {
           let hasPermission = true;
           const isSuperAdmin = currentUser.role === 'Super Admin';
-          const isAdmin = currentUser.role === 'Admin';
 
           if (requiredRole && currentUser.role !== requiredRole && !isSuperAdmin) {
             hasPermission = false;
           }
-          if (permission && !currentUser[permission] && !isAdmin && !isSuperAdmin) {
+          if (permission && !isSuperAdmin && !currentUser[permission]) {
               hasPermission = false;
           }
           isReady = hasPermission;
