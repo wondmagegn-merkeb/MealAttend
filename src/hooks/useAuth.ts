@@ -86,8 +86,10 @@ export function useAuth(): AuthContextType {
       
       if (user.passwordChangeRequired) {
         router.push('/auth/change-password');
-      } else {
+      } else if (user.role === 'Admin') {
         router.push('/admin');
+      } else {
+        router.push('/admin/students'); // Default page for 'User' role
       }
       return true;
     } catch (error: any) {
@@ -192,3 +194,5 @@ export function useAuth(): AuthContextType {
     setIsAuthenticated,
   };
 }
+
+    

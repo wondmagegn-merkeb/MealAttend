@@ -13,9 +13,9 @@ import { StudentsTable } from "@/components/admin/students/StudentsTable";
 import { useToast } from "@/hooks/use-toast";
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
-import type { Student } from '@/types';
+import type { StudentWithCreator } from '@/types';
 
-const fetchStudents = async (): Promise<Student[]> => {
+const fetchStudents = async (): Promise<StudentWithCreator[]> => {
   const response = await fetch('/api/students');
   if (!response.ok) throw new Error('Failed to fetch students');
   return response.json();
@@ -29,7 +29,7 @@ const deleteStudent = async (studentId: string) => {
   }
 };
 
-type SortableStudentKeys = 'studentId' | 'name' | 'classGrade' | 'gender' | 'createdAt';
+type SortableStudentKeys = 'studentId' | 'name' | 'classGrade' | 'gender' | 'createdAt' | 'createdBy';
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -42,14 +42,14 @@ const ITEMS_PER_PAGE = 5;
 export default function StudentsPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { currentUserId } = useAuth();
+  const { currentUser } = useAuth();
   const router = useRouter();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'createdAt', direction: 'descending' });
   const [currentPage, setCurrentPage] = useState(1);
   
-  const { data: students = [], isLoading: isLoadingStudents, error: studentsError } = useQuery<Student[]>({
+  const { data: students = [], isLoading: isLoadingStudents, error: studentsError } = useQuery<StudentWithCreator[]>({
     queryKey: ['students'],
     queryFn: fetchStudents,
   });
@@ -59,7 +59,7 @@ export default function StudentsPage() {
     onSuccess: (_, deletedStudentId) => {
         const deletedStudent = students.find(s => s.id === deletedStudentId);
         toast({ title: "Student Deleted", description: "The student record has been successfully deleted." });
-        logUserActivity(currentUserId, "STUDENT_DELETE_SUCCESS", `Deleted student ID: ${deletedStudent?.studentId || 'N/A'}, Name: ${deletedStudent?.name || 'Unknown'}`);
+        logUserActivity(currentUser?.userId, "STUDENT_DELETE_SUCCESS", `Deleted student ID: ${deletedStudent?.studentId || 'N/A'}, Name: ${deletedStudent?.name || 'Unknown'}`);
         queryClient.invalidateQueries({ queryKey: ['students'] });
     },
     onError: (error: Error) => {
@@ -67,7 +67,7 @@ export default function StudentsPage() {
     }
   });
 
-  const handleEditStudent = (student: Student) => {
+  const handleEditStudent = (student: StudentWithCreator) => {
     router.push(`/admin/students/${student.id}/edit`);
   };
 
@@ -91,19 +91,26 @@ export default function StudentsPage() {
 
   const filteredAndSortedStudents = useMemo(() => {
     let processedStudents = [...students];
+    
+    // For non-admins, only show students they created
+    if (currentUser?.role === 'User') {
+        processedStudents = processedStudents.filter(student => student.createdById === currentUser.id);
+    }
+
 
     if (searchTerm) {
       processedStudents = processedStudents.filter(student =>
         student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.studentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (student.classGrade && student.classGrade.toLowerCase().includes(searchTerm.toLowerCase()))
+        (student.classGrade && student.classGrade.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (student.createdBy && student.createdBy.fullName.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
     if (sortConfig.key) {
       processedStudents.sort((a, b) => {
-        const aValue = a[sortConfig.key!];
-        const bValue = b[sortConfig.key!];
+        const aValue = sortConfig.key === 'createdBy' ? a.createdBy?.fullName : a[sortConfig.key!];
+        const bValue = sortConfig.key === 'createdBy' ? b.createdBy?.fullName : b[sortConfig.key!];
 
         if (aValue === undefined || aValue === null) return 1;
         if (bValue === undefined || bValue === null) return -1;
@@ -121,7 +128,7 @@ export default function StudentsPage() {
       });
     }
     return processedStudents;
-  }, [students, searchTerm, sortConfig]);
+  }, [students, searchTerm, sortConfig, currentUser]);
 
   const totalPages = Math.max(1, Math.ceil(filteredAndSortedStudents.length / ITEMS_PER_PAGE));
   
@@ -177,7 +184,7 @@ export default function StudentsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search by ID, name, or grade..."
+              placeholder="Search by ID, name, grade, or creator..."
               value={searchTerm}
               onChange={handleSearchChange}
               className="pl-10 w-full sm:w-1/2 md:w-1/3"
@@ -239,3 +246,5 @@ export default function StudentsPage() {
     </div>
   );
 }
+
+    

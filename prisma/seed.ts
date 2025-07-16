@@ -69,6 +69,7 @@ const students = [
     qrCodeData: 'qr_alice_j_202300101',
     createdAt: subDays(new Date(), 150),
     updatedAt: subDays(new Date(), 10),
+    createdById: 'user_1', // Admin User
   },
   {
     id: 'stu_2',
@@ -80,6 +81,7 @@ const students = [
     qrCodeData: 'qr_bob_w_202400205',
     createdAt: subDays(new Date(), 30),
     updatedAt: subDays(new Date(), 3),
+    createdById: 'user_2', // Normal User
   },
    {
     id: 'stu_3',
@@ -91,6 +93,7 @@ const students = [
     qrCodeData: 'qr_charlie_b_202300115',
     createdAt: subDays(new Date(), 140),
     updatedAt: subDays(new Date(), 20),
+    createdById: 'user_1', // Admin User
   },
 ];
 
@@ -227,3 +230,5 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+
+    

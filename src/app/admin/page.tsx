@@ -19,6 +19,7 @@ import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import { QuickActions } from '@/components/admin/QuickActions';
 import type { Student, User, AttendanceRecord, UserActivityLog, AttendanceRecordWithStudent } from '@/types';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 
 const fetchDashboardData = async (): Promise<{ students: Student[], users: User[], attendance: AttendanceRecordWithStudent[], activity: UserActivityLog[] }> => {
     const [studentsRes, usersRes, attendanceRes, activityRes] = await Promise.all([
@@ -59,7 +60,7 @@ const getYearFromStudentId = (studentId: string): string | null => {
   return null;
 };
 
-export default function AdminDashboardPage() {
+function AdminDashboardPageContent() {
   const [selectedYear, setSelectedYear] = useState<string>(String(CURRENT_GREGORIAN_YEAR));
   const [selectedMonth, setSelectedMonth] = useState<number>(CURRENT_GREGORIAN_MONTH); 
   const { toast } = useToast();
@@ -369,3 +370,13 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
+export default function AdminDashboardPage() {
+    return (
+        <AuthGuard requiredRole="Admin">
+            <AdminDashboardPageContent />
+        </AuthGuard>
+    )
+}
+
+    

@@ -11,7 +11,12 @@ import Link from 'next/link';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
 
-const createStudent = async (data: Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string | null }) => {
+type CreateStudentPayload = Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { 
+  classGrade?: string | null;
+  createdById: string; 
+};
+
+const createStudent = async (data: CreateStudentPayload) => {
   const response = await fetch('/api/students', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -29,7 +34,7 @@ export default function NewStudentPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { currentUserId } = useAuth();
+  const { currentUser } = useAuth();
   
   const mutation = useMutation({
     mutationFn: createStudent,
@@ -38,7 +43,7 @@ export default function NewStudentPage() {
           title: "Student Added",
           description: `${newData.name} has been successfully added with ID ${newData.studentId}.`,
       });
-      logUserActivity(currentUserId, "STUDENT_CREATE_SUCCESS", `Created student ID: ${newData.studentId}, Name: ${newData.name}`);
+      logUserActivity(currentUser?.userId, "STUDENT_CREATE_SUCCESS", `Created student ID: ${newData.studentId}, Name: ${newData.name}`);
       queryClient.invalidateQueries({ queryKey: ['students'] });
       router.push('/admin/students');
     },
@@ -52,7 +57,17 @@ export default function NewStudentPage() {
   });
 
   const handleFormSubmit = async (data: Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string | null }) => {
-    mutation.mutate(data);
+    if (!currentUser?.id) {
+        toast({ title: "Authentication Error", description: "Could not identify the current user.", variant: "destructive" });
+        return;
+    }
+
+    const payload: CreateStudentPayload = {
+      ...data,
+      createdById: currentUser.id, // Add the creator's internal ID
+    };
+
+    mutation.mutate(payload);
   };
 
   return (
@@ -78,3 +93,5 @@ export default function NewStudentPage() {
     </div>
   );
 }
+
+    

@@ -17,12 +17,13 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { Student } from '@/types';
+import type { StudentWithCreator } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
+import { useAuth } from "@/hooks/useAuth";
 
 
-type SortableStudentKeys = 'studentId' | 'name' | 'classGrade' | 'gender' | 'createdAt';
+type SortableStudentKeys = 'studentId' | 'name' | 'classGrade' | 'gender' | 'createdAt' | 'createdBy';
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -31,8 +32,8 @@ interface SortConfig {
 }
 
 interface StudentsTableProps {
-  students: Student[];
-  onEdit: (student: Student) => void;
+  students: StudentWithCreator[];
+  onEdit: (student: StudentWithCreator) => void;
   onDelete: (studentId: string) => void;
   sortConfig: SortConfig;
   onSort: (key: SortableStudentKeys) => void;
@@ -40,9 +41,10 @@ interface StudentsTableProps {
 
 export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }: StudentsTableProps) {
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
-  const [studentToDelete, setStudentToDelete] = React.useState<Student | null>(null);
+  const [studentToDelete, setStudentToDelete] = React.useState<StudentWithCreator | null>(null);
+  const { currentUserRole } = useAuth();
 
-  const handleDeleteClick = (student: Student) => {
+  const handleDeleteClick = (student: StudentWithCreator) => {
     setStudentToDelete(student);
     setShowDeleteDialog(true);
   };
@@ -109,6 +111,12 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
                 <span className="text-muted-foreground">Gender:</span>
                 <span>{student.gender || 'N/A'}</span>
               </div>
+              {currentUserRole === 'Admin' && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Created By:</span>
+                  <span>{student.createdBy?.fullName || 'N/A'}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Created:</span>
                 <span>{format(new Date(student.createdAt), "yyyy-MM-dd")}</span>
@@ -138,6 +146,7 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
               <SortableTableHead columnKey="name">Name</SortableTableHead>
               <SortableTableHead columnKey="classGrade">Grade</SortableTableHead>
               <SortableTableHead columnKey="gender">Gender</SortableTableHead>
+              {currentUserRole === 'Admin' && <SortableTableHead columnKey="createdBy">Created By</SortableTableHead>}
               <SortableTableHead columnKey="createdAt">Created At</SortableTableHead>
               <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
             </TableRow>
@@ -165,6 +174,7 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
                 <TableCell className="whitespace-nowrap">
                   {student.gender ? <Badge variant="secondary">{student.gender}</Badge> : 'N/A'}
                 </TableCell>
+                 {currentUserRole === 'Admin' && <TableCell className="whitespace-nowrap">{student.createdBy?.fullName || 'N/A'}</TableCell>}
                 <TableCell className="whitespace-nowrap">{new Date(student.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right whitespace-nowrap">
                   <div className="flex justify-end items-center gap-1">
@@ -233,3 +243,5 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
     </TooltipProvider>
   );
 }
+
+    

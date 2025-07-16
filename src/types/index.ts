@@ -35,6 +35,15 @@ export interface Student {
   qrCodeData: string | null;
   createdAt: string;
   updatedAt: string;
+  createdById: string | null;
+}
+
+export interface StudentWithCreator extends Student {
+  createdBy: {
+    id: string;
+    userId: string;
+    fullName: string;
+  } | null;
 }
 
 export type MealType = "BREAKFAST" | "LUNCH" | "DINNER";
@@ -62,3 +71,5 @@ export interface UserActivityLog {
     details: string | null;
     activityTimestamp: string;
 }
+
+    

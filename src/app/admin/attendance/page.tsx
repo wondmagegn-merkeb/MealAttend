@@ -21,6 +21,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import type { AttendanceRecordWithStudent, Student, MealType } from '@/types';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 
 const fetchAttendanceRecords = async (): Promise<AttendanceRecordWithStudent[]> => {
   const response = await fetch('/api/attendance');
@@ -105,7 +106,7 @@ const transformAttendanceForExport = (records: AttendanceRecordWithStudent[]): E
     });
 };
 
-export default function AttendancePage() {
+function AttendancePageContent() {
   const { toast } = useToast();
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -148,7 +149,7 @@ export default function AttendancePage() {
         const classA = parseClass(a);
         const classB = parseClass(b);
         if (classA.number !== classB.number) return classA.number - classB.number;
-        return classA.letter.localeCompare(classB.letter);
+        return classA.letter.localeCompare(b.letter);
     });
   }, [students]);
 
@@ -625,3 +626,14 @@ export default function AttendancePage() {
     </div>
   );
 }
+
+
+export default function AttendancePage() {
+    return (
+        <AuthGuard requiredRole="Admin">
+            <AttendancePageContent />
+        </AuthGuard>
+    )
+}
+
+    

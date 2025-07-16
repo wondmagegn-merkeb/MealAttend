@@ -12,6 +12,15 @@ export async function GET() {
       orderBy: {
         createdAt: 'desc',
       },
+       include: {
+        createdBy: {
+          select: {
+            id: true,
+            userId: true,
+            fullName: true,
+          }
+        },
+      }
     });
     return NextResponse.json(students);
   } catch (error: any) {
@@ -26,10 +35,10 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const { name, gender, classGrade, profileImageURL } = data;
+    const { name, gender, classGrade, profileImageURL, createdById } = data;
 
-    if (!name) {
-      return NextResponse.json({ message: 'Missing required field: name' }, { status: 400 });
+    if (!name || !createdById) {
+      return NextResponse.json({ message: 'Missing required fields: name, createdById' }, { status: 400 });
     }
 
     const newStudentId = await generateNextId('STUDENT');
@@ -41,6 +50,7 @@ export async function POST(request: Request) {
         gender,
         classGrade,
         profileImageURL,
+        createdById,
         // The QR code data can be the studentId itself or some other unique identifier.
         qrCodeData: newStudentId,
       },
@@ -60,3 +70,5 @@ export async function POST(request: Request) {
     );
   }
 }
+
+    

@@ -16,6 +16,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import type { DateRange } from 'react-day-picker';
 import { format, isWithinInterval, startOfDay, endOfDay, parseISO } from 'date-fns';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 
 const fetchActivityLogs = async (): Promise<UserActivityLog[]> => {
   const response = await fetch('/api/activity-log');
@@ -54,7 +55,7 @@ const ALL_ACTIONS = [
 ];
 
 
-export default function ActivityLogPage() {
+function ActivityLogPageContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'activityTimestamp', direction: 'descending' });
   const [currentPage, setCurrentPage] = useState(1);
@@ -97,8 +98,9 @@ export default function ActivityLogPage() {
   const filteredAndSortedLogs = useMemo(() => {
     let processedLogs = [...logs];
 
-    if (currentUser?.role === 'User') {
-        processedLogs = processedLogs.filter(log => log.userIdentifier === currentUser.userId);
+    // For non-admins, only show their own activity
+    if (currentUser?.role !== 'Admin') {
+        processedLogs = processedLogs.filter(log => log.userIdentifier === currentUser?.userId);
     }
     
     if (actionFilter !== 'all') {
@@ -283,3 +285,13 @@ export default function ActivityLogPage() {
     </div>
   );
 }
+
+export default function ActivityLogPage() {
+    return (
+        <AuthGuard requiredRole="Admin">
+            <ActivityLogPageContent />
+        </AuthGuard>
+    )
+}
+
+    
