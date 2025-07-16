@@ -258,18 +258,7 @@ function AdminDashboardPageContent() {
     return (
        <div className="space-y-6">
         <WelcomeBanner />
-        <Card className="shadow-lg">
-            <CardHeader>
-                <CardTitle>Welcome to MealAttend</CardTitle>
-                <CardDescription>Your central hub for student management.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <p className="text-muted-foreground">
-                    Use the navigation menu on the left to access the features you have permission for, such as managing students.
-                </p>
-                <QuickActions />
-            </CardContent>
-        </Card>
+        <QuickActions />
        </div>
     )
   }
