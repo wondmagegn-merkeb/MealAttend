@@ -297,6 +297,7 @@ async function main() {
       eleanorVancePhotoUrl: "",
       sofiaReyesPhotoUrl: "",
       calebFinnPhotoUrl: "",
+      defaultSuperAdminPassword: "",
       defaultAdminPassword: "",
       defaultUserPassword: "",
       idCardLogoUrl: "",
@@ -325,3 +326,5 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+
+    

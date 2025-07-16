@@ -3,7 +3,7 @@
 
 import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Switch } from '@/components/ui/switch';
@@ -18,6 +18,7 @@ import type { SiteSettings } from '@prisma/client';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { themes } from '@/lib/themes';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 const siteSettingsSchema = z.object({
   siteName: z.string().min(1, { message: 'Site Name is required.' }),
@@ -32,6 +33,7 @@ const siteSettingsSchema = z.object({
   eleanorVancePhotoUrl: z.string().url({ message: 'Please enter a valid URL.' }).or(z.literal('')),
   sofiaReyesPhotoUrl: z.string().url({ message: 'Please enter a valid URL.' }).or(z.literal('')),
   calebFinnPhotoUrl: z.string().url({ message: 'Please enter a valid URL.' }).or(z.literal('')),
+  defaultSuperAdminPassword: z.string().optional(),
   defaultAdminPassword: z.string().optional(),
   defaultUserPassword: z.string().optional(),
   idCardLogoUrl: z.string().url({ message: 'Please enter a valid URL for the ID card logo.' }).or(z.literal('')),
@@ -88,6 +90,7 @@ export default function SiteManagementPage() {
       eleanorVancePhotoUrl: '',
       sofiaReyesPhotoUrl: '',
       calebFinnPhotoUrl: '',
+      defaultSuperAdminPassword: '',
       defaultAdminPassword: '',
       defaultUserPassword: '',
       idCardLogoUrl: '',
@@ -106,6 +109,7 @@ export default function SiteManagementPage() {
         eleanorVancePhotoUrl: settings.eleanorVancePhotoUrl || '',
         sofiaReyesPhotoUrl: settings.sofiaReyesPhotoUrl || '',
         calebFinnPhotoUrl: settings.calebFinnPhotoUrl || '',
+        defaultSuperAdminPassword: settings.defaultSuperAdminPassword || '',
         defaultAdminPassword: settings.defaultAdminPassword || '',
         defaultUserPassword: settings.defaultUserPassword || '',
         idCardLogoUrl: settings.idCardLogoUrl || '',
@@ -176,7 +180,8 @@ export default function SiteManagementPage() {
               <CardTitle className="flex items-center gap-2"><KeyRound className="h-5 w-5" /> Default Passwords</CardTitle>
               <CardDescription>Set the initial passwords for newly created users.</CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                 <FormField control={form.control} name="defaultSuperAdminPassword" render={({ field }) => (<FormItem><FormLabel>Default Super Admin Password</FormLabel><FormControl><Input type="password" placeholder="Leave blank for system default" {...field} /></FormControl><FormDescription>Password for newly created Super Admins.</FormDescription><FormMessage /></FormItem>)} />
                  <FormField control={form.control} name="defaultAdminPassword" render={({ field }) => (<FormItem><FormLabel>Default Admin Password</FormLabel><FormControl><Input type="password" placeholder="Leave blank for system default" {...field} /></FormControl><FormDescription>Password for newly created Admins.</FormDescription><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="defaultUserPassword" render={({ field }) => (<FormItem><FormLabel>Default User Password</FormLabel><FormControl><Input type="password" placeholder="Leave blank for system default" {...field} /></FormControl><FormDescription>Password for newly created standard Users.</FormDescription><FormMessage /></FormItem>)} />
             </CardContent>
@@ -203,10 +208,10 @@ export default function SiteManagementPage() {
                             {themes.map((theme) => (
                                 <FormItem key={theme.name} className="flex-1">
                                     <FormControl>
-                                         <RadioGroupItem value={theme.name} className="sr-only" />
+                                         <RadioGroupItem value={theme.name} id={theme.name} className="sr-only" />
                                     </FormControl>
-                                    <Label htmlFor={theme.name} className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary] cursor-pointer">
-                                        <span style={{'--theme-primary': theme.primary} as React.CSSProperties} className="w-full h-8 rounded-md bg-[var(--theme-primary)] mb-2"></span>
+                                    <Label htmlFor={theme.name} className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
+                                        <span style={{'--theme-primary': `hsl(${theme.primary})`} as React.CSSProperties} className="w-full h-8 rounded-md bg-[var(--theme-primary)] mb-2"></span>
                                         {theme.label}
                                     </Label>
                                 </FormItem>
@@ -296,3 +301,5 @@ export default function SiteManagementPage() {
     </div>
   );
 }
+
+    

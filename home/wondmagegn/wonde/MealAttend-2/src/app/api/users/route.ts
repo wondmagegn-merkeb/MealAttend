@@ -81,8 +81,8 @@ export async function POST(request: Request) {
     }
     
     // Enforce role creation rules
-    if (role === 'Super Admin') {
-        return NextResponse.json({ message: 'Cannot create a user with the Super Admin role.' }, { status: 403 });
+    if (creator.role !== 'Super Admin' && role === 'Super Admin') {
+        return NextResponse.json({ message: 'Only Super Admins can create other Super Admins.' }, { status: 403 });
     }
     if (creator.role === 'Admin' && role === 'Admin') {
         return NextResponse.json({ message: 'Admins cannot create other Admins.' }, { status: 403 });
@@ -98,7 +98,9 @@ export async function POST(request: Request) {
     });
     
     let defaultPassword = 'password123'; // System-wide fallback
-    if (role === 'Admin' && siteSettings?.defaultAdminPassword) {
+    if (role === 'Super Admin' && siteSettings?.defaultSuperAdminPassword) {
+      defaultPassword = siteSettings.defaultSuperAdminPassword;
+    } else if (role === 'Admin' && siteSettings?.defaultAdminPassword) {
       defaultPassword = siteSettings.defaultAdminPassword;
     } else if (role === 'User' && siteSettings?.defaultUserPassword) {
       defaultPassword = siteSettings.defaultUserPassword;
@@ -145,3 +147,5 @@ export async function POST(request: Request) {
     );
   }
 }
+
+    
