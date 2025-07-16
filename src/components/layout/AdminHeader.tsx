@@ -47,12 +47,12 @@ const getPageConfig = (pathname: string): { title: string, icon: React.ReactNode
   if (pathname.startsWith('/admin/profile/my-permissions')) return { title: 'My Permissions', icon: <ShieldCheck className="h-6 w-6" /> };
   if (pathname.startsWith('/scan')) return { title: 'QR Code Scanner', icon: <ScanLine className="h-6 w-6" /> };
   
-  return { title: 'MealAttend', icon: null };
+  return { title: '', icon: null };
 };
 
 
 export function AdminHeader() {
-  const { logout, currentUser } = useAuth(); 
+  const { logout, currentUser, siteName } = useAuth(); 
   const pathname = usePathname();
   const { title, icon } = getPageConfig(pathname);
 
@@ -62,7 +62,7 @@ export function AdminHeader() {
 
   const PageTitle = () => (
     <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
-      {icon} {title}
+      {icon} {title || siteName}
     </h1>
   );
 

@@ -51,7 +51,7 @@ export default async function HomePage() {
     {
       name: 'Leo Maxwell',
       role: 'CEO & Full-Stack Developer',
-      avatarUrl: settings?.leoMaxwellPhotoUrl || '/leo.png',
+      avatarUrl: settings?.leoMaxwellPhotoUrl || 'https://placehold.co/128x128.png',
       bio: 'Wachemo University Computer Science graduate, leading the vision and technology.',
       avatarHint: 'man professional',
       isCeo: true,
@@ -59,28 +59,28 @@ export default async function HomePage() {
     {
       name: 'Owen Grant',
       role: 'CTO & Full-Stack Developer',
-      avatarUrl: settings?.owenGrantPhotoUrl || '/owen.png',
+      avatarUrl: settings?.owenGrantPhotoUrl || 'https://placehold.co/128x128.png',
       bio: 'Wachemo University Computer Science graduate, building robust back-end systems.',
       avatarHint: 'man professional',
     },
      {
       name: 'Eleanor Vance',
       role: 'Project Manager & Marketing Lead',
-      avatarUrl: settings?.eleanorVancePhotoUrl || '/eleanor.png',
+      avatarUrl: settings?.eleanorVancePhotoUrl || 'https://placehold.co/128x128.png',
       bio: 'Marketing graduate from Wachemo University, driving our brand and project timelines forward.',
       avatarHint: 'woman professional',
     },
     {
       name: 'Sofia Reyes',
       role: 'Marketing Specialist',
-      avatarUrl: settings?.sofiaReyesPhotoUrl || '/sofia.png',
+      avatarUrl: settings?.sofiaReyesPhotoUrl || 'https://placehold.co/128x128.png',
       bio: 'Wachemo University marketing graduate with a passion for digital outreach.',
       avatarHint: 'woman professional',
     },
     {
       name: 'Caleb Finn',
       role: 'Lead Full-Stack Developer',
-      avatarUrl: settings?.calebFinnPhotoUrl || '/caleb.png',
+      avatarUrl: settings?.calebFinnPhotoUrl || 'https://placehold.co/128x128.png',
       bio: 'Software Engineering graduate from Wachemo University, focusing on seamless user experiences.',
       avatarHint: 'man professional',
     },
@@ -97,7 +97,7 @@ export default async function HomePage() {
               <div className="flex justify-center mb-4">
                   <Shield className="h-20 w-20 text-accent" />
               </div>
-              <CardTitle className="text-4xl font-bold text-primary">MealAttend Information Center</CardTitle>
+              <CardTitle className="text-4xl font-bold text-primary">{settings?.headerContent || 'MealAttend Information Center'}</CardTitle>
               <CardDescription className="text-lg text-muted-foreground">
                   Learn more about our system and the team behind it.
               </CardDescription>
@@ -137,7 +137,7 @@ export default async function HomePage() {
                         <h2 className="text-3xl font-semibold text-primary">Our Team</h2>
                     </div>
                     <div className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-6 mb-6">
-                        <Image src={settings?.addisSparkLogoUrl || "/addisspark-logo.jpg"} alt="AddisSpark Logo" width={120} height={120} className="rounded-lg shadow-md" data-ai-hint="spark logo" />
+                        <Image src={settings?.addisSparkLogoUrl || "https://placehold.co/120x120.png"} alt="AddisSpark Logo" width={120} height={120} className="rounded-lg shadow-md" data-ai-hint="spark logo" />
                         <p className="text-muted-foreground leading-relaxed flex-1">
                           MealAttend is proudly developed by <span className="font-semibold text-accent inline-flex items-center">AddisSpark <Sparkles className="ml-1 h-4 w-4" /></span>, an innovative startup dedicated to creating modern software solutions that solve real-world challenges. Our team is a blend of creative designers, skilled developers, and strategic thinkers.
                         </p>

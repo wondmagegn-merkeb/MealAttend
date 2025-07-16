@@ -15,12 +15,19 @@ const typeToPrefixMap: Record<IdType, string> = {
 
 /**
  * Generates the next sequential ID for a given entity type.
- * Format: ADERA/<PREFIX>/<YEAR>/<5-DIGIT-NUMBER>
+ * Format: <ID_PREFIX>/<TYPE_PREFIX>/<YEAR>/<5-DIGIT-NUMBER>
  * @param type The type of entity (STUDENT, USER, or DEPARTMENT).
  * @returns A promise that resolves to the next formatted ID string.
  */
 export async function generateNextId(type: IdType): Promise<string> {
   try {
+    // Fetch the site-wide ID prefix from settings
+    const settings = await prisma.siteSettings.findUnique({
+      where: { id: 1 },
+      select: { idPrefix: true }
+    });
+    const idPrefix = settings?.idPrefix || 'ADERA'; // Fallback to default
+
     // Prisma's interactive transaction ensures that the find/update operation is atomic.
     // This is crucial to prevent race conditions where two requests might get the same ID.
     const newCount = await prisma.$transaction(async (tx) => {
@@ -44,8 +51,8 @@ export async function generateNextId(type: IdType): Promise<string> {
     });
 
     const year = new Date().getFullYear();
-    const prefix = typeToPrefixMap[type];
-    const formattedId = `ADERA/${prefix}/${year}/${String(newCount).padStart(5, '0')}`;
+    const typePrefix = typeToPrefixMap[type];
+    const formattedId = `${idPrefix}/${typePrefix}/${year}/${String(newCount).padStart(5, '0')}`;
     return formattedId;
 
   } catch (error) {

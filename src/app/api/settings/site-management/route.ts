@@ -8,11 +8,8 @@ export const dynamic = 'force-dynamic';
 // GET site settings
 export async function GET(request: Request) {
   try {
-    const user = await getAuthFromRequest(request);
-    if (user?.role !== 'Super Admin') {
-      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-    }
-
+    // No auth check needed for public settings retrieval,
+    // as it's used by the root layout.
     const settings = await prisma.siteSettings.findUnique({
       where: { id: 1 },
     });
@@ -27,10 +24,23 @@ export async function GET(request: Request) {
 
     return NextResponse.json(settings);
   } catch (error: any) {
-    return NextResponse.json(
-      { message: 'Failed to fetch site settings', error: error.message },
-      { status: 500 }
-    );
+    // Return a default-like structure on error to prevent layout crash
+    console.error("Failed to fetch site settings:", error.message);
+    return NextResponse.json({
+        id: 1,
+        siteName: 'MealAttend',
+        headerContent: 'MealAttend Information Center',
+        idPrefix: 'ADERA',
+        theme: 'default',
+        showFeaturesSection: true,
+        showTeamSection: true,
+        addisSparkLogoUrl: '',
+        leoMaxwellPhotoUrl: '',
+        owenGrantPhotoUrl: '',
+        eleanorVancePhotoUrl: '',
+        sofiaReyesPhotoUrl: '',
+        calebFinnPhotoUrl: '',
+    });
   }
 }
 
@@ -47,6 +57,10 @@ export async function PUT(request: Request) {
     const updatedSettings = await prisma.siteSettings.update({
       where: { id: 1 },
       data: {
+        siteName: data.siteName,
+        headerContent: data.headerContent,
+        idPrefix: data.idPrefix,
+        theme: data.theme,
         showFeaturesSection: data.showFeaturesSection,
         showTeamSection: data.showTeamSection,
         addisSparkLogoUrl: data.addisSparkLogoUrl,

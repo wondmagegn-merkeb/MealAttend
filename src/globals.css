@@ -1,0 +1,96 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* These will be overridden by inline styles from layout.tsx */
+    --background: 0 0% 96%;
+    --foreground: 210 40% 10%;
+    --primary: 207 90% 54%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 174 100% 29%;
+    --accent-foreground: 0 0% 100%;
+    
+    /* These remain static as they are derived from the above */
+    --card: 0 0% 100%;
+    --card-foreground: 210 40% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 40% 10%;
+    --secondary: 207 80% 90%;
+    --secondary-foreground: 207 90% 30%;
+    --muted: 0 0% 90%;
+    --muted-foreground: 0 0% 45%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 207 90% 54%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.75rem;
+
+    /* Sidebar specific theme */
+    --sidebar-background: hsl(var(--primary));
+    --sidebar-foreground: hsl(var(--primary-foreground));
+    --sidebar-primary: hsl(var(--accent));
+    --sidebar-primary-foreground: hsl(var(--accent-foreground));
+    --sidebar-accent: hsl(var(--primary) / 0.8);
+    --sidebar-accent-foreground: hsl(var(--primary-foreground));
+    --sidebar-border: hsl(var(--primary) / 0.7);
+    --sidebar-ring: hsl(var(--accent));
+  }
+
+  .dark {
+    /* These will be overridden by inline styles from layout.tsx */
+    --background: 210 40% 5%;
+    --foreground: 0 0% 96%;
+    --primary: 207 90% 58%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 174 100% 35%;
+    --accent-foreground: 0 0% 100%;
+    
+    /* These remain static as they are derived from the above */
+    --card: 210 40% 8%;
+    --card-foreground: 0 0% 96%;
+    --popover: 210 40% 8%;
+    --popover-foreground: 0 0% 96%;
+    --secondary: 207 80% 20%;
+    --secondary-foreground: 0 0% 90%;
+    --muted: 210 40% 15%;
+    --muted-foreground: 0 0% 60%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 40% 20%;
+    --input: 210 40% 20%;
+    --ring: 207 90% 58%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+
+    /* Dark Sidebar specific theme */
+    --sidebar-background: hsl(var(--primary) / 0.5);
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: hsl(var(--accent));
+    --sidebar-primary-foreground: hsl(var(--accent-foreground));
+    --sidebar-accent: hsl(var(--primary) / 0.6);
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: hsl(var(--primary) / 0.4);
+    --sidebar-ring: hsl(var(--accent));
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
