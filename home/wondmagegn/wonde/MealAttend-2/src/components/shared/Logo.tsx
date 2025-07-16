@@ -4,6 +4,7 @@ import type { HTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 import prisma from '@/lib/prisma';
 import Image from 'next/image';
+import type { SiteSettings } from '@prisma/client';
 
 interface LogoProps extends HTMLAttributes<HTMLAnchorElement> {
   size?: 'sm' | 'md' | 'lg';
@@ -33,7 +34,7 @@ async function getSiteSettings(): Promise<{ siteName: string; logoUrl: string | 
 
 export async function Logo({ size = 'md', iconOnly = false, className, textColorClass = 'text-inherit', ...props }: LogoProps) {
   const textSizeClass = size === 'sm' ? 'text-xl' : size === 'md' ? 'text-2xl' : 'text-3xl';
-  const iconSize = size === 'sm' ? 'h-8 w-8' : size === 'md' ? 'h-9 w-9' : 'h-10 w-10'; // Adjusted for images
+  const iconSize = size === 'sm' ? 'h-8 w-8' : size === 'md' ? 'h-9 w-9' : 'h-10 w-10';
   const { siteName, logoUrl } = await getSiteSettings();
 
   return (

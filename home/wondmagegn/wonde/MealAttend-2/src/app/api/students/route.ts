@@ -15,12 +15,9 @@ export async function GET(request: Request) {
     }
 
     const whereClause: any = {};
-    if (user.role === 'Admin') {
-      // Admins can see students they created and students created by users under them.
-      // This part can be enhanced if there's a direct link between admins and the users they manage.
-      // For now, Admins see students created by themselves.
-      // A Super Admin will have no where clause and see all.
-    } else if (user.role === 'User') {
+    
+    // Super Admin can see all students, so no where clause is added.
+    if (user.role === 'Admin' || user.role === 'User') {
       whereClause.createdById = user.id;
     }
 
