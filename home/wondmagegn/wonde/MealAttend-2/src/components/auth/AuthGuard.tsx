@@ -38,14 +38,22 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
     const isPublicPage = PUBLIC_PATHS.includes(pathname);
     const isAuthFlowPage = AUTH_FLOW_PATHS.includes(pathname);
 
-    // If user is not authenticated...
+    // If the page is public, anyone can access it.
+    // However, if an authenticated user tries to access an auth flow page
+    // (like login) when they don't need to, redirect them.
+    if (isAuthenticated && !isPasswordChangeRequired && isAuthFlowPage && pathname !== '/auth/change-password') {
+        router.replace('/admin');
+        return;
+    }
+
+    if (isPublicPage) {
+        return;
+    }
+
+    // If user is not authenticated and trying to access a protected page
     if (!isAuthenticated) {
-      // and trying to access a protected page, redirect to login.
-      if (!isPublicPage) {
         router.replace('/auth/login');
-      }
-      // Otherwise, it's a public page, so they can stay.
-      return;
+        return;
     }
 
     // If user IS authenticated...
@@ -56,33 +64,25 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
         return;
       }
       
-      // and tries to access login/register pages when they don't need to change password, redirect to dashboard.
-      if (!isPasswordChangeRequired && isAuthFlowPage && pathname !== '/auth/change-password') {
-        router.replace('/admin');
-        return;
-      }
-      
       // Role & Permission Checks for protected pages
-      if (!isPublicPage) {
-        const isSuperAdmin = currentUser.role === 'Super Admin';
-        let hasAccess = true;
+      const isSuperAdmin = currentUser.role === 'Super Admin';
+      let hasAccess = true;
 
-        if (requiredRole && currentUser.role !== requiredRole && !isSuperAdmin) {
-            hasAccess = false;
-        }
+      if (requiredRole && currentUser.role !== requiredRole && !isSuperAdmin) {
+          hasAccess = false;
+      }
 
-        if (permission && !isSuperAdmin && !currentUser[permission]) {
-            hasAccess = false;
-        }
+      if (permission && !isSuperAdmin && !currentUser[permission]) {
+          hasAccess = false;
+      }
 
-        if (!hasAccess) {
-             toast({
-                title: "Access Denied",
-                description: "You do not have permission to view this page.",
-                variant: "destructive"
-            });
-            router.replace('/admin');
-        }
+      if (!hasAccess) {
+           toast({
+              title: "Access Denied",
+              description: "You do not have permission to view this page.",
+              variant: "destructive"
+          });
+          router.replace('/admin');
       }
     }
   }, [isAuthenticated, isPasswordChangeRequired, currentUser, pathname, router, permission, requiredRole]);
