@@ -11,8 +11,7 @@ import { toast } from '@/hooks/use-toast';
 import { Logo } from '../shared/Logo';
 
 const PUBLIC_PATHS = ['/', '/auth/login', '/auth/forgot-password', '/auth/reset-password'];
-const AUTH_FLOW_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-password', '/auth/change-password'];
-
+const AUTH_FLOW_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-password'];
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -36,38 +35,41 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
     }
 
     const isPublicPage = PUBLIC_PATHS.includes(pathname);
-    const isAuthFlowPage = AUTH_FLOW_PATHS.includes(pathname);
-
-    // If the page is public, anyone can access it.
-    // However, if an authenticated user tries to access an auth flow page
-    // (like login) when they don't need to, redirect them.
-    if (isAuthenticated && !isPasswordChangeRequired && isAuthFlowPage && pathname !== '/auth/change-password') {
-        router.replace('/admin');
-        return;
-    }
-
+    
+    // If the page is public, let them through.
+    // However, if an authenticated user tries to access a public auth flow page
+    // (like login), redirect them to the admin dashboard.
     if (isPublicPage) {
+        if (isAuthenticated && AUTH_FLOW_PATHS.includes(pathname)) {
+            router.replace('/admin');
+        }
         return;
     }
 
-    // If user is not authenticated and trying to access a protected page
+    // If we're on a protected page and not authenticated, redirect to login.
     if (!isAuthenticated) {
         router.replace('/auth/login');
         return;
     }
-
-    // If user IS authenticated...
+    
+    // From here, we know the user is authenticated.
     if (currentUser) {
-      // and must change password, redirect to the change password page.
+      // If password change is required, force user to the change password page.
       if (isPasswordChangeRequired && pathname !== '/auth/change-password') {
         router.replace('/auth/change-password');
         return;
       }
       
-      // Role & Permission Checks for protected pages
+      // Don't let users who have changed their password go back to the change password page.
+      if (!isPasswordChangeRequired && pathname === '/auth/change-password') {
+          router.replace('/admin');
+          return;
+      }
+
+      // Perform role and permission checks
       const isSuperAdmin = currentUser.role === 'Super Admin';
       let hasAccess = true;
-
+      
       if (requiredRole && currentUser.role !== requiredRole && !isSuperAdmin) {
           hasAccess = false;
       }
@@ -85,6 +87,7 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
           router.replace('/admin');
       }
     }
+
   }, [isAuthenticated, isPasswordChangeRequired, currentUser, pathname, router, permission, requiredRole]);
 
   // Show a loading screen for protected pages while auth state is loading.
