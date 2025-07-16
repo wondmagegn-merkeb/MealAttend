@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState, useRef } from "react";
 import { Loader2, Upload, ShieldCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { UserWithDepartment, Department } from '@/types';
+import type { UserWithDepartment, Department, PermissionKey } from '@/types';
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
@@ -78,6 +78,13 @@ const fileToDataUri = (file: File): Promise<string | null> => {
     reader.onerror = (error) => reject(error);
     reader.readAsDataURL(file);
   });
+};
+
+const permissionLabels: Record<PermissionKey, string> = {
+    canCreateStudents: 'Create Students', canReadStudents: 'Read Students', canWriteStudents: 'Update Students',
+    canDeleteStudents: 'Delete Students', canExportStudents: 'Export Students', canReadAttendance: 'Read Attendance',
+    canExportAttendance: 'Export Attendance', canReadActivityLog: 'Read Activity Log', canReadUsers: 'Read Users',
+    canWriteUsers: 'Write Users', canReadDepartments: 'Read Departments', canWriteDepartments: 'Write Departments'
 };
 
 export function UserForm({ onSubmit, initialData, isLoading = false, submitButtonText = "Submit", isProfileEditMode = false }: UserFormProps) {
@@ -170,6 +177,18 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     
     onSubmit(dataToSubmit);
   };
+  
+  const canGrantPermission = (permissionKey: PermissionKey): boolean => {
+    if (!currentUser) return false;
+    // Super Admins can grant any permission
+    if (currentUser.role === 'Super Admin') return true;
+    // Admins can only grant permissions they have themselves
+    if (currentUser.role === 'Admin') {
+      return currentUser[permissionKey] === true;
+    }
+    // Users cannot grant permissions
+    return false;
+  };
 
 
   return (
@@ -236,14 +255,14 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                 <FormField control={form.control} name="role" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Role</FormLabel>
-                    <Select onValueChange={(field as any).onChange} value={(field as any).value} defaultValue={(field as any).value}>
+                    <Select onValueChange={(field as any).onChange} value={(field as any).value} defaultValue={(field as any).value} disabled={currentUser?.role !== 'Super Admin'}>
                       <FormControl><SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger></FormControl>
                       <SelectContent>
                           {currentUser?.role === 'Super Admin' && <SelectItem value="Admin">Admin</SelectItem>}
                           {(currentUser?.role === 'Super Admin' || currentUser?.role === 'Admin') && <SelectItem value="User">User</SelectItem>}
                       </SelectContent>
                     </Select>
-                    <FormDescription>The user's role in the system. Admins have all permissions by default.</FormDescription><FormMessage />
+                    <FormDescription>The user's role in the system. Super Admins assign Admins. Admins assign Users.</FormDescription><FormMessage />
                   </FormItem>
                 )} />
 
@@ -303,10 +322,13 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       </CardContent>
     </Card>
 
-    {!isProfileEditMode && (
+    {!isProfileEditMode && form.watch('role') !== 'Admin' && (
         <Card className="shadow-md border-border mt-6">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><ShieldCheck /> User Permissions</CardTitle>
+                 <FormDescription>
+                    An Admin can only grant permissions that they possess themselves.
+                 </FormDescription>
             </CardHeader>
             <CardContent>
                  <Form {...form}>
@@ -314,30 +336,42 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                         <div className="space-y-4">
                             <h3 className="font-semibold text-lg text-primary">Student Management</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-                                <FormField control={form.control} name="canCreateStudents" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Create Students</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
-                                <FormField control={form.control} name="canReadStudents" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Read Students</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
-                                <FormField control={form.control} name="canWriteStudents" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Update Students</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
-                                <FormField control={form.control} name="canDeleteStudents" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Delete Students</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
-                                <FormField control={form.control} name="canExportStudents" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Export Students</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                                {Object.keys(permissionLabels).slice(0, 5).map((key) => (
+                                    <FormField key={key} control={form.control} name={key as PermissionKey} render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                        <div className="space-y-0.5"><FormLabel>{permissionLabels[key as PermissionKey]}</FormLabel></div>
+                                        <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} disabled={!canGrantPermission(key as PermissionKey)} /></FormControl>
+                                    </FormItem>)} 
+                                    />
+                                ))}
                             </div>
                         </div>
                         <Separator />
                         <div className="space-y-4">
                              <h3 className="font-semibold text-lg text-primary">Attendance</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-                               <FormField control={form.control} name="canReadAttendance" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Read Attendance</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
-                               <FormField control={form.control} name="canExportAttendance" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Export Attendance</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                               {Object.keys(permissionLabels).slice(5, 7).map((key) => (
+                                    <FormField key={key} control={form.control} name={key as PermissionKey} render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                        <div className="space-y-0.5"><FormLabel>{permissionLabels[key as PermissionKey]}</FormLabel></div>
+                                        <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} disabled={!canGrantPermission(key as PermissionKey)} /></FormControl>
+                                    </FormItem>)} 
+                                    />
+                                ))}
                             </div>
                         </div>
                          <Separator />
                         <div className="space-y-4">
                              <h3 className="font-semibold text-lg text-primary">Administration</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-                                <FormField control={form.control} name="canReadActivityLog" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Read Activity Log</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
-                                <FormField control={form.control} name="canReadUsers" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Read Users</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
-                                <FormField control={form.control} name="canWriteUsers" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Write Users</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
-                                <FormField control={form.control} name="canReadDepartments" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Read Departments</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
-                                <FormField control={form.control} name="canWriteDepartments" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Write Departments</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                               {Object.keys(permissionLabels).slice(7).map((key) => (
+                                    <FormField key={key} control={form.control} name={key as PermissionKey} render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                        <div className="space-y-0.5"><FormLabel>{permissionLabels[key as PermissionKey]}</FormLabel></div>
+                                        <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} disabled={!canGrantPermission(key as PermissionKey)} /></FormControl>
+                                    </FormItem>)} 
+                                    />
+                                ))}
                             </div>
                         </div>
                          <div className="flex justify-end pt-4">

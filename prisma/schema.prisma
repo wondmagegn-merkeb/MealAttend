@@ -7,10 +7,31 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
-  shadowDatabaseUrl = env("POSTGRES_URL_NON_POOLING") // used for migrations
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model SiteSettings {
+  id                    Int      @id @default(1)
+  siteName              String   @default("MealAttend")
+  headerContent         String   @default("MealAttend Information Center")
+  idPrefix              String   @default("ADERA")
+  theme                 String   @default("default")
+  showFeaturesSection   Boolean  @default(true)
+  showTeamSection       Boolean  @default(true)
+  addisSparkLogoUrl     String?
+  leoMaxwellPhotoUrl    String?
+  owenGrantPhotoUrl     String?
+  eleanorVancePhotoUrl  String?
+  sofiaReyesPhotoUrl    String?
+  calebFinnPhotoUrl     String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  defaultAdminPassword  String?
+  defaultUserPassword   String?
+  idCardLogoUrl         String?
+  idCardSchoolName      String?
+  idCardTitle           String?
 }
 
 model Department {
@@ -23,30 +44,25 @@ model Department {
 }
 
 model User {
-  id                       String    @id @default(cuid())
-  userId                   String    @unique
-  fullName                 String
-  email                    String    @unique
-  password                 String
-  role                     String    @default("User") // Super Admin, Admin, User
-  status                   String    @default("Active") // Active, Inactive
-  departmentId             String?
-  department               Department? @relation(fields: [departmentId], references: [id])
-  passwordChangeRequired   Boolean   @default(true)
-  profileImageURL          String?
-  passwordResetToken       String?   @unique
-  passwordResetExpires     DateTime?
-  createdAt                DateTime  @default(now())
-  updatedAt                DateTime  @updatedAt
-  
-  createdById              String?
-  createdBy                User?     @relation("UserCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  createdUsers             User[]    @relation("UserCreatedBy")
-  
-  createdStudents          Student[] @relation("StudentCreatedBy")
+  id                      String    @id @default(cuid())
+  userId                  String    @unique
+  fullName                String
+  email                   String    @unique
+  password                String
+  role                    String    @default("User") // "Super Admin", "Admin", "User"
+  status                  String    @default("Active") // "Active", "Inactive"
+  departmentId            String?
+  department              Department? @relation(fields: [departmentId], references: [id])
+  passwordChangeRequired  Boolean   @default(true)
+  profileImageURL         String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  passwordResetToken      String?   @unique
+  passwordResetExpires    DateTime?
 
-  scannedAttendanceRecords AttendanceRecord[]
-  activityLogs             ActivityLog[]
+  createdById String?
+  createdBy   User?     @relation("UserCreations", fields: [createdById], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  createdUsers User[]   @relation("UserCreations")
 
   // Permissions
   canReadStudents       Boolean @default(false)
@@ -61,6 +77,10 @@ model User {
   canWriteUsers         Boolean @default(false)
   canReadDepartments    Boolean @default(false)
   canWriteDepartments   Boolean @default(false)
+  
+  studentsCreated       Student[] @relation("StudentCreations")
+  attendanceScannedBy   AttendanceRecord[]
+  activityLogs          ActivityLog[]
 }
 
 model Student {
@@ -73,59 +93,53 @@ model Student {
   qrCodeData        String?  @unique
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-
+  
   createdById       String?
-  createdBy         User?    @relation("StudentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdBy         User?    @relation("StudentCreations", fields: [createdById], references: [id], onDelete: SetNull, onUpdate: NoAction)
   
   attendanceRecords AttendanceRecord[]
 }
 
 model AttendanceRecord {
-  id                 String    @id @default(cuid())
-  attendanceId       String    @unique
+  id                 String   @id @default(cuid())
+  attendanceId       String   @unique
   studentId          String
-  student            Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  mealType           String
-  status             String
-  recordDate         DateTime  @db.Date
+  student            Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  mealType           String   // "BREAKFAST", "LUNCH", "DINNER"
+  status             String   @default("PRESENT") // "PRESENT", "ABSENT"
+  recordDate         DateTime @db.Date
   scannedAtTimestamp DateTime?
   
-  scannedById        String?
-  scannedBy          User?     @relation(fields: [scannedById], references: [id], onDelete: SetNull)
+  scannedById String?
+  scannedBy   User?   @relation(fields: [scannedById], references: [id], onDelete: SetNull)
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
   @@unique([studentId, mealType, recordDate])
 }
 
 model ActivityLog {
   id                 String   @id @default(cuid())
   logId              String   @unique
-  userIdentifier     String   // Stores the ADERA ID or email for display
-  userId             String?  // Links to the internal user ID, if available
+  userIdentifier     String   // Stores the email or userId of the actor
+  userId             String?
   user               User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   action             String
   details            String?
   activityTimestamp  DateTime @default(now())
 }
 
+
 model IdCounter {
-  type  String @id
-  count Int    @default(0)
+  type  IdType @unique
+  count Int
 }
 
-model SiteSettings {
-  id                  Int      @id @default(1)
-  siteName            String   @default("MealAttend")
-  headerContent       String   @default("MealAttend Information Center")
-  idPrefix            String   @default("ADERA")
-  theme               String   @default("default")
-  showFeaturesSection Boolean  @default(true)
-  showTeamSection     Boolean  @default(true)
-  addisSparkLogoUrl   String?
-  leoMaxwellPhotoUrl  String?
-  owenGrantPhotoUrl   String?
-  eleanorVancePhotoUrl String?
-  sofiaReyesPhotoUrl  String?
-  calebFinnPhotoUrl   String?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+enum IdType {
+  STUDENT
+  USER
+  DEPARTMENT
+  ATTENDANCE
+  ACTIVITY_LOG
 }

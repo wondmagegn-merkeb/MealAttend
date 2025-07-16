@@ -42,6 +42,9 @@ export async function GET(request: Request) {
         calebFinnPhotoUrl: '',
         defaultAdminPassword: '',
         defaultUserPassword: '',
+        idCardLogoUrl: '',
+        idCardSchoolName: 'Tech University',
+        idCardTitle: 'STUDENT ID',
     });
   }
 }
@@ -73,6 +76,9 @@ export async function PUT(request: Request) {
         calebFinnPhotoUrl: data.calebFinnPhotoUrl,
         defaultAdminPassword: data.defaultAdminPassword,
         defaultUserPassword: data.defaultUserPassword,
+        idCardLogoUrl: data.idCardLogoUrl,
+        idCardSchoolName: data.idCardSchoolName,
+        idCardTitle: data.idCardTitle,
       },
     });
 

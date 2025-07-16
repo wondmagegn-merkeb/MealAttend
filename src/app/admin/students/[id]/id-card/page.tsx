@@ -10,6 +10,7 @@ import { ArrowLeft, Loader2, AlertTriangle, Printer } from 'lucide-react';
 import { StudentIdCard } from '@/components/admin/students/StudentIdCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Student } from '@/types';
+import type { SiteSettings } from '@prisma/client';
 
 const fetchStudent = async (id: string): Promise<Student> => {
     const response = await fetch(`/api/students/${id}`);
@@ -20,16 +21,27 @@ const fetchStudent = async (id: string): Promise<Student> => {
     return response.json();
 };
 
+const fetchSiteSettings = async (): Promise<SiteSettings> => {
+    const response = await fetch('/api/settings/site-management');
+    if (!response.ok) throw new Error('Failed to fetch site settings');
+    return response.json();
+};
+
 export default function StudentIdCardPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const studentInternalId = typeof params.id === 'string' ? params.id : undefined;
   const [autoPrintTriggered, setAutoPrintTriggered] = useState(false);
 
-  const { data: student, isLoading, error } = useQuery<Student>({
+  const { data: student, isLoading: isLoadingStudent, error: studentError } = useQuery<Student>({
     queryKey: ['student', studentInternalId],
     queryFn: () => fetchStudent(studentInternalId!),
     enabled: !!studentInternalId,
+  });
+
+  const { data: settings, isLoading: isLoadingSettings, error: settingsError } = useQuery<SiteSettings>({
+    queryKey: ['siteSettings'],
+    queryFn: fetchSiteSettings,
   });
 
   const handlePrint = useCallback(() => {
@@ -37,15 +49,17 @@ export default function StudentIdCardPage() {
   }, []);
   
   useEffect(() => {
-    if (student && !isLoading && !error && !autoPrintTriggered) {
+    if (student && !isLoadingStudent && !studentError && !autoPrintTriggered) {
       const autoprintQueryParam = searchParams.get('autoprint');
       if (autoprintQueryParam === 'true') {
         handlePrint();
         setAutoPrintTriggered(true);
       }
     }
-  }, [student, isLoading, error, searchParams, autoPrintTriggered, handlePrint]);
+  }, [student, isLoadingStudent, studentError, searchParams, autoPrintTriggered, handlePrint]);
 
+  const isLoading = isLoadingStudent || isLoadingSettings;
+  const error = studentError || settingsError;
 
   if (isLoading) {
     return (
@@ -62,13 +76,13 @@ export default function StudentIdCardPage() {
         <Card className="w-full max-w-md text-center shadow-lg">
             <CardHeader>
                 <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-2" />
-                <CardTitle className="text-2xl text-destructive">Student Not Found</CardTitle>
+                <CardTitle className="text-2xl text-destructive">Error Loading Data</CardTitle>
             </CardHeader>
             <CardContent>
                 <CardDescription className="mb-6">
-                  {(error as Error)?.message === 'Student not found'
+                  {(studentError as Error)?.message === 'Student not found'
                     ? 'The student record for this ID card could not be found.'
-                    : `Failed to load student data: ${(error as Error)?.message || 'Unknown error'}`
+                    : `Failed to load data: ${(error as Error)?.message || 'Unknown error'}`
                   }
                 </CardDescription>
                 <Button variant="outline" asChild>
@@ -102,7 +116,14 @@ export default function StudentIdCardPage() {
       
       <div id="printable-area" className="flex flex-col items-center justify-center p-4 md:p-6 bg-muted/50 rounded-lg border">
         <div className="p-4 md:p-8 flex justify-center items-center">
-            {student && <StudentIdCard student={student} />}
+            {student && (
+                <StudentIdCard 
+                    student={student} 
+                    logoUrl={settings?.idCardLogoUrl}
+                    schoolName={settings?.idCardSchoolName}
+                    cardTitle={settings?.idCardTitle}
+                />
+            )}
         </div>
         
         <div className="mt-4 flex justify-center print:hidden">

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Loader2, MonitorCog, Save, Image as ImageIcon, Palette, Settings, Building, KeyRound } from 'lucide-react';
+import { Loader2, MonitorCog, Save, Image as ImageIcon, Palette, Settings, Building, KeyRound, CreditCard } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import type { SiteSettings } from '@prisma/client';
@@ -34,6 +34,9 @@ const siteSettingsSchema = z.object({
   calebFinnPhotoUrl: z.string().url({ message: 'Please enter a valid URL.' }).or(z.literal('')),
   defaultAdminPassword: z.string().optional(),
   defaultUserPassword: z.string().optional(),
+  idCardLogoUrl: z.string().url({ message: 'Please enter a valid URL for the ID card logo.' }).or(z.literal('')),
+  idCardSchoolName: z.string().optional(),
+  idCardTitle: z.string().optional(),
 });
 
 type SiteSettingsFormData = z.infer<typeof siteSettingsSchema>;
@@ -87,6 +90,9 @@ export default function SiteManagementPage() {
       calebFinnPhotoUrl: '',
       defaultAdminPassword: '',
       defaultUserPassword: '',
+      idCardLogoUrl: '',
+      idCardSchoolName: '',
+      idCardTitle: '',
     },
   });
 
@@ -102,6 +108,9 @@ export default function SiteManagementPage() {
         calebFinnPhotoUrl: settings.calebFinnPhotoUrl || '',
         defaultAdminPassword: settings.defaultAdminPassword || '',
         defaultUserPassword: settings.defaultUserPassword || '',
+        idCardLogoUrl: settings.idCardLogoUrl || '',
+        idCardSchoolName: settings.idCardSchoolName || '',
+        idCardTitle: settings.idCardTitle || '',
       });
     }
   }, [settings, form]);
@@ -210,6 +219,19 @@ export default function SiteManagementPage() {
                   />
             </CardContent>
           </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><CreditCard className="h-5 w-5"/> ID Card Customization</CardTitle>
+              <CardDescription>Control the branding of the student ID cards.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <FormField control={form.control} name="idCardLogoUrl" render={({ field }) => (<FormItem><FormLabel>ID Card Logo URL</FormLabel><FormControl><Input placeholder="URL for the logo on ID cards..." {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="idCardSchoolName" render={({ field }) => (<FormItem><FormLabel>School/Institution Name</FormLabel><FormControl><Input placeholder="e.g., Wachemo University" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="idCardTitle" render={({ field }) => (<FormItem><FormLabel>ID Card Title</FormLabel><FormControl><Input placeholder="e.g., STUDENT ID" {...field} /></FormControl><FormMessage /></FormItem>)} />
+            </CardContent>
+          </Card>
+
 
           <Card>
             <CardHeader>

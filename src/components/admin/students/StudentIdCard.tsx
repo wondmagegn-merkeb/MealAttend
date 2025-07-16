@@ -6,14 +6,17 @@ import type { Student } from "@/types";
 
 interface StudentIdCardProps {
   student: Student;
+  logoUrl?: string | null;
+  schoolName?: string | null;
+  cardTitle?: string | null;
 }
 
-export function StudentIdCard({ student }: StudentIdCardProps) {
-  const schoolName = "Tech University"; 
-  const cardTitle = "STUDENT ID";
+export function StudentIdCard({ student, logoUrl, schoolName, cardTitle }: StudentIdCardProps) {
+  const finalSchoolName = schoolName || "Tech University";
+  const finalCardTitle = cardTitle || "STUDENT ID";
+  const finalLogoUrl = logoUrl || "/addisspark-logo.jpg";
 
   const qrDataToEncode = student.qrCodeData || student.studentId;
-  // Use 000000-0 for a black QR code on a transparent background
   const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(qrDataToEncode)}&format=png&color=000000&bgcolor=ffffff&qzone=1`;
 
 
@@ -36,7 +39,7 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
         <div className="flex items-center justify-between pb-[1mm] mb-[1mm] border-b border-primary/50 dark:border-primary/30 h-[12mm]">
           <div className="w-[10mm] h-[10mm] shrink-0">
             <Image 
-                src="/addisspark-logo.jpg" 
+                src={finalLogoUrl}
                 alt="School Logo"
                 width={40}
                 height={40}
@@ -44,8 +47,8 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
                 data-ai-hint="university logo"
              />
           </div>
-          <div className="flex-1 text-center text-[10px] font-bold text-primary/80 dark:text-primary/90 -ml-[9mm] tracking-wider">{schoolName}</div>
-          <div className="text-[8px] font-bold text-primary/80 dark:text-primary/90">{cardTitle}</div>
+          <div className="flex-1 text-center text-[10px] font-bold text-primary/80 dark:text-primary/90 -ml-[9mm] tracking-wider">{finalSchoolName}</div>
+          <div className="text-[8px] font-bold text-primary/80 dark:text-primary/90">{finalCardTitle}</div>
         </div>
 
         {/* Main Content */}
@@ -86,4 +89,3 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
     </div>
   );
 }
-

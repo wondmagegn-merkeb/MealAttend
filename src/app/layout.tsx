@@ -8,6 +8,7 @@ import QueryProvider from '@/components/shared/QueryProvider';
 import prisma from '@/lib/prisma';
 import type { SiteSettings } from '@prisma/client';
 import { themes } from '@/lib/themes';
+import { AuthProvider } from '@/hooks/useAuth';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -39,6 +40,9 @@ async function getSiteSettings(): Promise<SiteSettings> {
       updatedAt: new Date(),
       defaultAdminPassword: '',
       defaultUserPassword: '',
+      idCardLogoUrl: null,
+      idCardSchoolName: null,
+      idCardTitle: null,
     };
   } catch (error) {
     console.error("Failed to fetch site settings for layout:", error);
@@ -61,6 +65,9 @@ async function getSiteSettings(): Promise<SiteSettings> {
       updatedAt: new Date(),
       defaultAdminPassword: '',
       defaultUserPassword: '',
+      idCardLogoUrl: null,
+      idCardSchoolName: null,
+      idCardTitle: null,
     };
   }
 }
@@ -98,15 +105,17 @@ export default async function RootLayout({
         style={themeVariables}
       >
         <QueryProvider>
-          <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-          >
-            {children}
-            <Toaster />
-          </ThemeProvider>
+          <AuthProvider>
+            <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+            >
+              {children}
+              <Toaster />
+            </ThemeProvider>
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>
