@@ -54,6 +54,10 @@ const ALL_ACTIONS = [
     "DEPARTMENT_DELETE_SUCCESS",
 ];
 
+const formatActionForDisplay = (action: string) => {
+    return action.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+};
+
 
 function ActivityLogPageContent() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -205,7 +209,7 @@ function ActivityLogPageContent() {
                         <SelectItem value="all">All Actions</SelectItem>
                         {ALL_ACTIONS.map(action => (
                             <SelectItem key={action} value={action}>
-                                {action.replace(/_/g, ' ')}
+                                {formatActionForDisplay(action)}
                             </SelectItem>
                         ))}
                     </SelectContent>

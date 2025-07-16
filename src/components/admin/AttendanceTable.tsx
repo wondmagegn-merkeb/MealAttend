@@ -17,7 +17,7 @@ import { format, parseISO } from 'date-fns';
 import type { AttendanceRecordWithStudent } from "@/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-export type SortableAttendanceKeys = 'studentId' | 'studentName' | 'recordDate' | 'mealType' | 'scannedAtTimestamp' | 'status';
+export type SortableAttendanceKeys = 'studentId' | 'studentName' | 'recordDate' | 'mealType' | 'scannedAtTimestamp' | 'status' | 'scannedBy';
 
 export interface SortConfig {
   key: SortableAttendanceKeys | null;
@@ -94,6 +94,10 @@ export function AttendanceTable({
                 <span className="text-muted-foreground">Scanned At:</span>
                 <span>{record.scannedAtTimestamp ? format(parseISO(record.scannedAtTimestamp as unknown as string), 'hh:mm a') : 'N/A'}</span>
               </div>
+               <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Scanned By:</span>
+                <span>{record.scannedBy?.fullName || 'N/A'}</span>
+              </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Status:</span>
                 <Badge
@@ -119,6 +123,7 @@ export function AttendanceTable({
               <SortableTableHead columnKey="recordDate">Date</SortableTableHead>
               <SortableTableHead columnKey="mealType">Meal Type</SortableTableHead>
               <SortableTableHead columnKey="scannedAtTimestamp">Scanned At</SortableTableHead>
+              <SortableTableHead columnKey="scannedBy">Scanned By</SortableTableHead>
               <SortableTableHead columnKey="status" className="text-right">Status</SortableTableHead>
             </TableRow>
           </TableHeader>
@@ -140,6 +145,7 @@ export function AttendanceTable({
                 <TableCell className="whitespace-nowrap">{format(parseISO(record.recordDate as unknown as string), 'yyyy-MM-dd')}</TableCell>
                 <TableCell className="whitespace-nowrap">{record.mealType.charAt(0) + record.mealType.slice(1).toLowerCase()}</TableCell>
                 <TableCell className="whitespace-nowrap">{record.scannedAtTimestamp ? format(parseISO(record.scannedAtTimestamp as unknown as string), 'hh:mm a') : 'N/A'}</TableCell>
+                <TableCell className="whitespace-nowrap">{record.scannedBy?.fullName || 'N/A'}</TableCell>
                 <TableCell className="text-right whitespace-nowrap">
                   <Badge
                     variant={record.status === "PRESENT" ? "default" : "destructive"}

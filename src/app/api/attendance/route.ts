@@ -39,6 +39,13 @@ export async function GET(request: Request) {
       where,
       include: {
         student: true, // Include related student data
+        scannedBy: {
+          select: {
+            id: true,
+            userId: true,
+            fullName: true,
+          }
+        }
       },
       orderBy: {
         scannedAtTimestamp: 'desc',

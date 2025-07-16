@@ -56,10 +56,16 @@ export interface AttendanceRecord {
     status: 'PRESENT' | 'ABSENT';
     recordDate: string;
     scannedAtTimestamp: string | null;
+    scannedById: string | null;
 }
 
 export interface AttendanceRecordWithStudent extends AttendanceRecord {
     student: Student;
+    scannedBy: {
+        id: string;
+        userId: string;
+        fullName: string;
+    } | null;
 }
 
 export interface UserActivityLog {
@@ -71,5 +77,3 @@ export interface UserActivityLog {
     details: string | null;
     activityTimestamp: string;
 }
-
-    

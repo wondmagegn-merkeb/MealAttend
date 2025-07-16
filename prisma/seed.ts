@@ -102,6 +102,7 @@ const attendanceRecords = [
     id: 'att_1',
     attendanceId: 'ADERA/ATT/2024/00001',
     studentId: 'stu_1',
+    scannedById: 'user_1',
     mealType: 'LUNCH',
     status: 'PRESENT',
     recordDate: new Date(formatISO(new Date(), { representation: 'date' }) + 'T00:00:00.000Z'),
@@ -111,6 +112,7 @@ const attendanceRecords = [
     id: 'att_2',
     attendanceId: 'ADERA/ATT/2024/00002',
     studentId: 'stu_2',
+    scannedById: 'user_2',
     mealType: 'LUNCH',
     status: 'PRESENT',
     recordDate: new Date(formatISO(new Date(), { representation: 'date' }) + 'T00:00:00.000Z'),
@@ -120,6 +122,7 @@ const attendanceRecords = [
     id: 'att_3',
     attendanceId: 'ADERA/ATT/2024/00003',
     studentId: 'stu_1',
+    scannedById: 'user_1',
     mealType: 'BREAKFAST',
     status: 'PRESENT',
     recordDate: new Date(formatISO(subDays(new Date(), 1), { representation: 'date' }) + 'T00:00:00.000Z'),
@@ -230,5 +233,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-
-    

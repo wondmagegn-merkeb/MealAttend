@@ -82,7 +82,7 @@ const playWarningBeep = () => {
 
 export function QrScannerClient() {
   const { toast } = useToast();
-  const { currentUserId } = useAuth();
+  const { currentUser, currentUserId } = useAuth();
   
   const [selectedMealType, setSelectedMealType] = useState<MealType>("LUNCH");
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -95,7 +95,7 @@ export function QrScannerClient() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const processScanOrCheck = useCallback(async (identifier: { qrCodeData?: string; studentId?: string }, isCheckOnly = false) => {
-    if (isProcessing) return;
+    if (isProcessing || !currentUser) return;
     setIsProcessing(true);
     setLastScanTime(Date.now());
     
@@ -103,7 +103,11 @@ export function QrScannerClient() {
     try {
       const endpoint = isCheckOnly ? '/api/attendance/check' : '/api/scan';
       
-      let body: any = { mealType: selectedMealType };
+      let body: any = { 
+        mealType: selectedMealType,
+        scannerId: currentUser.id, // Pass internal user ID
+      };
+      
       if (identifier.qrCodeData) {
         body.qrCodeData = identifier.qrCodeData;
       } else if (identifier.studentId) {
@@ -148,7 +152,7 @@ export function QrScannerClient() {
     } finally {
         setIsProcessing(false);
     }
-  }, [selectedMealType, toast, currentUserId, isProcessing]);
+  }, [selectedMealType, toast, currentUserId, currentUser, isProcessing]);
 
 
   const handleManualCheck = () => {

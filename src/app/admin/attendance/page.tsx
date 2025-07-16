@@ -45,6 +45,7 @@ interface ExportAttendanceRecord {
   breakfast: string;
   lunch: string;
   dinner: string;
+  scannedBy: string;
 }
 
 const parseClass = (classStr: string | null | undefined): { number: number; letter: string } => {
@@ -61,7 +62,7 @@ const parseClass = (classStr: string | null | undefined): { number: number; lett
 };
 
 const transformAttendanceForExport = (records: AttendanceRecordWithStudent[]): ExportAttendanceRecord[] => {
-  const groupedRecords: Record<string, Partial<ExportAttendanceRecord> & { studentName?: string }> = {};
+  const groupedRecords: Record<string, Partial<ExportAttendanceRecord> & { studentName?: string, scannedBy?: string }> = {};
 
   records.forEach(record => {
     const recordDateStr = format(parseISO(record.recordDate as unknown as string), 'yyyy-MM-dd');
@@ -75,6 +76,7 @@ const transformAttendanceForExport = (records: AttendanceRecordWithStudent[]): E
         breakfast: "N/A",
         lunch: "N/A",
         dinner: "N/A",
+        scannedBy: record.scannedBy?.fullName || "N/A",
       };
     }
 
@@ -232,6 +234,7 @@ function AttendancePageContent() {
           record.student.studentId.toLowerCase().includes(lowerSearchTerm) ||
           record.student.name.toLowerCase().includes(lowerSearchTerm) ||
           record.mealType.toLowerCase().includes(lowerSearchTerm) ||
+          record.scannedBy?.fullName.toLowerCase().includes(lowerSearchTerm) ||
           format(parseISO(record.recordDate as unknown as string), 'yyyy-MM-dd').includes(searchTerm)
         );
       }
@@ -242,8 +245,24 @@ function AttendancePageContent() {
     
     if (sortConfig.key) {
       recordsToProcess.sort((a, b) => {
-        const aVal = sortConfig.key === 'studentName' ? a.student.name : sortConfig.key === 'studentId' ? a.student.studentId : a[sortConfig.key!];
-        const bVal = sortConfig.key === 'studentName' ? b.student.name : sortConfig.key === 'studentId' ? b.student.studentId : b[sortConfig.key!];
+        let aVal, bVal;
+        switch(sortConfig.key) {
+          case 'studentName':
+            aVal = a.student.name;
+            bVal = b.student.name;
+            break;
+          case 'studentId':
+            aVal = a.student.studentId;
+            bVal = b.student.studentId;
+            break;
+          case 'scannedBy':
+            aVal = a.scannedBy?.fullName;
+            bVal = b.scannedBy?.fullName;
+            break;
+          default:
+            aVal = a[sortConfig.key!];
+            bVal = b[sortConfig.key!];
+        }
         
         let comparison = 0;
         if (aVal === null || aVal === undefined) comparison = 1;
@@ -327,7 +346,7 @@ function AttendancePageContent() {
     
     autoTable(doc, {
       startY: 25,
-      head: [['Student ID', 'Name', 'Date', 'Breakfast', 'Lunch', 'Dinner']],
+      head: [['Student ID', 'Name', 'Date', 'Breakfast', 'Lunch', 'Dinner', 'Scanned By']],
       body: recordsForExport.map(record => [
         record.studentId,
         record.studentName,
@@ -335,6 +354,7 @@ function AttendancePageContent() {
         record.breakfast,
         record.lunch,
         record.dinner,
+        record.scannedBy,
       ]),
       styles: { fontSize: 8 }, 
       headStyles: { fillColor: [22, 160, 133] }, 
@@ -356,7 +376,7 @@ function AttendancePageContent() {
     const dataToExport = [
       [docTitle], 
       [], 
-      ['Student ID', 'Name', 'Date', 'Breakfast', 'Lunch', 'Dinner'], 
+      ['Student ID', 'Name', 'Date', 'Breakfast', 'Lunch', 'Dinner', 'Scanned By'], 
       ...recordsForExport.map(record => [
         record.studentId,
         record.studentName,
@@ -364,18 +384,19 @@ function AttendancePageContent() {
         record.breakfast,
         record.lunch,
         record.dinner,
+        record.scannedBy,
       ]),
     ];
 
     const worksheet = XLSX.utils.aoa_to_sheet(dataToExport);
     
     if (worksheet['!merges']) {
-        worksheet['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }); 
+        worksheet['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }); 
     } else {
-        worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
+        worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
     }
     worksheet['!cols'] = [
-        { wch: 20 }, { wch: 25 }, { wch: 12 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
+        { wch: 20 }, { wch: 25 }, { wch: 12 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 25 },
     ];
 
     const workbook = XLSX.utils.book_new();
@@ -564,7 +585,7 @@ function AttendancePageContent() {
                 {!isReportView && (
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input type="search" placeholder="Search records by ID, name, meal, date..." value={searchTerm} onChange={handleSearchChange} className="pl-10 w-full" />
+                        <Input type="search" placeholder="Search records by ID, name, meal, scanner..." value={searchTerm} onChange={handleSearchChange} className="pl-10 w-full" />
                     </div>
                 )}
                 <div className="space-y-2 md:col-start-2 md:row-start-1">

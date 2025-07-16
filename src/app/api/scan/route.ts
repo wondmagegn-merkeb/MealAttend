@@ -10,10 +10,13 @@ export const dynamic = 'force-dynamic';
 // Handle a QR code scan and record attendance
 export async function POST(request: Request) {
   try {
-    const { qrCodeData, mealType, studentId: manualStudentId } = await request.json();
+    const { qrCodeData, mealType, studentId: manualStudentId, scannerId } = await request.json(); // scannerId is the user's internal ID
 
     if (!mealType || (!qrCodeData && !manualStudentId)) {
       return NextResponse.json({ message: 'Missing identifier (qrCodeData or studentId) or mealType' }, { status: 400 });
+    }
+     if (!scannerId) {
+      return NextResponse.json({ message: 'Missing scannerId (user ID)' }, { status: 400 });
     }
     
     let findCondition;
@@ -39,6 +42,14 @@ export async function POST(request: Request) {
             studentId: student.id,
             mealType: mealType,
             recordDate: today,
+        },
+        include: {
+            scannedBy: {
+                select: {
+                    fullName: true,
+                    userId: true,
+                }
+            }
         }
     });
     
@@ -46,7 +57,7 @@ export async function POST(request: Request) {
         return NextResponse.json({
             success: true,
             type: 'already_recorded',
-            message: `Already recorded for ${mealType}.`,
+            message: `Already recorded by ${existingRecord.scannedBy?.fullName || 'N/A'}.`,
             student: student,
             record: existingRecord,
         });
@@ -61,6 +72,15 @@ export async function POST(request: Request) {
             status: 'PRESENT',
             recordDate: today,
             scannedAtTimestamp: new Date(),
+            scannedById: scannerId,
+        },
+        include: {
+            scannedBy: {
+                select: {
+                    fullName: true,
+                    userId: true,
+                }
+            }
         }
     });
 

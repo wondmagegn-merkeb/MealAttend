@@ -29,6 +29,10 @@ interface ActivityLogTableProps {
   onSort: (key: SortableActivityLogKeys) => void;
 }
 
+const formatActionForDisplay = (action: string) => {
+    return action.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+};
+
 export function ActivityLogTable({ logs, sortConfig, onSort }: ActivityLogTableProps) {
   
   const renderSortIcon = (columnKey: SortableActivityLogKeys) => {
@@ -65,7 +69,7 @@ export function ActivityLogTable({ logs, sortConfig, onSort }: ActivityLogTableP
         {logs.map((log) => (
           <Card key={log.id} className="shadow-md">
             <CardHeader>
-              <CardTitle className="text-lg">{log.action.replace(/_/g, ' ')}</CardTitle>
+              <CardTitle className="text-lg">{formatActionForDisplay(log.action)}</CardTitle>
               <CardDescription>{format(parseISO(log.activityTimestamp as unknown as string), "MMM dd, yyyy, hh:mm:ss a")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
@@ -100,7 +104,7 @@ export function ActivityLogTable({ logs, sortConfig, onSort }: ActivityLogTableP
                   {format(parseISO(log.activityTimestamp as unknown as string), "MMM dd, yyyy, hh:mm:ss a")}
                 </TableCell>
                 <TableCell className="font-medium whitespace-nowrap">{log.userIdentifier}</TableCell>
-                <TableCell className="whitespace-nowrap">{log.action.replace(/_/g, ' ')}</TableCell>
+                <TableCell className="whitespace-nowrap">{formatActionForDisplay(log.action)}</TableCell>
                 <TableCell className="text-sm text-muted-foreground whitespace-nowrap">{log.details || 'N/A'}</TableCell>
               </TableRow>
             ))}
