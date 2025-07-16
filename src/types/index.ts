@@ -19,6 +19,20 @@ export interface User {
   updatedAt: string;
   passwordResetToken?: string | null;
   passwordResetExpires?: string | null;
+  
+  // Permissions
+  canReadStudents: boolean;
+  canWriteStudents: boolean;
+  canCreateStudents: boolean;
+  canDeleteStudents: boolean;
+  canExportStudents: boolean;
+  canReadAttendance: boolean;
+  canExportAttendance: boolean;
+  canReadActivityLog: boolean;
+  canReadUsers: boolean;
+  canWriteUsers: boolean;
+  canReadDepartments: boolean;
+  canWriteDepartments: boolean;
 }
 
 export interface UserWithDepartment extends User {
@@ -77,3 +91,17 @@ export interface UserActivityLog {
     details: string | null;
     activityTimestamp: string;
 }
+
+export type PermissionKey =
+  | 'canReadStudents'
+  | 'canWriteStudents'
+  | 'canCreateStudents'
+  | 'canDeleteStudents'
+  | 'canExportStudents'
+  | 'canReadAttendance'
+  | 'canExportAttendance'
+  | 'canReadActivityLog'
+  | 'canReadUsers'
+  | 'canWriteUsers'
+  | 'canReadDepartments'
+  | 'canWriteDepartments';

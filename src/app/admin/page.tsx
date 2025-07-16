@@ -7,7 +7,7 @@ import { WelcomeBanner } from "@/components/admin/WelcomeBanner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Loader2, Users, CalendarDays, LineChart as LineChartIcon, FileDown, PieChart as PieChartLucideIcon, UserCheck, AlertTriangle, History, ArrowRight, Edit3, UserPlus, CreditCard, ScanLine, BookCopy, UsersRound, Building2, Settings } from "lucide-react";
+import { Loader2, Users, CalendarDays, LineChart as LineChartIcon, FileDown, PieChart as PieChartLucideIcon, UserCheck, AlertTriangle, History, ArrowRight } from "lucide-react";
 import { LineChart, Line, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip as RechartsTooltip, Legend as RechartsLegend, PieChart, Pie, Cell } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, type ChartConfig } from "@/components/ui/chart";
 import { format, formatDistanceToNow, getDaysInMonth, getMonth, getYear, parseISO } from 'date-fns';
@@ -18,7 +18,7 @@ import * as XLSX from 'xlsx';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import { QuickActions } from '@/components/admin/QuickActions';
-import type { Student, User, AttendanceRecord, UserActivityLog, AttendanceRecordWithStudent } from '@/types';
+import type { Student, User, AttendanceRecordWithStudent, UserActivityLog } from '@/types';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 
 const fetchDashboardData = async (): Promise<{ students: Student[], users: User[], attendance: AttendanceRecordWithStudent[], activity: UserActivityLog[] }> => {
@@ -29,10 +29,11 @@ const fetchDashboardData = async (): Promise<{ students: Student[], users: User[
         fetch('/api/activity-log')
     ]);
 
-    console.log("Dashboard data fetched successfully");
-
     if (!studentsRes.ok || !usersRes.ok || !attendanceRes.ok || !activityRes.ok) {
-        throw new Error('Failed to fetch all dashboard data');
+        // Handle individual failures if necessary
+        const getError = async (res: Response) => res.ok ? null : `${res.url}: ${res.statusText}`;
+        const errors = await Promise.all([getError(studentsRes), getError(usersRes), getError(attendanceRes), getError(activityRes)]);
+        throw new Error(`Failed to fetch dashboard data. Errors: ${errors.filter(e => e).join(', ')}`);
     }
 
     return {
@@ -69,6 +70,7 @@ function AdminDashboardPageContent() {
   const { data, isLoading, error: dataError } = useQuery({
       queryKey: ['dashboardData'],
       queryFn: fetchDashboardData,
+      enabled: !!currentUser?.canReadUsers && !!currentUser?.canReadStudents,
   });
 
   const allStudents = data?.students || [];
@@ -251,6 +253,27 @@ function AdminDashboardPageContent() {
     );
   }
 
+  // If a user doesn't have permissions for the dashboard, show a welcome/info page instead.
+  if (!currentUser?.canReadUsers) {
+    return (
+       <div className="space-y-6">
+        <WelcomeBanner />
+        <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle>Welcome to MealAttend</CardTitle>
+                <CardDescription>Your central hub for student management.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <p className="text-muted-foreground">
+                    Use the navigation menu on the left to access the features you have permission for, such as managing students.
+                </p>
+                <QuickActions />
+            </CardContent>
+        </Card>
+       </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <WelcomeBanner />
@@ -373,7 +396,7 @@ function AdminDashboardPageContent() {
 
 export default function AdminDashboardPage() {
     return (
-        <AuthGuard requiredRole="Admin">
+        <AuthGuard>
             <AdminDashboardPageContent />
         </AuthGuard>
     )

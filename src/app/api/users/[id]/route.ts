@@ -35,7 +35,14 @@ export async function GET(request: Request, { params }: RouteParams) {
 export async function PUT(request: Request, { params }: RouteParams) {
   try {
     const data = await request.json();
-    const { fullName, email, departmentId, role, status, profileImageURL } = data;
+    const { 
+        fullName, email, departmentId, role, status, profileImageURL,
+        canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
+        canReadAttendance, canExportAttendance,
+        canReadActivityLog,
+        canReadUsers, canWriteUsers,
+        canReadDepartments, canWriteDepartments
+    } = data;
 
     const updatedUser = await prisma.user.update({
       where: { id: params.id },
@@ -46,6 +53,12 @@ export async function PUT(request: Request, { params }: RouteParams) {
         role,
         status,
         profileImageURL,
+        // Permissions
+        canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
+        canReadAttendance, canExportAttendance,
+        canReadActivityLog,
+        canReadUsers, canWriteUsers,
+        canReadDepartments, canWriteDepartments
       },
     });
     return NextResponse.json(updatedUser);

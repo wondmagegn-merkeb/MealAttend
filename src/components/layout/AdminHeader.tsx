@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, UserCircle, Settings as SettingsIcon, Edit3, PanelLeft, LayoutDashboard, BookCopy, UsersRound, Users, Building2, History, UserPlus, FileDown, CreditCard, UserCog, ScanLine } from "lucide-react";
+import { LogOut, UserCircle, Settings as SettingsIcon, Edit3, PanelLeft, LayoutDashboard, BookCopy, UsersRound, Users, Building2, History, UserPlus, FileDown, CreditCard, UserCog, ScanLine, ShieldCheck } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar"; 
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth"; 
@@ -43,6 +43,7 @@ const getPageConfig = (pathname: string): { title: string, icon: React.ReactNode
   }
   if (pathname.startsWith('/admin/activity-log')) return { title: 'Activity Log', icon: <History className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/profile/edit')) return { title: 'Edit Profile', icon: <UserCog className="h-6 w-6" /> };
+  if (pathname.startsWith('/admin/profile/my-permissions')) return { title: 'My Permissions', icon: <ShieldCheck className="h-6 w-6" /> };
   if (pathname.startsWith('/scan')) return { title: 'QR Code Scanner', icon: <ScanLine className="h-6 w-6" /> };
   
   return { title: 'MealAttend', icon: null };
@@ -106,6 +107,14 @@ export function AdminHeader() {
                 <a> 
                   <Edit3 className="mr-2 h-4 w-4" />
                   <span>Edit Profile</span>
+                </a>
+              </DropdownMenuItem>
+            </Link>
+             <Link href="/admin/profile/my-permissions" passHref legacyBehavior>
+              <DropdownMenuItem asChild>
+                <a> 
+                  <ShieldCheck className="mr-2 h-4 w-4" />
+                  <span>My Permissions</span>
                 </a>
               </DropdownMenuItem>
             </Link>

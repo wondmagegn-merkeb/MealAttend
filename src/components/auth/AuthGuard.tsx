@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
-import type { User } from '@/types/user';
+import type { PermissionKey } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { Logo } from '../shared/Logo';
 
@@ -16,13 +16,13 @@ const AUTH_FLOW_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-pa
 
 interface AuthGuardProps {
   children: ReactNode;
-  requiredRole?: User['role'];
+  permission?: PermissionKey;
 }
 
-export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
+export function AuthGuard({ children, permission }: AuthGuardProps) {
   const { 
     isAuthenticated, 
-    currentUserRole, 
+    currentUser,
     isPasswordChangeRequired 
   } = useAuth();
   const router = useRouter();
@@ -42,7 +42,7 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
       return;
     }
 
-    if (isAuthenticated) {
+    if (isAuthenticated && currentUser) {
       // If password change is required, force user to the change password page.
       if (isPasswordChangeRequired && pathname !== '/auth/change-password') {
         router.replace('/auth/change-password');
@@ -55,8 +55,8 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
         return;
       }
 
-      // If the page requires a specific role and the user doesn't have it, deny access.
-      if (requiredRole && currentUserRole !== requiredRole) {
+      // If the page requires a specific permission and the user doesn't have it, deny access.
+      if (permission && !currentUser[permission]) {
         toast({
           title: "Access Denied",
           description: "You do not have permission to view this page.",
@@ -66,15 +66,25 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
         return;
       }
     }
-  }, [isAuthenticated, isPasswordChangeRequired, currentUserRole, pathname, router, requiredRole]);
+  }, [isAuthenticated, isPasswordChangeRequired, currentUser, pathname, router, permission]);
 
-  // Show a loading screen while auth state is being determined or a redirect is imminent.
-  const isLoading = isAuthenticated === null || 
-                   (!isAuthenticated && !AUTH_FLOW_PATHS.includes(pathname)) ||
-                   (isAuthenticated && isPasswordChangeRequired && pathname !== '/auth/change-password') ||
-                   (isAuthenticated && requiredRole && currentUserRole !== requiredRole);
-
-  if (isLoading) {
+  // Determine if content is ready to be shown
+  let isReady = false;
+  if (isAuthenticated) {
+      if (isPasswordChangeRequired && pathname === '/auth/change-password') {
+          isReady = true;
+      } else if (!isPasswordChangeRequired && !AUTH_FLOW_PATHS.includes(pathname)) {
+          if (permission) {
+              isReady = !!currentUser?.[permission];
+          } else {
+              isReady = true;
+          }
+      }
+  } else if (AUTH_FLOW_PATHS.includes(pathname)) {
+      isReady = true;
+  }
+  
+  if (isAuthenticated === null || !isReady) {
     return (
       <div className="flex flex-col justify-center items-center h-screen bg-background">
         <div className="text-center space-y-4">
@@ -91,5 +101,3 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
   // If all checks pass, render the children.
   return <>{children}</>;
 }
-
-    

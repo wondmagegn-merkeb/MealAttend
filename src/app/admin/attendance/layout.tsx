@@ -4,7 +4,7 @@ import { AuthGuard } from '@/components/auth/AuthGuard';
 
 export default function AttendanceLayout({ children }: { children: ReactNode }) {
   return (
-    <AuthGuard>
+    <AuthGuard permission="canReadAttendance">
       {children}
     </AuthGuard>
   );

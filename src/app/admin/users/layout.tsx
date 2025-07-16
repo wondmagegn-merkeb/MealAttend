@@ -4,7 +4,7 @@ import { AuthGuard } from '@/components/auth/AuthGuard';
 
 export default function UsersAdminLayout({ children }: { children: ReactNode }) {
   return (
-    <AuthGuard requiredRole="Admin">
+    <AuthGuard permission="canReadUsers">
       {children}
     </AuthGuard>
   );

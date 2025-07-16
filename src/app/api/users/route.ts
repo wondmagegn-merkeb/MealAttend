@@ -37,7 +37,14 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const { fullName, email, departmentId, role, status, profileImageURL } = data;
+    const { 
+        fullName, email, departmentId, role, status, profileImageURL,
+        canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
+        canReadAttendance, canExportAttendance,
+        canReadActivityLog,
+        canReadUsers, canWriteUsers,
+        canReadDepartments, canWriteDepartments
+    } = data;
 
     if (!fullName || !email || !departmentId || !role || !status) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
@@ -60,6 +67,12 @@ export async function POST(request: Request) {
         status,
         profileImageURL,
         passwordChangeRequired: true,
+        // Permissions
+        canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
+        canReadAttendance, canExportAttendance,
+        canReadActivityLog,
+        canReadUsers, canWriteUsers,
+        canReadDepartments, canWriteDepartments,
       },
     });
 

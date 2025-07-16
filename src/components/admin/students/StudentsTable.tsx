@@ -28,7 +28,7 @@ type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
   key: SortableStudentKeys | null;
-  direction: SortDirection;
+  direction: 'ascending' | 'descending';
 }
 
 interface StudentsTableProps {
@@ -42,7 +42,7 @@ interface StudentsTableProps {
 export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }: StudentsTableProps) {
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
   const [studentToDelete, setStudentToDelete] = React.useState<StudentWithCreator | null>(null);
-  const { currentUserRole } = useAuth();
+  const { currentUser } = useAuth();
 
   const handleDeleteClick = (student: StudentWithCreator) => {
     setStudentToDelete(student);
@@ -111,7 +111,7 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
                 <span className="text-muted-foreground">Gender:</span>
                 <span>{student.gender || 'N/A'}</span>
               </div>
-              {currentUserRole === 'Admin' && (
+              {currentUser?.role === 'Admin' && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Created By:</span>
                   <span>{student.createdBy?.fullName || 'N/A'}</span>
@@ -126,12 +126,16 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
               <Button variant="outline" size="sm" asChild>
                 <Link href={`/admin/students/${student.id}/id-card`}><Eye className="mr-2 h-4 w-4" /> View ID</Link>
               </Button>
-              <Button variant="outline" size="sm" onClick={() => onEdit(student)}>
-                <Edit className="mr-2 h-4 w-4" /> Edit
-              </Button>
-              <Button variant="destructive" size="sm" onClick={() => handleDeleteClick(student)}>
-                <Trash2 className="mr-2 h-4 w-4" /> Delete
-              </Button>
+              {currentUser?.canWriteStudents && (
+                <Button variant="outline" size="sm" onClick={() => onEdit(student)}>
+                  <Edit className="mr-2 h-4 w-4" /> Edit
+                </Button>
+              )}
+              {currentUser?.canDeleteStudents && (
+                <Button variant="destructive" size="sm" onClick={() => handleDeleteClick(student)}>
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+                </Button>
+              )}
             </CardFooter>
           </Card>
         ))}
@@ -146,7 +150,7 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
               <SortableTableHead columnKey="name">Name</SortableTableHead>
               <SortableTableHead columnKey="classGrade">Grade</SortableTableHead>
               <SortableTableHead columnKey="gender">Gender</SortableTableHead>
-              {currentUserRole === 'Admin' && <SortableTableHead columnKey="createdBy">Created By</SortableTableHead>}
+              {currentUser?.role === 'Admin' && <SortableTableHead columnKey="createdBy">Created By</SortableTableHead>}
               <SortableTableHead columnKey="createdAt">Created At</SortableTableHead>
               <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
             </TableRow>
@@ -174,7 +178,7 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
                 <TableCell className="whitespace-nowrap">
                   {student.gender ? <Badge variant="secondary">{student.gender}</Badge> : 'N/A'}
                 </TableCell>
-                 {currentUserRole === 'Admin' && <TableCell className="whitespace-nowrap">{student.createdBy?.fullName || 'N/A'}</TableCell>}
+                 {currentUser?.role === 'Admin' && <TableCell className="whitespace-nowrap">{student.createdBy?.fullName || 'N/A'}</TableCell>}
                 <TableCell className="whitespace-nowrap">{new Date(student.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right whitespace-nowrap">
                   <div className="flex justify-end items-center gap-1">
@@ -192,29 +196,33 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
                       </TooltipContent>
                     </Tooltip>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" onClick={() => onEdit(student)}>
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Edit Student</span>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Edit Student</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    {currentUser?.canWriteStudents && (
+                        <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" onClick={() => onEdit(student)}>
+                            <Edit className="h-4 w-4" />
+                            <span className="sr-only">Edit Student</span>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Edit Student</p>
+                        </TooltipContent>
+                        </Tooltip>
+                    )}
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(student)} className="text-destructive hover:text-destructive/90 hover:bg-destructive/10">
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Delete Student</span>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Delete Student</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    {currentUser?.canDeleteStudents && (
+                        <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(student)} className="text-destructive hover:text-destructive/90 hover:bg-destructive/10">
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Delete Student</span>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Delete Student</p>
+                        </TooltipContent>
+                        </Tooltip>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
@@ -243,5 +251,3 @@ export function StudentsTable({ students, onEdit, onDelete, sortConfig, onSort }
     </TooltipProvider>
   );
 }
-
-    

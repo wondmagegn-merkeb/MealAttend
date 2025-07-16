@@ -27,6 +27,12 @@ const users = [
     profileImageURL: 'https://placehold.co/100x100.png',
     createdAt: subDays(new Date(), 10),
     updatedAt: subDays(new Date(), 1),
+    // Admin has all permissions
+    canReadStudents: true, canWriteStudents: true, canCreateStudents: true, canDeleteStudents: true, canExportStudents: true,
+    canReadAttendance: true, canExportAttendance: true,
+    canReadActivityLog: true,
+    canReadUsers: true, canWriteUsers: true,
+    canReadDepartments: true, canWriteDepartments: true,
   },
   {
     id: 'user_2',
@@ -41,6 +47,12 @@ const users = [
     profileImageURL: 'https://placehold.co/100x100.png',
     createdAt: subDays(new Date(), 20),
     updatedAt: subDays(new Date(), 5),
+    // Standard user has student permissions but no others
+    canReadStudents: true, canWriteStudents: true, canCreateStudents: true, canDeleteStudents: true, canExportStudents: true,
+    canReadAttendance: false, canExportAttendance: false,
+    canReadActivityLog: false,
+    canReadUsers: false, canWriteUsers: false,
+    canReadDepartments: false, canWriteDepartments: false,
   },
   {
     id: 'user_3',
@@ -55,6 +67,12 @@ const users = [
     profileImageURL: 'https://placehold.co/100x100.png',
     createdAt: subDays(new Date(), 5),
     updatedAt: subDays(new Date(), 2),
+    // This user only has create/read access to students
+    canReadStudents: true, canWriteStudents: false, canCreateStudents: true, canDeleteStudents: false, canExportStudents: false,
+    canReadAttendance: false, canExportAttendance: false,
+    canReadActivityLog: false,
+    canReadUsers: false, canWriteUsers: false,
+    canReadDepartments: false, canWriteDepartments: false,
   },
 ];
 
@@ -144,7 +162,6 @@ const activityLogs = [
     id: 'log_2',
     logId: 'ADERA/LOG/2024/00002',
     userIdentifier: 'ADERA/USR/2024/00002',
-    userId: 'user_2',
     action: 'ATTENDANCE_RECORD_SUCCESS',
     details: 'Student: Bob Williams, Meal: LUNCH',
     activityTimestamp: subDays(new Date(), 1),

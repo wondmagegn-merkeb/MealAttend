@@ -12,10 +12,12 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState, useRef } from "react";
-import { Loader2, Upload } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Loader2, Upload, ShieldCheck } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { UserWithDepartment, Department } from '@/types';
 import { useToast } from "@/hooks/use-toast";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
 
 
 const fetchDepartments = async (): Promise<Department[]> => {
@@ -26,6 +28,21 @@ const fetchDepartments = async (): Promise<Department[]> => {
     return response.json();
 };
 
+const permissionsSchema = {
+  canReadStudents: z.boolean().default(false),
+  canWriteStudents: z.boolean().default(false),
+  canCreateStudents: z.boolean().default(false),
+  canDeleteStudents: z.boolean().default(false),
+  canExportStudents: z.boolean().default(false),
+  canReadAttendance: z.boolean().default(false),
+  canExportAttendance: z.boolean().default(false),
+  canReadActivityLog: z.boolean().default(false),
+  canReadUsers: z.boolean().default(false),
+  canWriteUsers: z.boolean().default(false),
+  canReadDepartments: z.boolean().default(false),
+  canWriteDepartments: z.boolean().default(false),
+};
+
 const userFormSchema = z.object({
   fullName: z.string().min(1, { message: "Full Name is required." }),
   departmentId: z.string().min(1, { message: "Department is required." }),
@@ -33,6 +50,7 @@ const userFormSchema = z.object({
   role: z.enum(['Admin', 'User'], { errorMap: () => ({ message: "Please select a role." }) }),
   status: z.enum(['Active', 'Inactive'], { errorMap: () => ({ message: "Please select a status." }) }),
   profileImageURL: z.string().optional().or(z.literal("")),
+  ...permissionsSchema,
 });
 
 const profileEditFormSchema = z.object({
@@ -65,7 +83,6 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   const { toast } = useToast();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: availableDepartments = [], isLoading: isLoadingDepartments } = useQuery<Department[]>({
       queryKey: ['departments'],
@@ -153,8 +170,12 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
 
 
   return (
+    <>
     <Card className="shadow-md border-border">
-      <CardContent className="pt-6">
+      <CardHeader>
+          <CardTitle>User Details</CardTitle>
+      </CardHeader>
+      <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6">
             {initialData?.userId && !isProfileEditMode && (
@@ -216,7 +237,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                       <FormControl><SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger></FormControl>
                       <SelectContent><SelectItem value="Admin">Admin</SelectItem><SelectItem value="User">User</SelectItem></SelectContent>
                     </Select>
-                    <FormDescription>The user's role in the system.</FormDescription><FormMessage />
+                    <FormDescription>The user's role in the system. Admins have all permissions by default.</FormDescription><FormMessage />
                   </FormItem>
                 )} />
 
@@ -264,15 +285,73 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
               <FormField control={form.control} name="profileImageURL" render={({ field }) => <Input type="hidden" {...field} />} />
               {form.formState.errors.profileImageURL && (<FormMessage>{(form.formState.errors.profileImageURL as any).message}</FormMessage>)}
             </FormItem>
-            
-            <div className="flex justify-end pt-2">
-              <Button type="submit" className="w-full sm:w-auto" disabled={isLoading || isLoadingDepartments}>
-                {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
-              </Button>
+             <div className="flex justify-end pt-2">
+                 {!isProfileEditMode && (
+                    <Button type="submit" className="w-full sm:w-auto" disabled={isLoading || isLoadingDepartments}>
+                        {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
+                    </Button>
+                 )}
             </div>
           </form>
         </Form>
       </CardContent>
     </Card>
+
+    {!isProfileEditMode && (
+        <Card className="shadow-md border-border mt-6">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><ShieldCheck /> User Permissions</CardTitle>
+            </CardHeader>
+            <CardContent>
+                 <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-4">
+                        <div className="space-y-4">
+                            <h3 className="font-semibold text-lg text-primary">Student Management</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+                                <FormField control={form.control} name="canCreateStudents" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Create Students</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                                <FormField control={form.control} name="canReadStudents" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Read Students</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                                <FormField control={form.control} name="canWriteStudents" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Update Students</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                                <FormField control={form.control} name="canDeleteStudents" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Delete Students</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                                <FormField control={form.control} name="canExportStudents" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Export Students</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                            </div>
+                        </div>
+                        <Separator />
+                        <div className="space-y-4">
+                             <h3 className="font-semibold text-lg text-primary">Attendance</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+                               <FormField control={form.control} name="canReadAttendance" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Read Attendance</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                               <FormField control={form.control} name="canExportAttendance" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Export Attendance</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                            </div>
+                        </div>
+                         <Separator />
+                        <div className="space-y-4">
+                             <h3 className="font-semibold text-lg text-primary">Administration</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+                                <FormField control={form.control} name="canReadActivityLog" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Read Activity Log</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                                <FormField control={form.control} name="canReadUsers" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Read Users</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                                <FormField control={form.control} name="canWriteUsers" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Write Users</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                                <FormField control={form.control} name="canReadDepartments" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Read Departments</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                                <FormField control={form.control} name="canWriteDepartments" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Write Departments</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                            </div>
+                        </div>
+                         <div className="flex justify-end pt-4">
+                             <Button type="submit" className="w-full sm:w-auto" disabled={isLoading || isLoadingDepartments}>
+                                {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
+                            </Button>
+                        </div>
+                    </form>
+                 </Form>
+            </CardContent>
+        </Card>
+    )}
+
+    {isProfileEditMode && (
+        <div className="mt-6 flex justify-end">
+             <Button onClick={form.handleSubmit(onFormSubmit)} className="w-full sm:w-auto" disabled={isLoading}>
+                {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
+            </Button>
+        </div>
+    )}
+    </>
   );
 }

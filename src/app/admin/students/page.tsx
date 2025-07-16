@@ -52,6 +52,7 @@ export default function StudentsPage() {
   const { data: students = [], isLoading: isLoadingStudents, error: studentsError } = useQuery<StudentWithCreator[]>({
     queryKey: ['students'],
     queryFn: fetchStudents,
+    enabled: !!currentUser?.canReadStudents
   });
 
   const deleteMutation = useMutation({
@@ -96,7 +97,6 @@ export default function StudentsPage() {
     if (currentUser?.role === 'User') {
         processedStudents = processedStudents.filter(student => student.createdById === currentUser.id);
     }
-
 
     if (searchTerm) {
       processedStudents = processedStudents.filter(student =>
@@ -158,21 +158,25 @@ export default function StudentsPage() {
           <p className="text-muted-foreground">Add, edit, or remove student records.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
-           <Button asChild size="lg" variant="outline" className="shadow-md hover:shadow-lg transition-shadow">
-            <Link href="/admin/students/export">
-              <FileText className="mr-2 h-5 w-5" /> Export Student List
-            </Link>
-          </Button>
+           {currentUser?.canExportStudents && (
+             <Button asChild size="lg" variant="outline" className="shadow-md hover:shadow-lg transition-shadow">
+               <Link href="/admin/students/export">
+                 <FileText className="mr-2 h-5 w-5" /> Export Student List
+               </Link>
+             </Button>
+           )}
            <Button asChild size="lg" variant="outline" className="shadow-md hover:shadow-lg transition-shadow">
             <Link href="/admin/students/view-all-ids">
               <CreditCard className="mr-2 h-5 w-5" /> View All ID Cards
             </Link>
           </Button>
-          <Button asChild size="lg" className="shadow-md hover:shadow-lg transition-shadow">
-            <Link href="/admin/students/new">
-              <PlusCircle className="mr-2 h-5 w-5" /> Add New Student
-            </Link>
-          </Button>
+          {currentUser?.canCreateStudents && (
+            <Button asChild size="lg" className="shadow-md hover:shadow-lg transition-shadow">
+              <Link href="/admin/students/new">
+                <PlusCircle className="mr-2 h-5 w-5" /> Add New Student
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -246,5 +250,3 @@ export default function StudentsPage() {
     </div>
   );
 }
-
-    
