@@ -1,73 +1,70 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGPOSTGRES_URL_NON_POOLING") // uses a direct connection
+  shadowDatabaseUrl = env("POSTGRES_URL_NON_POOLING") // used for migrations
+}
+
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-// ========================================
-// Models
-// ========================================
-
 model Department {
-  id           String @id @default(cuid())
+  id    String @id @default(cuid())
   departmentId String @unique
-  name         String @unique
-  users        User[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  name  String @unique
+  users User[]
 }
 
 model User {
-  id                     String      @id @default(cuid())
-  userId                 String      @unique
-  fullName               String
-  email                  String      @unique
-  password               String
-  role                   String      @default("User") // 'Admin' or 'User'
-  status                 String      @default("Active") // 'Active' or 'Inactive'
-  passwordChangeRequired Boolean     @default(true)
-  profileImageURL        String?
-  createdAt              DateTime    @default(now())
-  updatedAt              DateTime    @updatedAt
-  departmentId           String?
-  department             Department? @relation(fields: [departmentId], references: [id])
-
+  id                      String   @id @default(cuid())
+  userId                  String   @unique
+  fullName                String
+  email                   String   @unique
+  password                String
+  role                    String   // "Super Admin", "Admin", "User"
+  status                  String   // "Active", "Inactive"
+  departmentId            String?
+  department              Department? @relation(fields: [departmentId], references: [id])
+  passwordChangeRequired  Boolean  @default(false)
+  profileImageURL         String?
+  passwordResetToken      String?  @unique
+  passwordResetExpires    DateTime?
+  
   // Permissions
-  canReadStudents         Boolean @default(false)
-  canWriteStudents        Boolean @default(false)
-  canCreateStudents       Boolean @default(false)
-  canDeleteStudents       Boolean @default(false)
-  canExportStudents       Boolean @default(false)
-  canReadAttendance       Boolean @default(false)
-  canExportAttendance     Boolean @default(false)
-  canReadActivityLog      Boolean @default(false)
-  canReadUsers            Boolean @default(false)
-  canWriteUsers           Boolean @default(false)
-  canReadDepartments      Boolean @default(false)
-  canWriteDepartments     Boolean @default(false)
+  canReadStudents      Boolean @default(false)
+  canWriteStudents     Boolean @default(false)
+  canCreateStudents    Boolean @default(false)
+  canDeleteStudents    Boolean @default(false)
+  canExportStudents    Boolean @default(false)
+  canReadAttendance    Boolean @default(false)
+  canExportAttendance  Boolean @default(false)
+  canReadActivityLog   Boolean @default(false)
+  canReadUsers         Boolean @default(false)
+  canWriteUsers        Boolean @default(false)
+  canReadDepartments   Boolean @default(false)
+  canWriteDepartments  Boolean @default(false)
 
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  createdById           String?
+  createdBy             User? @relation("UserCreatedBy", fields: [createdById], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  createdUsers          User[] @relation("UserCreatedBy")
 
-  createdStudents      Student[] @relation("CreatedBy")
-  scannedAttendance    AttendanceRecord[] @relation("ScannedBy")
+  createdStudents      Student[]
+  scannedAttendance    AttendanceRecord[]
   activityLogs         ActivityLog[]
-
-  passwordResetToken   String?
-  passwordResetExpires DateTime?
-
-  @@index([departmentId])
 }
 
 model Student {
   id              String   @id @default(cuid())
   studentId       String   @unique
   name            String
-  gender          String? // "Male" or "Female"
+  gender          String?
   classGrade      String?
   profileImageURL String?
   qrCodeData      String?
@@ -75,46 +72,47 @@ model Student {
   updatedAt       DateTime @updatedAt
 
   createdById     String?
-  createdBy       User?    @relation("CreatedBy", fields: [createdById], references: [id])
+  createdBy       User?    @relation(fields: [createdById], references: [id])
 
   attendanceRecords AttendanceRecord[]
-
-  @@index([createdById])
 }
 
-
 model AttendanceRecord {
-  id                 String   @id @default(cuid())
-  attendanceId       String   @unique
-  studentId          String
-  student            Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  mealType           String
-  status             String // "PRESENT" or "ABSENT"
-  recordDate         DateTime @db.Date
-  scannedAtTimestamp DateTime?
-  scannedById        String?
-  scannedBy          User?    @relation("ScannedBy", fields: [scannedById], references: [id])
-
-
-  @@index([studentId])
-  @@index([scannedById])
-  @@index([recordDate])
+  id                  String   @id @default(cuid())
+  attendanceId        String   @unique
+  studentId           String
+  student             Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  mealType            String
+  status              String
+  recordDate          DateTime
+  scannedAtTimestamp  DateTime?
+  
+  scannedById         String?
+  scannedBy           User?    @relation(fields: [scannedById], references: [id])
 }
 
 model ActivityLog {
   id                String   @id @default(cuid())
   logId             String   @unique
-  userIdentifier    String // This could be userId or email for failed logins
+  userIdentifier    String   // The public ID (ADERA/USR/...) or email for failed logins
+  userId            String?  // The internal ID, if user is found
+  user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   action            String
   details           String?
   activityTimestamp DateTime @default(now())
-  userId            String?  
-  user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([userId])
 }
 
-model IdCounter {
-  type  String @id // 'STUDENT', 'USER', 'DEPARTMENT', 'ATTENDANCE', 'ACTIVITY_LOG'
-  count Int    @default(0)
+model IDCounter {
+  type  String @id // e.g., 'STUDENT', 'USER'
+  count Int
+}
+
+model AppSettings {
+  id            Int      @id @default(1)
+  siteName      String   @default("MealAttend")
+  idPrefix      String   @default("ADERA")
+  schoolName    String   @default("Tech University")
+  colorTheme    String   @default("default")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }

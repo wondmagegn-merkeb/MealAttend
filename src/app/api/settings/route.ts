@@ -1,0 +1,67 @@
+
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { getAuthFromRequest } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
+
+// GET app settings
+export async function GET(request: Request) {
+  try {
+    const settings = await prisma.appSettings.findUnique({
+      where: { id: 1 },
+    });
+    if (!settings) {
+      // This should ideally not happen if seeding is done correctly
+      const defaultSettings = await prisma.appSettings.create({
+        data: {
+          id: 1,
+          siteName: "MealAttend",
+          idPrefix: "ADERA",
+          schoolName: "Tech University",
+          colorTheme: "default",
+        }
+      });
+      return NextResponse.json(defaultSettings);
+    }
+    return NextResponse.json(settings);
+  } catch (error: any) {
+    return NextResponse.json(
+      { message: 'Failed to fetch app settings', error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+// UPDATE app settings
+export async function PUT(request: Request) {
+  try {
+    const user = await getAuthFromRequest(request);
+    if (!user || user.role !== 'Super Admin') {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
+    }
+
+    const data = await request.json();
+    const { siteName, idPrefix, schoolName, colorTheme } = data;
+
+    const updatedSettings = await prisma.appSettings.update({
+      where: { id: 1 },
+      data: {
+        siteName,
+        idPrefix,
+        schoolName,
+        colorTheme,
+      },
+    });
+
+    return NextResponse.json(updatedSettings);
+  } catch (error: any) {
+    if ((error as any).code === 'P2025') {
+      return NextResponse.json({ message: 'App settings not found.' }, { status: 404 });
+    }
+    return NextResponse.json(
+      { message: 'Failed to update app settings', error: (error as any).message },
+      { status: 500 }
+    );
+  }
+}

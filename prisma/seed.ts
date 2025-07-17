@@ -205,6 +205,20 @@ const activityLogs = [
 async function main() {
   console.log('Start seeding...');
 
+  // Seed App Settings
+  await prisma.appSettings.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      siteName: "MealAttend",
+      idPrefix: "ADERA",
+      schoolName: "Tech University",
+      colorTheme: "default",
+    },
+  });
+  console.log('Seeded app settings.');
+
   // Seed Departments
   for (const dept of departments) {
     await prisma.department.upsert({

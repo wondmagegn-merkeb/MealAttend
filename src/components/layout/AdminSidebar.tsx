@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, BookUser, Settings, QrCode, UsersRound, Users as UsersIcon, Building2 as DepartmentIcon, History, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, BookUser, Settings, QrCode, UsersRound, Users as UsersIcon, Building2 as DepartmentIcon, History, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   SidebarContent as ShadSidebarContent,
@@ -29,6 +29,7 @@ export function AdminSidebar() {
     { href: '/admin/users', label: 'Users', icon: UsersIcon, tooltip: 'Manage Users (Admin)', permission: 'canReadUsers' },
     { href: '/admin/departments', label: 'Departments', icon: DepartmentIcon, tooltip: 'Manage Departments (Admin)', permission: 'canReadDepartments' },
     { href: '/admin/activity-log', label: 'Activity Log', icon: History, tooltip: 'View User Activity', permission: 'canReadActivityLog' },
+    { href: '/admin/super-settings', label: 'Site Settings', icon: ShieldAlert, tooltip: 'Manage Site Settings (Super Admin)', permission: 'Super Admin' },
   ];
 
   const bottomNavItems = [
@@ -38,6 +39,8 @@ export function AdminSidebar() {
 
   const isNavItemVisible = (permission: string | boolean) => {
     if (permission === true) return true;
+    // Special check for role-based permission
+    if (permission === 'Super Admin') return currentUser?.role === 'Super Admin';
     if (!currentUser || typeof permission !== 'string') return false;
     return currentUser[permission as keyof typeof currentUser] === true;
   };

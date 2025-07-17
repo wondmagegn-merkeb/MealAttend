@@ -5,6 +5,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/components/shared/ThemeProvider';
 import QueryProvider from '@/components/shared/QueryProvider';
+import { AppSettingsProvider } from '@/hooks/useAppSettings';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -26,15 +27,17 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
         <QueryProvider>
-          <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-          >
-            {children}
-            <Toaster />
-          </ThemeProvider>
+          <AppSettingsProvider>
+            <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+            >
+              {children}
+              <Toaster />
+            </ThemeProvider>
+          </AppSettingsProvider>
         </QueryProvider>
       </body>
     </html>

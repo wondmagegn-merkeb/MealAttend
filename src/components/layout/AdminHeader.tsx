@@ -11,18 +11,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, UserCircle, Settings as SettingsIcon, Edit3, PanelLeft, LayoutDashboard, BookCopy, UsersRound, Users, Building2, History, UserPlus, FileDown, CreditCard, UserCog, ScanLine, ShieldCheck } from "lucide-react";
+import { LogOut, UserCircle, Settings as SettingsIcon, Edit3, PanelLeft, LayoutDashboard, BookCopy, UsersRound, Users, Building2, History, UserPlus, FileDown, CreditCard, UserCog, ScanLine, ShieldCheck, ShieldAlert } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar"; 
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth"; 
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../ui/sidebar";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
 const getPageConfig = (pathname: string): { title: string, icon: React.ReactNode | null } => {
   // Main Navigation
   if (pathname === '/admin') return { title: 'Dashboard', icon: <LayoutDashboard className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/attendance')) return { title: 'Attendance', icon: <BookCopy className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/settings')) return { title: 'Settings', icon: <SettingsIcon className="h-6 w-6" /> };
+  if (pathname.startsWith('/admin/super-settings')) return { title: 'Super Admin Settings', icon: <ShieldAlert className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/students')) {
     if (pathname.startsWith('/admin/students/new')) return { title: 'Add New Student', icon: <UserPlus className="h-6 w-6" /> };
     if (pathname.startsWith('/admin/students/export')) return { title: 'Export Students', icon: <FileDown className="h-6 w-6" /> };
@@ -52,6 +54,7 @@ const getPageConfig = (pathname: string): { title: string, icon: React.ReactNode
 
 export function AdminHeader() {
   const { logout, currentUser } = useAuth(); 
+  const { settings } = useAppSettings();
   const pathname = usePathname();
   const { title, icon } = getPageConfig(pathname);
 

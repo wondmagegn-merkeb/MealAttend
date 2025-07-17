@@ -3,7 +3,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Moon, Sun, Laptop } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -26,14 +25,14 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-semibold tracking-tight text-primary">Settings</h2>
-        <p className="text-muted-foreground">Manage application appearance.</p>
+        <h2 className="text-3xl font-semibold tracking-tight text-primary">Display Settings</h2>
+        <p className="text-muted-foreground">Manage your personal application appearance.</p>
       </div>
 
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Appearance</CardTitle>
-          <CardDescription>Customize the look and feel of the application.</CardDescription>
+          <CardDescription>Customize the look and feel of the application for your account.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
            <div className="p-4 rounded-lg border space-y-4">

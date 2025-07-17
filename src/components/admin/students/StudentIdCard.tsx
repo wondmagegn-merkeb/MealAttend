@@ -3,13 +3,15 @@
 
 import Image from 'next/image';
 import type { Student } from "@/types";
+import { useAppSettings } from '@/hooks/useAppSettings';
 
 interface StudentIdCardProps {
   student: Student;
 }
 
 export function StudentIdCard({ student }: StudentIdCardProps) {
-  const schoolName = "Tech University"; 
+  const { settings } = useAppSettings();
+  const schoolName = settings.schoolName;
   const cardTitle = "STUDENT ID";
 
   const qrDataToEncode = student.qrCodeData || student.studentId;
@@ -86,4 +88,3 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
     </div>
   );
 }
-

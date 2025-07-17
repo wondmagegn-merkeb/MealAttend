@@ -17,9 +17,10 @@ const AUTH_FLOW_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-pa
 interface AuthGuardProps {
   children: ReactNode;
   permission?: PermissionKey;
+  requiredRole?: 'Super Admin' | 'Admin' | 'User';
 }
 
-export function AuthGuard({ children, permission }: AuthGuardProps) {
+export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps) {
   const { 
     isAuthenticated, 
     currentUser,
@@ -54,9 +55,20 @@ export function AuthGuard({ children, permission }: AuthGuardProps) {
         router.replace('/admin');
         return;
       }
+      
+      // If a specific role is required and the user doesn't have it, deny access.
+      if (requiredRole && currentUser.role !== requiredRole) {
+        toast({
+          title: "Access Denied",
+          description: `You must be a ${requiredRole} to view this page.`,
+          variant: "destructive"
+        });
+        router.replace('/admin');
+        return;
+      }
 
       // If the page requires a specific permission and the user doesn't have it, deny access.
-      if (permission && !currentUser[permission]) {
+      if (permission && currentUser.role !== 'Super Admin' && !currentUser[permission]) {
         toast({
           title: "Access Denied",
           description: "You do not have permission to view this page.",
@@ -66,19 +78,25 @@ export function AuthGuard({ children, permission }: AuthGuardProps) {
         return;
       }
     }
-  }, [isAuthenticated, isPasswordChangeRequired, currentUser, pathname, router, permission]);
+  }, [isAuthenticated, isPasswordChangeRequired, currentUser, pathname, router, permission, requiredRole]);
 
   // Determine if content is ready to be shown
   let isReady = false;
-  if (isAuthenticated) {
+  if (isAuthenticated && currentUser) {
       if (isPasswordChangeRequired && pathname === '/auth/change-password') {
           isReady = true;
       } else if (!isPasswordChangeRequired && !AUTH_FLOW_PATHS.includes(pathname)) {
-          if (permission) {
-              isReady = !!currentUser?.[permission];
-          } else {
-              isReady = true;
+          let hasRequiredRole = true;
+          if (requiredRole) {
+            hasRequiredRole = currentUser.role === requiredRole;
           }
+          
+          let hasRequiredPermission = true;
+          if (permission && currentUser.role !== 'Super Admin') {
+            hasRequiredPermission = !!currentUser[permission];
+          }
+
+          isReady = hasRequiredRole && hasRequiredPermission;
       }
   } else if (AUTH_FLOW_PATHS.includes(pathname)) {
       isReady = true;
