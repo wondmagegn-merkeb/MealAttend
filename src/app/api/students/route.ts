@@ -10,6 +10,9 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   try {
     const user = await getAuthFromRequest(request);
+    console.log('User:', user);
+    console.log('Role:', request.headers.get('Authorization'));
+
     if (!user) {
         return NextResponse.json({ message: 'Authentication required' }, { status: 401 });
     }

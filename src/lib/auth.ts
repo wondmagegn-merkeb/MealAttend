@@ -20,9 +20,11 @@ export async function getAuthFromRequest(request: Request): Promise<User | null>
   // The token is `mock-jwt-for-${user.userId}`
   const userId = authToken.replace('mock-jwt-for-', '');
 
+  console.log("Retrieving user from token:", userId);
   if (!userId) {
     return null;
   }
+
   
   try {
     const user = await prisma.user.findUnique({

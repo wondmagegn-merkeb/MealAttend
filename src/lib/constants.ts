@@ -9,5 +9,4 @@ export const AUTH_TOKEN_KEY = 'mealAttendAuthToken_v1';
 export const REMEMBERED_EMAIL_KEY = 'mealAttendRememberedEmail_v1';
 export const CURRENT_USER_DETAILS_KEY = 'mealAttendCurrentUserDetails_v1';
 export const PASSWORD_CHANGE_REQUIRED_KEY_PREFIX = 'mealAttendPasswordChangeRequired_';
-export const USER_ACTIVITY_LOG_KEY = 'mealAttendUserActivityLog_v1'; // New key for activity logs
-    
+export const USER_ACTIVITY_LOG_KEY = 'mealAttendUserActivityLog_v1';

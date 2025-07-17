@@ -16,7 +16,10 @@ import { useAuth } from '@/hooks/useAuth';
 import type { StudentWithCreator } from '@/types';
 
 const fetchStudents = async (): Promise<StudentWithCreator[]> => {
-  const response = await fetch('/api/students');
+  const token = localStorage.getItem('mealAttendAuthToken_v1');
+  const response = await fetch('/api/students',{
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
   if (!response.ok) throw new Error('Failed to fetch students');
   return response.json();
 };

@@ -22,11 +22,20 @@ import type { Student, User, AttendanceRecordWithStudent, UserActivityLog } from
 import { AuthGuard } from '@/components/auth/AuthGuard';
 
 const fetchDashboardData = async (): Promise<{ students: Student[], users: User[], attendance: AttendanceRecordWithStudent[], activity: UserActivityLog[] }> => {
-    const [studentsRes, usersRes, attendanceRes, activityRes] = await Promise.all([
-        fetch('/api/students'),
-        fetch('/api/users'),
-        fetch('/api/attendance'),
-        fetch('/api/activity-log')
+  const token = localStorage.getItem('mealAttendAuthToken_v1');
+  const [studentsRes, usersRes, attendanceRes, activityRes] = await Promise.all([
+        fetch('/api/students',{
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch('/api/users',{
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch('/api/attendance',{
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch('/api/activity-log',{
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
     ]);
 
     if (!studentsRes.ok || !usersRes.ok || !attendanceRes.ok || !activityRes.ok) {
