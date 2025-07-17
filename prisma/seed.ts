@@ -201,13 +201,20 @@ async function main() {
   // Seed App Settings
   await prisma.appSettings.upsert({
     where: { id: 1 },
-    update: {},
+    update: {
+      showHomepage: true,
+      showTeamSection: true,
+      companyLogoUrl: null,
+    },
     create: {
       id: 1,
       siteName: "MealAttend",
       idPrefix: "ADERA",
       schoolName: "Tech University",
       colorTheme: "default",
+      showHomepage: true,
+      showTeamSection: true,
+      companyLogoUrl: null,
     },
   });
   console.log('Seeded app settings.');

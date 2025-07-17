@@ -43,7 +43,15 @@ export async function PUT(request: Request) {
     }
 
     const data = await request.json();
-    const { siteName, idPrefix, schoolName, colorTheme } = data;
+    const { 
+        siteName, 
+        idPrefix, 
+        schoolName, 
+        colorTheme,
+        showHomepage,
+        showTeamSection,
+        companyLogoUrl
+    } = data;
 
     const updatedSettings = await prisma.appSettings.update({
       where: { id: 1 },
@@ -52,6 +60,9 @@ export async function PUT(request: Request) {
         idPrefix,
         schoolName,
         colorTheme,
+        showHomepage,
+        showTeamSection,
+        companyLogoUrl
       },
     });
 
