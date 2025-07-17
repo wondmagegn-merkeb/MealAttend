@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, UserCircle, Settings as SettingsIcon, Edit3, PanelLeft, LayoutDashboard, BookCopy, UsersRound, Users, Building2, History, UserPlus, FileDown, CreditCard, UserCog, ScanLine, ShieldCheck, ShieldAlert } from "lucide-react";
+import { LogOut, UserCircle, Settings as SettingsIcon, Edit3, PanelLeft, LayoutDashboard, BookCopy, UsersRound, Users, History, UserPlus, FileDown, CreditCard, UserCog, ScanLine, ShieldCheck, ShieldAlert } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar"; 
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth"; 
@@ -37,11 +37,6 @@ const getPageConfig = (pathname: string): { title: string, icon: React.ReactNode
     if (pathname.startsWith('/admin/users/new')) return { title: 'Add New User', icon: <UserPlus className="h-6 w-6" /> };
     if (pathname.includes('/edit')) return { title: 'Edit User', icon: <Edit3 className="h-6 w-6" /> };
     return { title: 'Users', icon: <Users className="h-6 w-6" /> };
-  }
-  if (pathname.startsWith('/admin/departments')) {
-    if (pathname.startsWith('/admin/departments/new')) return { title: 'Add New Department', icon: <Building2 className="h-6 w-6" /> };
-    if (pathname.includes('/edit')) return { title: 'Edit Department', icon: <Edit3 className="h-6 w-6" /> };
-    return { title: 'Departments', icon: <Building2 className="h-6 w-6" /> };
   }
   if (pathname.startsWith('/admin/activity-log')) return { title: 'Activity Log', icon: <History className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/profile/edit')) return { title: 'Edit Profile', icon: <UserCog className="h-6 w-6" /> };

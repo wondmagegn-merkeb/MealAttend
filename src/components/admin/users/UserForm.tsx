@@ -4,7 +4,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useQuery } from '@tanstack/react-query';
 
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -14,20 +13,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState, useRef } from "react";
 import { Loader2, Upload, ShieldCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { UserWithDepartment, Department } from '@/types';
+import type { User } from '@/types';
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
 
-
-const fetchDepartments = async (): Promise<Department[]> => {
-    const response = await fetch('/api/departments');
-    if (!response.ok) {
-        throw new Error('Failed to fetch departments');
-    }
-    return response.json();
-};
 
 const permissionsSchema = {
   canReadStudents: z.boolean().default(false),
@@ -46,7 +37,7 @@ const permissionsSchema = {
 
 const userFormSchema = z.object({
   fullName: z.string().min(1, { message: "Full Name is required." }),
-  departmentId: z.string().min(1, { message: "Department is required." }),
+  position: z.string().optional(),
   email: z.string().email({ message: "Invalid email address." }).min(1, { message: "Email is required." }),
   role: z.enum(['Super Admin', 'Admin', 'User'], { errorMap: () => ({ message: "Please select a role." }) }),
   status: z.enum(['Active', 'Inactive'], { errorMap: () => ({ message: "Please select a status." }) }),
@@ -65,7 +56,7 @@ export type ProfileEditFormData = z.infer<typeof profileEditFormSchema>;
 
 interface UserFormProps {
   onSubmit: (data: any) => void; 
-  initialData?: UserWithDepartment | null;
+  initialData?: User | null;
   isLoading?: boolean;
   submitButtonText?: string;
   isProfileEditMode?: boolean;
@@ -87,24 +78,18 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const { data: availableDepartments = [], isLoading: isLoadingDepartments } = useQuery<Department[]>({
-      queryKey: ['departments'],
-      queryFn: fetchDepartments,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-
   const currentSchema = isProfileEditMode ? profileEditFormSchema : userFormSchema;
 
   const form = useForm<z.infer<typeof currentSchema>>({
     resolver: zodResolver(currentSchema),
     defaultValues: initialData ? {
       ...initialData,
-      departmentId: initialData.departmentId || "",
+      position: initialData.position || "",
       status: initialData.status || "Active",
       profileImageURL: initialData.profileImageURL || "",
     } : {
       fullName: "",
-      departmentId: "",
+      position: "",
       email: "",
       role: "User",
       status: "Active",
@@ -116,7 +101,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     if (initialData) {
       form.reset({
         ...initialData,
-        departmentId: initialData.departmentId || "",
+        position: initialData.position || "",
         status: initialData.status || "Active",
         profileImageURL: initialData.profileImageURL || "",
       });
@@ -188,29 +173,17 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                 <FormDescription>This ID is system-generated and cannot be changed.</FormDescription>
               </FormItem>
             )}
-            <FormField control={form.control} name="fullName" render={({ field }) => (
-              <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="e.g., Jane Smith" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
             
-            {isProfileEditMode ? (
-              <FormItem>
-                <FormLabel>Department</FormLabel>
-                <FormControl><Input value={initialData?.department?.name || 'N/A'} readOnly className="bg-muted/50" /></FormControl>
-                <FormDescription>Your department (cannot be changed here).</FormDescription>
-              </FormItem>
-            ) : (
-              <FormField control={form.control} name="departmentId" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Department</FormLabel>
-                  <Select onValueChange={(field as any).onChange} value={(field as any).value} defaultValue={(field as any).value} disabled={isLoadingDepartments || availableDepartments.length === 0}>
-                    <FormControl><SelectTrigger><SelectValue placeholder={isLoadingDepartments ? "Loading..." : "Select a department"} /></SelectTrigger></FormControl>
-                    <SelectContent>{availableDepartments.map((dept) => (<SelectItem key={dept.id} value={dept.id}>{dept.name}</SelectItem>))}</SelectContent>
-                  </Select>
-                  {availableDepartments.length === 0 && !isLoadingDepartments && (<FormDescription>No departments found. Please add departments first.</FormDescription>)}
-                  <FormMessage />
-                </FormItem>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField control={form.control} name="fullName" render={({ field }) => (
+                <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="e.g., Jane Smith" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
-            )}
+              {!isProfileEditMode && (
+                <FormField control={form.control} name="position" render={({ field }) => (
+                  <FormItem><FormLabel>Position</FormLabel><FormControl><Input placeholder="e.g., Kitchen Manager" {...(field as any)} /></FormControl><FormMessage /></FormItem>
+                )} />
+              )}
+            </div>
 
             <FormField control={form.control} name="email" render={({ field }) => (
               <FormItem>
@@ -232,7 +205,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
             )} />
 
             {!isProfileEditMode && (
-              <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField control={form.control} name="role" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Role</FormLabel>
@@ -261,7 +234,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                     <FormMessage />
                   </FormItem>
                 )} />
-              </>
+              </div>
             )}
 
             <FormItem>
@@ -293,7 +266,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
             </FormItem>
              <div className="flex justify-end pt-2">
                  {!isProfileEditMode && (
-                    <Button type="submit" className="w-full sm:w-auto" disabled={isLoading || isLoadingDepartments}>
+                    <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
                         {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
                     </Button>
                  )}
@@ -341,7 +314,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                             </div>
                         </div>
                          <div className="flex justify-end pt-4">
-                             <Button type="submit" className="w-full sm:w-auto" disabled={isLoading || isLoadingDepartments}>
+                             <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
                                 {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
                             </Button>
                         </div>

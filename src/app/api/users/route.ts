@@ -30,7 +30,6 @@ export async function GET(request: Request) {
     const users = await prisma.user.findMany({
       where: whereClause,
       include: {
-        department: true, // Include related department data
         createdBy: {
           select: {
             id: true,
@@ -68,7 +67,7 @@ export async function POST(request: Request) {
 
     const data = await request.json();
     const { 
-        fullName, email, departmentId, role, status, profileImageURL,
+        fullName, email, position, role, status, profileImageURL,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
         canReadAttendance, canExportAttendance,
         canReadActivityLog,
@@ -76,7 +75,7 @@ export async function POST(request: Request) {
         canReadDepartments, canWriteDepartments
     } = data;
 
-    if (!fullName || !email || !departmentId || !role || !status) {
+    if (!fullName || !email || !role || !status) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
     }
     
@@ -100,7 +99,7 @@ export async function POST(request: Request) {
         fullName,
         email,
         password: hashedPassword,
-        departmentId,
+        position,
         role,
         status,
         profileImageURL,

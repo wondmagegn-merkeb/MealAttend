@@ -14,10 +14,10 @@ import { UsersTable } from "@/components/admin/users/UsersTable";
 import { useToast } from "@/hooks/use-toast";
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
-import type { UserWithDepartment } from '@/types';
+import type { UserWithCreator } from '@/types';
 
 
-const fetchUsers = async (): Promise<UserWithDepartment[]> => {
+const fetchUsers = async (): Promise<UserWithCreator[]> => {
   const token = localStorage.getItem('mealAttendAuthToken_v1');
   const response = await fetch('/api/users', {
     headers: { 'Authorization': `Bearer ${token}` }
@@ -39,7 +39,7 @@ const deleteUser = async (userId: string) => {
 };
 
 
-type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'status' | 'createdAt' | 'createdBy';
+type SortableUserKeys = 'userId' | 'fullName' | 'position' | 'email' | 'role' | 'status' | 'createdAt' | 'createdBy';
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -60,7 +60,7 @@ export default function UsersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('all');
 
-  const { data: users = [], isLoading: isLoadingUsers, error: usersError } = useQuery<UserWithDepartment[]>({
+  const { data: users = [], isLoading: isLoadingUsers, error: usersError } = useQuery<UserWithCreator[]>({
     queryKey: ['users'],
     queryFn: fetchUsers,
   });
@@ -79,7 +79,7 @@ export default function UsersPage() {
   });
 
 
-  const handleEditUser = (user: UserWithDepartment) => {
+  const handleEditUser = (user: UserWithCreator) => {
     router.push(`/admin/users/${user.id}/edit`);
   };
 
@@ -111,7 +111,7 @@ export default function UsersPage() {
       processedUsers = processedUsers.filter(user =>
         (user.userId && user.userId.toLowerCase().includes(lowerSearchTerm)) ||
         user.fullName.toLowerCase().includes(lowerSearchTerm) ||
-        (user.department && user.department.name.toLowerCase().includes(lowerSearchTerm)) ||
+        (user.position && user.position.toLowerCase().includes(lowerSearchTerm)) ||
         user.email.toLowerCase().includes(lowerSearchTerm) ||
         user.role.toLowerCase().includes(lowerSearchTerm) ||
         (user.createdBy && user.createdBy.fullName.toLowerCase().includes(lowerSearchTerm))
@@ -121,7 +121,6 @@ export default function UsersPage() {
       processedUsers.sort((a, b) => {
         let aValue, bValue;
         switch(sortConfig.key) {
-            case 'department': aValue = a.department?.name; bValue = b.department?.name; break;
             case 'createdBy': aValue = a.createdBy?.fullName; bValue = b.createdBy?.fullName; break;
             default: aValue = a[sortConfig.key!]; bValue = b[sortConfig.key!];
         }

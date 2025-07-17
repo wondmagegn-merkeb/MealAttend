@@ -17,7 +17,6 @@ export async function GET(request: Request, { params }: RouteParams) {
     const user = await prisma.user.findUnique({
       where: { id: params.id },
       include: { 
-        department: true,
         createdBy: {
           select: { id: true, userId: true, fullName: true }
         }
@@ -47,7 +46,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     const data = await request.json();
     const { 
-        fullName, email, departmentId, role, status, profileImageURL,
+        fullName, email, position, role, status, profileImageURL,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
         canReadAttendance, canExportAttendance,
         canReadActivityLog,
@@ -71,7 +70,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       data: {
         fullName,
         email,
-        departmentId,
+        position,
         role,
         status,
         profileImageURL,

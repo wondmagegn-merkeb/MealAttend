@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, BookUser, Settings, QrCode, UsersRound, Users as UsersIcon, Building2 as DepartmentIcon, History, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, BookUser, Settings, QrCode, UsersRound, Users as UsersIcon, History, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   SidebarContent as ShadSidebarContent,
@@ -27,7 +27,6 @@ export function AdminSidebar() {
     { href: '/admin/attendance', label: 'Attendance', icon: BookUser, tooltip: 'Manage Attendance Records', permission: 'canReadAttendance' },
     { href: '/admin/students', label: 'Students', icon: UsersRound, tooltip: 'Manage Students', permission: 'canReadStudents' },
     { href: '/admin/users', label: 'Users', icon: UsersIcon, tooltip: 'Manage Users (Admin)', permission: 'canReadUsers' },
-    { href: '/admin/departments', label: 'Departments', icon: DepartmentIcon, tooltip: 'Manage Departments (Admin)', permission: 'canReadDepartments' },
     { href: '/admin/activity-log', label: 'Activity Log', icon: History, tooltip: 'View User Activity', permission: 'canReadActivityLog' },
   ];
 
@@ -42,6 +41,8 @@ export function AdminSidebar() {
     // Special check for role-based permission
     if (permission === 'Super Admin') return currentUser?.role === 'Super Admin';
     if (!currentUser || typeof permission !== 'string') return false;
+    // Admins have all permissions, so always show for them
+    if (currentUser.role === 'Admin' || currentUser.role === 'Super Admin') return true;
     return currentUser[permission as keyof typeof currentUser] === true;
   };
   

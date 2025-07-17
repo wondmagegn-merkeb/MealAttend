@@ -17,11 +17,11 @@ import React from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import type { UserWithDepartment } from "@/types";
+import type { UserWithCreator } from "@/types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 
-type SortableUserKeys = 'userId' | 'fullName' | 'department' | 'email' | 'role' | 'status' | 'createdAt' | 'createdBy';
+type SortableUserKeys = 'userId' | 'fullName' | 'position' | 'email' | 'role' | 'status' | 'createdAt' | 'createdBy';
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
@@ -30,8 +30,8 @@ interface SortConfig {
 }
 
 interface UsersTableProps {
-  users: UserWithDepartment[];
-  onEdit: (user: UserWithDepartment) => void;
+  users: UserWithCreator[];
+  onEdit: (user: UserWithCreator) => void;
   onDelete: (userId: string) => void;
   sortConfig: SortConfig;
   onSort: (key: SortableUserKeys) => void;
@@ -39,10 +39,10 @@ interface UsersTableProps {
 
 export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: UsersTableProps) {
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
-  const [userToDelete, setUserToDelete] = React.useState<UserWithDepartment | null>(null);
+  const [userToDelete, setUserToDelete] = React.useState<UserWithCreator | null>(null);
   const { currentUser } = useAuth();
 
-  const handleDeleteClick = (user: UserWithDepartment) => {
+  const handleDeleteClick = (user: UserWithCreator) => {
     setUserToDelete(user);
     setShowDeleteDialog(true);
   };
@@ -106,8 +106,8 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
                 <span className="font-mono text-xs">{user.userId}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Department:</span>
-                <span>{user.department?.name || 'N/A'}</span>
+                <span className="text-muted-foreground">Position:</span>
+                <span>{user.position || 'N/A'}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Role:</span>
@@ -145,7 +145,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
             <TableRow>
               <SortableTableHead columnKey="userId">User ID</SortableTableHead>
               <SortableTableHead columnKey="fullName">Full Name</SortableTableHead>
-              <SortableTableHead columnKey="department">Department</SortableTableHead>
+              <SortableTableHead columnKey="position">Position</SortableTableHead>
               <SortableTableHead columnKey="email">Email</SortableTableHead>
               <SortableTableHead columnKey="role">Role</SortableTableHead>
               <SortableTableHead columnKey="status">Status</SortableTableHead>
@@ -171,7 +171,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
                     <span className="font-medium">{user.fullName}</span>
                   </div>
                 </TableCell>
-                <TableCell className="whitespace-nowrap">{user.department?.name || 'N/A'}</TableCell>
+                <TableCell className="whitespace-nowrap">{user.position || 'N/A'}</TableCell>
                 <TableCell className="whitespace-nowrap">{user.email}</TableCell>
                 <TableCell className="whitespace-nowrap">
                   <Badge variant={user.role === 'Admin' || user.role === 'Super Admin' ? 'default' : 'secondary'}>

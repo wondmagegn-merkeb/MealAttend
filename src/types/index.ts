@@ -10,9 +10,9 @@ export interface User {
   userId: string;
   fullName: string;
   email: string;
+  position: string | null;
   role: 'Super Admin' | 'Admin' | 'User';
   status: 'Active' | 'Inactive';
-  departmentId: string | null;
   passwordChangeRequired: boolean;
   profileImageURL: string | null;
   createdAt: string;
@@ -36,8 +36,7 @@ export interface User {
   canWriteDepartments: boolean;
 }
 
-export interface UserWithDepartment extends User {
-  department: Department | null;
+export interface UserWithCreator extends User {
   createdBy: {
     id: string;
     userId: string;

@@ -11,9 +11,9 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
-import type { UserWithDepartment } from '@/types';
+import type { User } from '@/types';
 
-const fetchUser = async (id: string): Promise<UserWithDepartment> => {
+const fetchUser = async (id: string): Promise<User> => {
     const token = localStorage.getItem('mealAttendAuthToken_v1');
     const response = await fetch(`/api/users/${id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -25,7 +25,7 @@ const fetchUser = async (id: string): Promise<UserWithDepartment> => {
     return response.json();
 };
 
-const updateUser = async ({ id, data }: { id: string, data: UserFormData }): Promise<UserWithDepartment> => {
+const updateUser = async ({ id, data }: { id: string, data: UserFormData }): Promise<User> => {
     const token = localStorage.getItem('mealAttendAuthToken_v1');
     const response = await fetch(`/api/users/${id}`, {
         method: 'PUT',
@@ -52,7 +52,7 @@ export default function EditUserPage() {
   
   const userIdParam = typeof params.id === 'string' ? params.id : undefined;
 
-  const { data: user, isLoading, error } = useQuery<UserWithDepartment>({
+  const { data: user, isLoading, error } = useQuery<User>({
     queryKey: ['user', userIdParam],
     queryFn: () => fetchUser(userIdParam!),
     enabled: !!userIdParam,

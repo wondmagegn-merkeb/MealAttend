@@ -8,24 +8,24 @@ import { AUTH_TOKEN_KEY, CURRENT_USER_DETAILS_KEY } from '@/lib/constants';
 import { useToast } from './use-toast';
 import { logUserActivity } from '@/lib/activityLogger';
 import type { ProfileEditFormData } from '@/components/admin/users/UserForm';
-import type { UserWithDepartment, User } from '@/types';
+import type { UserWithCreator, User } from '@/types';
 
 interface AuthContextType {
   isAuthenticated: boolean | null;
-  currentUser: UserWithDepartment | null;
+  currentUser: UserWithCreator | null;
   currentUserRole: User['role'] | null;
   currentUserId: string | null; // ADERA User ID
   isPasswordChangeRequired: boolean;
   login: (email: string, password?: string) => Promise<boolean>;
   logout: () => void;
-  changePassword: (newPassword: string) => Promise<UserWithDepartment>;
-  updateProfile: (profileData: ProfileEditFormData) => Promise<UserWithDepartment>;
+  changePassword: (newPassword: string) => Promise<UserWithCreator>;
+  updateProfile: (profileData: ProfileEditFormData) => Promise<UserWithCreator>;
   setIsAuthenticated: Dispatch<SetStateAction<boolean | null>>;
 }
 
 export function useAuth(): AuthContextType {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [currentUser, setCurrentUser] = useState<UserWithDepartment | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserWithCreator | null>(null);
   const [isPasswordChangeRequired, setIsPasswordChangeRequired] = useState<boolean>(false);
   const router = useRouter();
   const pathname = usePathname();
@@ -34,7 +34,7 @@ export function useAuth(): AuthContextType {
   const currentUserRole = currentUser?.role || null;
   const currentUserId = currentUser?.userId || null;
 
-  const updateClientAuth = useCallback((user: UserWithDepartment | null) => {
+  const updateClientAuth = useCallback((user: UserWithCreator | null) => {
     if (user) {
         localStorage.setItem(AUTH_TOKEN_KEY, `mock-jwt-for-${user.userId}`);
         localStorage.setItem(CURRENT_USER_DETAILS_KEY, JSON.stringify(user));
@@ -54,7 +54,7 @@ export function useAuth(): AuthContextType {
     try {
       const storedUserDetailsRaw = localStorage.getItem(CURRENT_USER_DETAILS_KEY);
       if (storedUserDetailsRaw) {
-        const storedUser: UserWithDepartment = JSON.parse(storedUserDetailsRaw);
+        const storedUser: UserWithCreator = JSON.parse(storedUserDetailsRaw);
         updateClientAuth(storedUser);
       } else {
         updateClientAuth(null);
@@ -79,7 +79,7 @@ export function useAuth(): AuthContextType {
         throw new Error(data.message || 'Login failed.');
       }
       
-      const user: UserWithDepartment = data.user;
+      const user: UserWithCreator = data.user;
       
       updateClientAuth(user);
       
@@ -114,7 +114,7 @@ export function useAuth(): AuthContextType {
     }
   }, [router, toast, currentUser, updateClientAuth]);
 
-  const changePassword = useCallback(async (newPassword: string): Promise<UserWithDepartment> => {
+  const changePassword = useCallback(async (newPassword: string): Promise<UserWithCreator> => {
     if (!currentUser) {
       throw new Error("No active user session found.");
     }
@@ -131,7 +131,7 @@ export function useAuth(): AuthContextType {
             throw new Error(data.message || 'Failed to change password.');
         }
         
-        const updatedUser: UserWithDepartment = data.user;
+        const updatedUser: UserWithCreator = data.user;
         updateClientAuth(updatedUser);
         logUserActivity(currentUser.userId, "PASSWORD_CHANGE_SUCCESS");
         return updatedUser;
@@ -141,7 +141,7 @@ export function useAuth(): AuthContextType {
     }
   }, [currentUser, toast, updateClientAuth]);
 
-  const updateProfile = useCallback(async (profileData: ProfileEditFormData): Promise<UserWithDepartment> => {
+  const updateProfile = useCallback(async (profileData: ProfileEditFormData): Promise<UserWithCreator> => {
     if (!currentUser) {
         throw new Error("No active user session found.");
     }
@@ -162,7 +162,7 @@ export function useAuth(): AuthContextType {
             throw new Error(data.message || 'Failed to update profile.');
         }
         
-        const updatedUser: UserWithDepartment = data.user;
+        const updatedUser: UserWithCreator = data.user;
         updateClientAuth(updatedUser);
         logUserActivity(currentUser.userId, "PROFILE_UPDATE_SUCCESS");
         return updatedUser;

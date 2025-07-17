@@ -6,13 +6,6 @@ import { hashSync } from 'bcryptjs';
 const prisma = new PrismaClient();
 const saltRounds = 10;
 
-const departments = [
-  { id: 'dept_1', departmentId: 'ADERA/DEP/2024/00001', name: 'Kitchen Staff' },
-  { id: 'dept_2', departmentId: 'ADERA/DEP/2024/00002', name: 'Administration' },
-  { id: 'dept_3', departmentId: 'ADERA/DEP/2024/00003', name: 'Teaching Faculty' },
-  { id: 'dept_4', departmentId: 'ADERA/DEP/2024/00004', name: 'Security' },
-];
-
 const users = [
   {
     id: 'user_super_admin',
@@ -22,7 +15,7 @@ const users = [
     password: hashSync('password123', saltRounds),
     role: 'Super Admin',
     status: 'Active',
-    departmentId: 'dept_2',
+    position: 'System Administrator',
     passwordChangeRequired: false,
     profileImageURL: 'https://placehold.co/100x100.png',
     createdAt: subDays(new Date(), 30),
@@ -43,7 +36,7 @@ const users = [
     password: hashSync('password123', saltRounds),
     role: 'Admin',
     status: 'Active',
-    departmentId: 'dept_2',
+    position: 'Head of Staff',
     passwordChangeRequired: false,
     profileImageURL: 'https://placehold.co/100x100.png',
     createdAt: subDays(new Date(), 10),
@@ -64,7 +57,7 @@ const users = [
     password: hashSync('password123', saltRounds),
     role: 'User',
     status: 'Inactive',
-    departmentId: 'dept_1',
+    position: 'Kitchen Staff',
     passwordChangeRequired: false,
     profileImageURL: 'https://placehold.co/100x100.png',
     createdAt: subDays(new Date(), 20),
@@ -85,7 +78,7 @@ const users = [
     password: hashSync('password', saltRounds), // Password for user that needs to change it
     role: 'User',
     status: 'Active',
-    departmentId: 'dept_3',
+    position: 'Faculty Member',
     passwordChangeRequired: true,
     profileImageURL: 'https://placehold.co/100x100.png',
     createdAt: subDays(new Date(), 5),
@@ -218,16 +211,6 @@ async function main() {
     },
   });
   console.log('Seeded app settings.');
-
-  // Seed Departments
-  for (const dept of departments) {
-    await prisma.department.upsert({
-      where: { id: dept.id },
-      update: {},
-      create: dept,
-    });
-  }
-  console.log('Seeded departments.');
 
   // Seed Users
   for (const user of users) {
