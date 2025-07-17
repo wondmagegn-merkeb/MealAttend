@@ -16,6 +16,7 @@ import { Loader2, Palette, Save, Settings, AlertTriangle } from "lucide-react";
 import type { AppSettings } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import { useAppSettings } from "@/hooks/useAppSettings";
+import { Label } from "@/components/ui/label";
 
 const themes = [
   { name: "default", label: "Default", primary: "hsl(207 90% 54%)", accent: "hsl(174 100% 29%)", bg: "hsl(0 0% 96%)" },
