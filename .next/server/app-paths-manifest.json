@@ -1,6 +1,9 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
+  "/admin/attendance/page": "app/admin/attendance/page.js",
   "/admin/page": "app/admin/page.js",
+  "/admin/profile/my-permissions/page": "app/admin/profile/my-permissions/page.js",
+  "/admin/students/page": "app/admin/students/page.js",
   "/admin/super-settings/page": "app/admin/super-settings/page.js",
   "/admin/users/[id]/edit/page": "app/admin/users/[id]/edit/page.js",
   "/admin/users/new/page": "app/admin/users/new/page.js",
@@ -15,5 +18,6 @@
   "/api/users/route": "app/api/users/route.js",
   "/auth/login/page": "app/auth/login/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/page": "app/page.js"
+  "/page": "app/page.js",
+  "/scan/page": "app/scan/page.js"
 }

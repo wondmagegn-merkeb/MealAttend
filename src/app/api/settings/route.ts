@@ -26,6 +26,7 @@ export async function GET(request: Request) {
     }
     return NextResponse.json(settings);
   } catch (error: any) {
+    console.error('Error fetching app settings:', error);
     return NextResponse.json(
       { message: 'Failed to fetch app settings', error: error.message },
       { status: 500 }
