@@ -29,10 +29,10 @@ export function AdminSidebar() {
     { href: '/admin/users', label: 'Users', icon: UsersIcon, tooltip: 'Manage Users (Admin)', permission: 'canReadUsers' },
     { href: '/admin/departments', label: 'Departments', icon: DepartmentIcon, tooltip: 'Manage Departments (Admin)', permission: 'canReadDepartments' },
     { href: '/admin/activity-log', label: 'Activity Log', icon: History, tooltip: 'View User Activity', permission: 'canReadActivityLog' },
-    { href: '/admin/super-settings', label: 'Site Settings', icon: ShieldAlert, tooltip: 'Manage Site Settings (Super Admin)', permission: 'Super Admin' },
   ];
 
   const bottomNavItems = [
+     { href: '/admin/super-settings', label: 'Site Settings', icon: ShieldAlert, tooltip: 'Manage Site Settings (Super Admin)', permission: 'Super Admin' },
      { href: '/admin/profile/my-permissions', label: 'My Permissions', icon: ShieldCheck, tooltip: 'View Your Permissions', permission: true },
      { href: '/admin/settings', label: 'Settings', icon: Settings, tooltip: 'Application Settings', permission: true },
   ];
@@ -80,7 +80,7 @@ export function AdminSidebar() {
         <div className="mt-auto">
             <SidebarSeparator />
              <SidebarMenu className="pt-2">
-                {bottomNavItems.map((item) => (
+                {bottomNavItems.filter(item => isNavItemVisible(item.permission)).map((item) => (
                     <SidebarMenuItem key={item.label}>
                     <Link href={item.href} passHref legacyBehavior>
                         <SidebarMenuButton
