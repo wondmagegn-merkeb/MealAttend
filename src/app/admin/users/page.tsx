@@ -59,6 +59,7 @@ export default function UsersPage() {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'createdAt', direction: 'descending' });
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [roleFilter, setRoleFilter] = useState('all');
 
   const { data: users = [], isLoading: isLoadingUsers, error: usersError } = useQuery<UserWithCreator[]>({
     queryKey: ['users'],
@@ -106,6 +107,10 @@ export default function UsersPage() {
       processedUsers = processedUsers.filter(user => user.status === statusFilter);
     }
     
+    if (roleFilter !== 'all') {
+      processedUsers = processedUsers.filter(user => user.role === roleFilter);
+    }
+    
     if (searchTerm) {
       const lowerSearchTerm = searchTerm.toLowerCase();
       processedUsers = processedUsers.filter(user =>
@@ -113,7 +118,6 @@ export default function UsersPage() {
         user.fullName.toLowerCase().includes(lowerSearchTerm) ||
         (user.position && user.position.toLowerCase().includes(lowerSearchTerm)) ||
         user.email.toLowerCase().includes(lowerSearchTerm) ||
-        user.role.toLowerCase().includes(lowerSearchTerm) ||
         (user.createdBy && user.createdBy.fullName.toLowerCase().includes(lowerSearchTerm))
       );
     }
@@ -132,7 +136,7 @@ export default function UsersPage() {
       });
     }
     return processedUsers;
-  }, [users, searchTerm, sortConfig, statusFilter]);
+  }, [users, searchTerm, sortConfig, statusFilter, roleFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredAndSortedUsers.length / ITEMS_PER_PAGE));
   
@@ -164,13 +168,24 @@ export default function UsersPage() {
         <CardHeader>
           <CardTitle>User List</CardTitle>
           <CardDescription>
-            {currentUser?.role === 'Super Admin' ? 'Viewing all users in the system.' : 'Viewing users you have created.'}
+            {currentUser?.role === 'Super Admin' ? 'Viewing all users in the system.' : 'Viewing users you have access to.'}
           </CardDescription>
            <div className="mt-4 flex flex-col sm:flex-row gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input type="search" placeholder="Search by ID, name, email, etc..." value={searchTerm} onChange={handleSearchChange} className="pl-10 w-full sm:w-64 md:w-72" />
             </div>
+             <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Filter by role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Roles</SelectItem>
+                <SelectItem value="Super Admin">Super Admin</SelectItem>
+                <SelectItem value="Admin">Admin</SelectItem>
+                <SelectItem value="User">User</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Filter by status" />

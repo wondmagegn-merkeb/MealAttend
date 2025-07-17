@@ -4,6 +4,7 @@
   "/admin/attendance/page": "app/admin/attendance/page.js",
   "/admin/page": "app/admin/page.js",
   "/admin/profile/my-permissions/page": "app/admin/profile/my-permissions/page.js",
+  "/admin/settings/page": "app/admin/settings/page.js",
   "/admin/students/[id]/id-card/page": "app/admin/students/[id]/id-card/page.js",
   "/admin/students/export/page": "app/admin/students/export/page.js",
   "/admin/students/page": "app/admin/students/page.js",

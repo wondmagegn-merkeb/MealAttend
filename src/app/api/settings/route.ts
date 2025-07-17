@@ -21,6 +21,7 @@ export async function GET(request: Request) {
           siteName: "MealAttend",
           idPrefix: "ADERA",
           schoolName: "Tech University",
+          idCardTitle: "STUDENT ID",
           colorTheme: "default",
         }
       });
@@ -50,11 +51,13 @@ export async function PUT(request: Request) {
     const { 
         siteName, 
         idPrefix, 
-        schoolName, 
+        schoolName,
+        idCardTitle,
         colorTheme,
         showHomepage,
         showTeamSection,
         companyLogoUrl,
+        idCardLogoUrl,
         defaultUserPassword,
         defaultAdminPassword,
     } = data;
@@ -63,10 +66,12 @@ export async function PUT(request: Request) {
       siteName,
       idPrefix,
       schoolName,
+      idCardTitle,
       colorTheme,
       showHomepage,
       showTeamSection,
       companyLogoUrl,
+      idCardLogoUrl,
     };
     
     if (defaultUserPassword) {

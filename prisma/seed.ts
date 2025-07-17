@@ -205,16 +205,19 @@ async function main() {
       showHomepage: true,
       showTeamSection: true,
       companyLogoUrl: null,
+      idCardLogoUrl: null,
     },
     create: {
       id: 1,
       siteName: "MealAttend",
       idPrefix: "ADERA",
       schoolName: "Tech University",
+      idCardTitle: "STUDENT ID",
       colorTheme: "default",
       showHomepage: true,
       showTeamSection: true,
       companyLogoUrl: null,
+      idCardLogoUrl: null,
     },
   });
   console.log('Seeded app settings.');

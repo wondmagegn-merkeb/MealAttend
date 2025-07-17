@@ -12,10 +12,10 @@ interface StudentIdCardProps {
 export function StudentIdCard({ student }: StudentIdCardProps) {
   const { settings } = useAppSettings();
   const schoolName = settings.schoolName;
-  const cardTitle = "STUDENT ID";
+  const cardTitle = settings.idCardTitle || "STUDENT ID";
+  const idCardLogo = settings.idCardLogoUrl;
 
   const qrDataToEncode = student.qrCodeData || student.studentId;
-  // Use 000000-0 for a black QR code on a transparent background
   const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(qrDataToEncode)}&format=png&color=000000&bgcolor=ffffff&qzone=1`;
 
 
@@ -38,7 +38,7 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
         <div className="flex items-center justify-between pb-[1mm] mb-[1mm] border-b border-primary/50 dark:border-primary/30 h-[12mm]">
           <div className="w-[10mm] h-[10mm] shrink-0">
             <Image 
-                src="/addisspark-logo.jpg" 
+                src={idCardLogo || "/addisspark-logo.jpg"} 
                 alt="School Logo"
                 width={40}
                 height={40}

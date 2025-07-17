@@ -43,6 +43,11 @@ export async function PUT(request: Request, { params }: RouteParams) {
      if (!editor) {
         return NextResponse.json({ message: 'Authentication required' }, { status: 401 });
     }
+    
+    const userToEdit = await prisma.user.findUnique({ where: { id: params.id } });
+    if (!userToEdit) {
+        return NextResponse.json({ message: 'User to edit not found' }, { status: 404 });
+    }
 
     const data = await request.json();
     const { 
@@ -55,14 +60,17 @@ export async function PUT(request: Request, { params }: RouteParams) {
     } = data;
     
     // Authorization check
-    if (editor.role === 'Admin' && data.role === 'Admin') {
-         return NextResponse.json({ message: 'Admins cannot edit other Admins.' }, { status: 403 });
+    if (editor.role !== 'Super Admin') {
+        if (data.role === 'Admin' || data.role === 'Super Admin') {
+            return NextResponse.json({ message: 'Only Super Admins can assign Admin roles.' }, { status: 403 });
+        }
+        if (userToEdit.role === 'Admin' || userToEdit.role === 'Super Admin') {
+            return NextResponse.json({ message: 'Admins cannot edit other Admins or Super Admins.' }, { status: 403 });
+        }
     }
-    if (editor.role === 'Admin' && data.role === 'Super Admin') {
-        return NextResponse.json({ message: 'Admins cannot edit Super Admins.' }, { status: 403 });
-    }
-     if (editor.role !== 'Super Admin' && data.role === 'Super Admin') {
-      return NextResponse.json({ message: 'Only Super Admins can modify Super Admin roles.' }, { status: 403 });
+
+    if (userToEdit.id === editor.id && userToEdit.role !== data.role) {
+        return NextResponse.json({ message: 'You cannot change your own role.' }, { status: 403 });
     }
 
     const updatedUser = await prisma.user.update({
@@ -97,6 +105,14 @@ export async function PUT(request: Request, { params }: RouteParams) {
 // DELETE a user
 export async function DELETE(request: Request, { params }: RouteParams) {
   try {
+    const editor = await getAuthFromRequest(request);
+    if (!editor) {
+        return NextResponse.json({ message: 'Authentication required' }, { status: 401 });
+    }
+    if (editor.id === params.id) {
+        return NextResponse.json({ message: 'You cannot delete your own account.' }, { status: 403 });
+    }
+
      await prisma.$transaction(async (tx) => {
         // Delete related students first
         await tx.student.deleteMany({
