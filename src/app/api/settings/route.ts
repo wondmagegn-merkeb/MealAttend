@@ -2,7 +2,9 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getAuthFromRequest } from '@/lib/auth';
+import { hash } from 'bcryptjs';
 
+const saltRounds = 10;
 export const dynamic = 'force-dynamic';
 
 // GET app settings
@@ -24,7 +26,9 @@ export async function GET(request: Request) {
       });
       return NextResponse.json(defaultSettings);
     }
-    return NextResponse.json(settings);
+    // Don't send password hashes to the client
+    const { defaultUserPassword, defaultAdminPassword, ...clientSettings } = settings;
+    return NextResponse.json(clientSettings);
   } catch (error: any) {
     console.error('Error fetching app settings:', error);
     return NextResponse.json(
@@ -50,23 +54,37 @@ export async function PUT(request: Request) {
         colorTheme,
         showHomepage,
         showTeamSection,
-        companyLogoUrl
+        companyLogoUrl,
+        defaultUserPassword,
+        defaultAdminPassword,
     } = data;
+
+    const dataToUpdate: any = {
+      siteName,
+      idPrefix,
+      schoolName,
+      colorTheme,
+      showHomepage,
+      showTeamSection,
+      companyLogoUrl,
+    };
+    
+    if (defaultUserPassword) {
+      dataToUpdate.defaultUserPassword = await hash(defaultUserPassword, saltRounds);
+    }
+
+    if (defaultAdminPassword) {
+      dataToUpdate.defaultAdminPassword = await hash(defaultAdminPassword, saltRounds);
+    }
 
     const updatedSettings = await prisma.appSettings.update({
       where: { id: 1 },
-      data: {
-        siteName,
-        idPrefix,
-        schoolName,
-        colorTheme,
-        showHomepage,
-        showTeamSection,
-        companyLogoUrl
-      },
+      data: dataToUpdate,
     });
+    
+    const { defaultUserPassword: _, defaultAdminPassword: __, ...clientSettings } = updatedSettings;
 
-    return NextResponse.json(updatedSettings);
+    return NextResponse.json(clientSettings);
   } catch (error: any) {
     if ((error as any).code === 'P2025') {
       return NextResponse.json({ message: 'App settings not found.' }, { status: 404 });

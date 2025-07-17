@@ -51,7 +51,7 @@ export default function NewUserPage() {
         await generateWelcomeEmail({
           userName: newUser.fullName,
           userEmail: newUser.email,
-          tempPassword: 'password123', // Demo password
+          tempPassword: '[password set by admin]', // Generic placeholder for security
           loginUrl: `${window.location.origin}/auth/login`,
         });
         toast({

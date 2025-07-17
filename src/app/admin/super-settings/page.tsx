@@ -12,7 +12,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Palette, Save, Settings, AlertTriangle, Home, Users, Upload } from "lucide-react";
+import { Loader2, Palette, Save, Settings, AlertTriangle, Home, Users, Upload, KeyRound } from "lucide-react";
 import type { AppSettings } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import { useAppSettings } from "@/hooks/useAppSettings";
@@ -36,6 +36,8 @@ const settingsFormSchema = z.object({
   showHomepage: z.boolean().default(true),
   showTeamSection: z.boolean().default(true),
   companyLogoUrl: z.string().optional().nullable(),
+  defaultUserPassword: z.string().min(6, "Password must be at least 6 characters.").optional().or(z.literal('')),
+  defaultAdminPassword: z.string().min(6, "Password must be at least 6 characters.").optional().or(z.literal('')),
 });
 
 type SettingsFormData = z.infer<typeof settingsFormSchema>;
@@ -55,7 +57,7 @@ const fileToDataUri = (file: File): Promise<string | null> => {
   });
 };
 
-const updateSettings = async (data: SettingsFormData): Promise<AppSettings> => {
+const updateSettings = async (data: Partial<SettingsFormData>): Promise<AppSettings> => {
   const res = await fetch('/api/settings', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -105,12 +107,18 @@ export default function SuperAdminSettingsPage() {
       showHomepage: true,
       showTeamSection: true,
       companyLogoUrl: null,
+      defaultUserPassword: "",
+      defaultAdminPassword: "",
     },
   });
 
   useEffect(() => {
     if (settings) {
-      form.reset(settings);
+      form.reset({
+        ...settings,
+        defaultUserPassword: "", // Don't show existing passwords
+        defaultAdminPassword: "",
+      });
       setImagePreview(settings.companyLogoUrl || null);
     }
   }, [settings, form]);
@@ -140,7 +148,12 @@ export default function SuperAdminSettingsPage() {
         }
     }
     
-    mutation.mutate({ ...data, companyLogoUrl: finalLogoUrl });
+    // Don't send passwords if they are empty
+    const dataToSubmit: Partial<SettingsFormData> = { ...data, companyLogoUrl: finalLogoUrl };
+    if (!data.defaultUserPassword) delete dataToSubmit.defaultUserPassword;
+    if (!data.defaultAdminPassword) delete dataToSubmit.defaultAdminPassword;
+    
+    mutation.mutate(dataToSubmit);
   };
 
 
@@ -230,6 +243,31 @@ export default function SuperAdminSettingsPage() {
                   <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                 </FormItem>
               )} />
+            </CardContent>
+          </Card>
+          
+          <Card>
+             <CardHeader>
+                <CardTitle className="flex items-center gap-2"><KeyRound /> Default Passwords</CardTitle>
+                <CardDescription>Set the initial password for newly created users. Leave blank to keep the current password.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField control={form.control} name="defaultAdminPassword" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>New Admin Users</FormLabel>
+                        <FormControl><Input type="password" {...field} placeholder="Enter new default password" /></FormControl>
+                        <FormDescription>Default for users with the 'Admin' role.</FormDescription>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                 <FormField control={form.control} name="defaultUserPassword" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>New Standard Users</FormLabel>
+                        <FormControl><Input type="password" {...field} placeholder="Enter new default password" /></FormControl>
+                        <FormDescription>Default for users with the 'User' role.</FormDescription>
+                        <FormMessage />
+                    </FormItem>
+                )} />
             </CardContent>
           </Card>
 
