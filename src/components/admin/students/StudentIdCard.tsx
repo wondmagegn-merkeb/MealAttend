@@ -14,6 +14,7 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
   const schoolName = settings.schoolName;
   const cardTitle = settings.idCardTitle || "STUDENT ID";
   const idCardLogo = settings.idCardLogoUrl;
+  const idPrefix = settings.idPrefix;
 
   const qrDataToEncode = student.qrCodeData || student.studentId;
   const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(qrDataToEncode)}&format=png&color=000000&bgcolor=ffffff&qzone=1`;
@@ -67,7 +68,7 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
               <div className="text-[10px] font-bold text-gray-800 dark:text-gray-100 break-words leading-tight">{student.name}</div>
             </div>
             <div className="text-[8px] text-gray-700 dark:text-gray-300 space-y-[0.5mm]">
-              <div><strong>ID:</strong> {student.studentId}</div>
+              <div><strong>ID:</strong> {idPrefix}/{student.studentId.split('/').slice(1).join('/')}</div>
               <div><strong>Grade:</strong> {student.classGrade || 'N/A'}</div>
               <div><strong>Gender:</strong> {student.gender || 'N/A'}</div>
             </div>

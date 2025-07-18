@@ -657,7 +657,7 @@ function AttendancePageContent() {
 
 export default function AttendancePage() {
     return (
-        <AuthGuard requiredRole="Admin">
+        <AuthGuard permission="canReadAttendance">
             <AttendancePageContent />
         </AuthGuard>
     )

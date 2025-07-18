@@ -3,6 +3,8 @@
   "/admin/activity-log/page": "app/admin/activity-log/page.js",
   "/admin/attendance/page": "app/admin/attendance/page.js",
   "/admin/page": "app/admin/page.js",
+  "/admin/students/page": "app/admin/students/page.js",
+  "/admin/students/view-all-ids/page": "app/admin/students/view-all-ids/page.js",
   "/admin/super-settings/features/page": "app/admin/super-settings/features/page.js",
   "/admin/super-settings/page": "app/admin/super-settings/page.js",
   "/admin/super-settings/team/page": "app/admin/super-settings/team/page.js",
