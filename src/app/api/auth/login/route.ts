@@ -15,7 +15,6 @@ export async function POST(request: Request) {
 
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
-      include: { department: true },
     });
 
     if (!user) {
@@ -23,7 +22,6 @@ export async function POST(request: Request) {
     }
     
     const passwordMatches = await compare(inputPassword, user.password);
-    console.log("Password Matches:", passwordMatches);
 
     if (!passwordMatches) {
         return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });

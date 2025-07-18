@@ -34,9 +34,6 @@ export async function POST(request: Request) {
         password: hashedPassword,
         passwordChangeRequired: false,
       },
-      include: {
-        department: true,
-      }
     });
     
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

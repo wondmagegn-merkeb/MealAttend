@@ -23,9 +23,6 @@ export async function PUT(request: Request) {
         fullName,
         profileImageURL: profileImageURL,
       },
-      include: {
-        department: true,
-      }
     });
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
