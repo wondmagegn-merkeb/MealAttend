@@ -129,7 +129,7 @@ export default function HomePage() {
                                 data-ai-hint="company logo"
                             />
                             <p className="text-muted-foreground leading-relaxed flex-1">
-                            MealAttend is proudly developed by AddisSpark, an innovative team dedicated to creating modern software solutions that solve real-world challenges. Our team is a blend of creative designers, skilled developers, and strategic thinkers.
+                            MealAttend is proudly developed by <span className="font-bold text-primary">AddisSpark</span>, an innovative team dedicated to creating modern software solutions that solve real-world challenges. Our team is a blend of creative designers, skilled developers, and strategic thinkers.
                             </p>
                         </div>
                         
