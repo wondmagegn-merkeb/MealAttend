@@ -43,6 +43,7 @@ export async function GET(request: Request) {
 export async function PUT(request: Request) {
   try {
     const user = await getAuthFromRequest(request);
+    console.log(user);
     if (!user || user.role !== 'Super Admin') {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
     }

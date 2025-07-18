@@ -39,17 +39,25 @@ const fileToDataUri = (file: File): Promise<string> => {
 };
 
 const fetchSettings = async (): Promise<AppSettings> => {
-  const res = await fetch('/api/settings');
+  const token = localStorage.getItem('mealAttendAuthToken_v1');
+  const res = await fetch('/api/settings',{
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
   if (!res.ok) throw new Error('Failed to fetch settings');
   return res.json();
 };
 
 const updateSettings = async (data: Partial<AppSettings>): Promise<AppSettings> => {
+  const token = localStorage.getItem('mealAttendAuthToken_v1');
   const res = await fetch('/api/settings', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    method: 'PUT', // HTTP method
+    headers: {
+      'Content-Type': 'application/json',  // Declares that the body content is JSON
+      'Authorization': `Bearer ${token}`   // Sends a bearer token for authorization
+    },
+    body: JSON.stringify(data), // Converts JS object to JSON string for sending in request body
   });
+  
   if (!res.ok) {
     const errorData = await res.json();
     throw new Error(errorData.message || 'Failed to update settings');
@@ -108,11 +116,26 @@ export default function SuperAdminSettingsPage() {
     },
   });
   
-  const brandingForm = useForm<z.infer<typeof brandingSchema>>({ resolver: zodResolver(brandingSchema) });
-  const idCardForm = useForm<z.infer<typeof idCardSchema>>({ resolver: zodResolver(idCardSchema) });
-  const homepageForm = useForm<z.infer<typeof homepageSchema>>({ resolver: zodResolver(homepageSchema) });
-  const passwordForm = useForm<z.infer<typeof passwordSchema>>({ resolver: zodResolver(passwordSchema) });
-  const themeForm = useForm<z.infer<typeof themeSchema>>({ resolver: zodResolver(themeSchema) });
+  const brandingForm = useForm<z.infer<typeof brandingSchema>>({
+    resolver: zodResolver(brandingSchema),
+    defaultValues: { siteName: "", idPrefix: "", companyLogoUrl: "" }
+  });
+  const idCardForm = useForm<z.infer<typeof idCardSchema>>({
+    resolver: zodResolver(idCardSchema),
+    defaultValues: { schoolName: "", idCardTitle: "", idCardLogoUrl: "" }
+  });
+  const homepageForm = useForm<z.infer<typeof homepageSchema>>({
+    resolver: zodResolver(homepageSchema),
+    defaultValues: { showHomepage: true, showTeamSection: true }
+  });
+  const passwordForm = useForm<z.infer<typeof passwordSchema>>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: { defaultUserPassword: "", defaultAdminPassword: "" }
+  });
+  const themeForm = useForm<z.infer<typeof themeSchema>>({
+    resolver: zodResolver(themeSchema),
+    defaultValues: { colorTheme: "default" }
+  });
 
   const [companyLogoPreview, setCompanyLogoPreview] = useState<string | null>(null);
   const [idCardLogoPreview, setIdCardLogoPreview] = useState<string | null>(null);
