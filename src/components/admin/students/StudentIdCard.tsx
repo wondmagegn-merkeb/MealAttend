@@ -20,7 +20,6 @@ export function StudentIdCard({ student, previewSettings }: StudentIdCardProps) 
   const schoolName = previewSettings?.schoolName ?? globalSettings.schoolName;
   const cardTitle = previewSettings?.idCardTitle ?? globalSettings.idCardTitle ?? "STUDENT ID";
   const idCardLogo = previewSettings?.idCardLogoUrl ?? globalSettings.idCardLogoUrl;
-  const idPrefix = globalSettings.idPrefix;
   
   const fullStudentId = student.studentId;
 
