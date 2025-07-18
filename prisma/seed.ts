@@ -20,7 +20,6 @@ const users = [
     profileImageURL: 'https://placehold.co/100x100.png',
     createdAt: subDays(new Date(), 30),
     updatedAt: subDays(new Date(), 1),
-    createdById: null,
     // Super Admin has all permissions implicitly
     canReadStudents: true, canWriteStudents: true, canCreateStudents: true, canDeleteStudents: true, canExportStudents: true,
     canReadAttendance: true, canExportAttendance: true,
@@ -42,7 +41,7 @@ const users = [
     profileImageURL: 'https://placehold.co/100x100.png',
     createdAt: subDays(new Date(), 10),
     updatedAt: subDays(new Date(), 1),
-    createdById: 'user_super_admin',
+    createdBy: { connect: { id: 'user_super_admin' } },
     // Admin has all permissions for this demo
     canReadStudents: true, canWriteStudents: true, canCreateStudents: true, canDeleteStudents: true, canExportStudents: true,
     canReadAttendance: true, canExportAttendance: true,
@@ -64,7 +63,7 @@ const users = [
     profileImageURL: 'https://placehold.co/100x100.png',
     createdAt: subDays(new Date(), 20),
     updatedAt: subDays(new Date(), 5),
-    createdById: 'user_admin',
+    createdBy: { connect: { id: 'user_admin' } },
     // Standard user has student permissions but no others
     canReadStudents: true, canWriteStudents: true, canCreateStudents: true, canDeleteStudents: true, canExportStudents: true,
     canReadAttendance: false, canExportAttendance: false,
@@ -86,7 +85,7 @@ const users = [
     profileImageURL: 'https://placehold.co/100x100.png',
     createdAt: subDays(new Date(), 5),
     updatedAt: subDays(new Date(), 2),
-    createdById: 'user_admin',
+    createdBy: { connect: { id: 'user_admin' } },
     // This user only has create/read access to students
     canReadStudents: true, canWriteStudents: false, canCreateStudents: true, canDeleteStudents: false, canExportStudents: false,
     canReadAttendance: false, canExportAttendance: false,

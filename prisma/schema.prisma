@@ -70,6 +70,7 @@ model User {
   // Kept for schema completeness, but UI is removed
   canReadDepartments  Boolean @default(false)
   canWriteDepartments Boolean @default(false)
+  canScanId           Boolean @default(false)
 
 }
 
