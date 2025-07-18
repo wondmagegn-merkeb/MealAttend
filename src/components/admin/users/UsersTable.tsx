@@ -82,6 +82,8 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
     );
   }
 
+  const showCreatedByColumn = currentUser?.role === 'Super Admin';
+
   return (
     <TooltipProvider>
       {/* Mobile View */}
@@ -117,10 +119,12 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
                 <span className="text-muted-foreground">Status:</span>
                 <Badge variant={user.status === 'Active' ? 'default' : 'destructive'} className={user.status === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'}>{user.status}</Badge>
               </div>
-               <div className="flex justify-between">
-                <span className="text-muted-foreground">Created By:</span>
-                <span>{user.createdBy?.fullName || 'N/A'}</span>
-              </div>
+               {showCreatedByColumn && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Created By:</span>
+                  <span>{user.createdBy?.fullName || 'N/A'}</span>
+                </div>
+               )}
                <div className="flex justify-between">
                 <span className="text-muted-foreground">Created:</span>
                 <span>{format(new Date(user.createdAt), "yyyy-MM-dd")}</span>
@@ -149,7 +153,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
               <SortableTableHead columnKey="email">Email</SortableTableHead>
               <SortableTableHead columnKey="role">Role</SortableTableHead>
               <SortableTableHead columnKey="status">Status</SortableTableHead>
-              {currentUser?.role === 'Super Admin' && <SortableTableHead columnKey="createdBy">Created By</SortableTableHead>}
+              {showCreatedByColumn && <SortableTableHead columnKey="createdBy">Created By</SortableTableHead>}
               <SortableTableHead columnKey="createdAt">Created At</SortableTableHead>
               <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
             </TableRow>
@@ -184,7 +188,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
                         {user.status}
                     </Badge>
                 </TableCell>
-                 {currentUser?.role === 'Super Admin' && (
+                 {showCreatedByColumn && (
                     <TableCell className="whitespace-nowrap">{user.createdBy?.fullName || 'N/A'}</TableCell>
                  )}
                 <TableCell className="whitespace-nowrap">{format(new Date(user.createdAt), "yyyy-MM-dd")}</TableCell>

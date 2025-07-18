@@ -98,12 +98,13 @@ function ActivityLogPageContent() {
     setCurrentPage(1);
   };
 
+  const canViewAllLogs = currentUser?.role === 'Admin' || currentUser?.role === 'Super Admin';
 
   const filteredAndSortedLogs = useMemo(() => {
     let processedLogs = [...logs];
 
     // For non-admins, only show their own activity
-    if (currentUser?.role !== 'Admin') {
+    if (!canViewAllLogs) {
         processedLogs = processedLogs.filter(log => log.userIdentifier === currentUser?.userId);
     }
     
@@ -147,7 +148,7 @@ function ActivityLogPageContent() {
       });
     }
     return processedLogs;
-  }, [logs, searchTerm, sortConfig, currentUser, actionFilter, dateRangeFilter]);
+  }, [logs, searchTerm, sortConfig, currentUser, actionFilter, dateRangeFilter, canViewAllLogs]);
 
   const totalPages = Math.max(1, Math.ceil(filteredAndSortedLogs.length / ITEMS_PER_PAGE));
   
@@ -173,10 +174,10 @@ function ActivityLogPageContent() {
         <div>
           <h2 className="text-3xl font-semibold tracking-tight text-primary flex items-center">
             <ListChecks className="mr-3 h-8 w-8" /> 
-            {currentUser?.role === 'Admin' ? 'User Activity Log' : 'My Activity Log'}
+            {canViewAllLogs ? 'User Activity Log' : 'My Activity Log'}
           </h2>
           <p className="text-muted-foreground">
-            {currentUser?.role === 'Admin' 
+            {canViewAllLogs 
               ? 'View recorded user actions within the application.' 
               : 'A record of your actions within the application.'}
           </p>
@@ -193,7 +194,7 @@ function ActivityLogPageContent() {
                 <Search className="absolute left-3 bottom-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                 type="search"
-                placeholder={currentUser?.role === 'Admin' ? "User ID or details..." : "Search details..."}
+                placeholder={canViewAllLogs ? "User ID or details..." : "Search details..."}
                 value={searchTerm}
                 onChange={handleSearchChange}
                 className="pl-10"
@@ -292,7 +293,7 @@ function ActivityLogPageContent() {
 
 export default function ActivityLogPage() {
     return (
-        <AuthGuard requiredRole="Admin">
+        <AuthGuard permission="canReadActivityLog">
             <ActivityLogPageContent />
         </AuthGuard>
     )
