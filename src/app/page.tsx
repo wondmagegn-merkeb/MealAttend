@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { LogIn, Shield, Cog, Users, QrCode, ClipboardList, UserCog, FileDown, Loader2 } from 'lucide-react';
+import { LogIn, Shield, Cog, Users, QrCode, ClipboardList, UserCog, FileDown, Loader2, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -129,7 +129,7 @@ export default function HomePage() {
                                 data-ai-hint="company logo"
                             />
                             <p className="text-muted-foreground leading-relaxed flex-1">
-                            MealAttend is proudly developed by <span className="font-bold text-primary">AddisSpark</span>, an innovative team dedicated to creating modern software solutions that solve real-world challenges. Our team is a blend of creative designers, skilled developers, and strategic thinkers.
+                            MealAttend is proudly developed by <span className="inline-flex items-center gap-1 font-bold text-primary"><Sparkles className="h-4 w-4" />AddisSpark<Sparkles className="h-4 w-4" /></span>, an innovative team dedicated to creating modern software solutions that solve real-world challenges. Our team is a blend of creative designers, skilled developers, and strategic thinkers.
                             </p>
                         </div>
                         
