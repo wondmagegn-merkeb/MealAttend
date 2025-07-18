@@ -2,7 +2,9 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getAuthFromRequest } from '@/lib/auth';
+import { hash } from 'bcryptjs';
 
+const saltRounds = 10;
 export const dynamic = 'force-dynamic';
 
 interface RouteParams {
@@ -51,7 +53,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     const data = await request.json();
     const { 
-        fullName, email, position, role, status, profileImageURL,
+        fullName, email, position, role, status, profileImageURL, password,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
         canReadAttendance, canExportAttendance,
         canReadActivityLog,
@@ -73,9 +75,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
         return NextResponse.json({ message: 'You cannot change your own role.' }, { status: 403 });
     }
 
-    const updatedUser = await prisma.user.update({
-      where: { id: params.id },
-      data: {
+    const dataToUpdate: any = {
         fullName,
         email,
         position,
@@ -88,7 +88,16 @@ export async function PUT(request: Request, { params }: RouteParams) {
         canReadActivityLog,
         canReadUsers, canWriteUsers,
         canReadDepartments, canWriteDepartments
-      },
+    };
+
+    if (password) {
+        dataToUpdate.password = await hash(password, saltRounds);
+        dataToUpdate.passwordChangeRequired = true; // Force user to change password on next login
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: params.id },
+      data: dataToUpdate,
     });
     return NextResponse.json(updatedUser);
   } catch (error: any) {

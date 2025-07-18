@@ -60,12 +60,16 @@ export default function EditUserPage() {
 
   const mutation = useMutation({
     mutationFn: updateUser,
-    onSuccess: (updatedData) => {
+    onSuccess: (updatedData, variables) => {
       toast({
         title: "User Updated",
         description: `${updatedData.fullName}'s record has been updated.`,
       });
-      logUserActivity(actorUserId, "USER_UPDATE_SUCCESS", `Updated user ID: ${updatedData.userId}, Name: ${updatedData.fullName}`);
+      let logDetails = `Updated user ID: ${updatedData.userId}, Name: ${updatedData.fullName}`;
+      if (variables.data.password) {
+        logDetails += '. Password was reset.';
+      }
+      logUserActivity(actorUserId, "USER_UPDATE_SUCCESS", logDetails);
       queryClient.invalidateQueries({ queryKey: ['users'] });
       queryClient.invalidateQueries({ queryKey: ['user', userIdParam] });
       router.push('/admin/users');

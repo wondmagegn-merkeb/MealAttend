@@ -11,8 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState, useRef } from "react";
-import { Loader2, Upload, ShieldCheck } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, Upload, ShieldCheck, KeyRound } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { User, PermissionKey } from '@/types';
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
@@ -42,6 +42,9 @@ const userFormSchema = z.object({
   role: z.enum(['Super Admin', 'Admin', 'User'], { errorMap: () => ({ message: "Please select a role." }) }),
   status: z.enum(['Active', 'Inactive'], { errorMap: () => ({ message: "Please select a status." }) }),
   profileImageURL: z.string().optional().or(z.literal("")),
+  password: z.string().optional().refine(val => !val || val.length >= 6, {
+    message: "Password must be at least 6 characters long if provided.",
+  }),
   ...permissionsSchema,
 });
 
@@ -100,6 +103,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       position: initialData.position || "",
       status: initialData.status || "Active",
       profileImageURL: initialData.profileImageURL || "",
+      password: "", // Always start with empty password field
     } : {
       fullName: "",
       position: "",
@@ -107,6 +111,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       role: "User",
       status: "Active",
       profileImageURL: "",
+      password: "",
     },
   });
   
@@ -119,6 +124,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
         position: initialData.position || "",
         status: initialData.status || "Active",
         profileImageURL: initialData.profileImageURL || "",
+        password: "",
       });
       setImagePreview(initialData.profileImageURL || null);
     }
@@ -168,6 +174,11 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
         profileImageURL: finalProfileUrl,
     };
     
+    // Don't submit an empty password string
+    if ('password' in dataToSubmit && !dataToSubmit.password) {
+        delete (dataToSubmit as any).password;
+    }
+
     onSubmit(dataToSubmit);
   };
   
@@ -334,8 +345,33 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
         </Form>
       </CardContent>
     </Card>
-
+    
     {!isProfileEditMode && (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6">
+
+        {initialData && (
+          <Card className="shadow-md border-border mt-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><KeyRound /> Reset Password</CardTitle>
+              <CardDescription>
+                Optionally enter a new password for this user. They will be required to change it on their next login.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FormField control={form.control} name="password" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>New Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="Leave blank to keep current password" {...(field as any)} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </CardContent>
+          </Card>
+        )}
+
         <Card className="shadow-md border-border mt-6">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><ShieldCheck /> User Permissions</CardTitle>
@@ -344,27 +380,25 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6">
-                      {Object.entries(permissionGroups).map(([section, perms]) => (
-                        <div key={section} className="space-y-4">
-                          <h3 className="font-semibold text-lg text-primary">{section}</h3>
-                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-                            {perms.map(p => renderPermissionSwitch(p.id, p.label))}
-                           </div>
-                           {section !== 'Administration' && <Separator />}
-                        </div>
-                      ))}
-
-                         <div className="flex justify-end pt-4">
-                             <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
-                                {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
-                            </Button>
-                        </div>
-                    </form>
-                 </Form>
+              {Object.entries(permissionGroups).map(([section, perms]) => (
+                <div key={section} className="space-y-4">
+                  <h3 className="font-semibold text-lg text-primary">{section}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+                    {perms.map(p => renderPermissionSwitch(p.id, p.label))}
+                    </div>
+                    {section !== 'Administration' && <Separator />}
+                </div>
+              ))}
             </CardContent>
         </Card>
+
+        <div className="flex justify-end pt-4">
+            <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
+                {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
+            </Button>
+        </div>
+      </form>
+    </Form>
     )}
 
     {isProfileEditMode && (
