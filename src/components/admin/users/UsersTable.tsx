@@ -81,7 +81,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
       </div>
     );
   }
-
+  
   const showCreatedByColumn = currentUser?.role === 'Super Admin';
 
   return (
