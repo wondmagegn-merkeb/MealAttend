@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, BookUser, Settings, QrCode, UsersRound, Users as UsersIcon, History, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, BookUser, Settings, QrCode, UsersRound, Users as UsersIcon, History, ShieldCheck, ShieldAlert, ListOrdered } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   SidebarContent as ShadSidebarContent,
@@ -47,7 +47,10 @@ export function AdminSidebar() {
   };
   
   const isActive = (href: string) => {
-    return href === '/admin' ? pathname === href : pathname.startsWith(href);
+    if (href === '/admin/super-settings') {
+      return pathname.startsWith(href);
+    }
+    return href === '/admin' ? pathname === href : pathname.startsWith(href) && href !== '/admin';
   }
 
   return (

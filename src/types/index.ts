@@ -1,4 +1,6 @@
 
+import type { TeamMember as PrismaTeamMember } from '@prisma/client';
+
 export interface Department {
   id: string;
   departmentId: string;
@@ -110,3 +112,5 @@ export type PermissionKey =
   | 'canWriteUsers'
   | 'canReadDepartments'
   | 'canWriteDepartments';
+
+export type TeamMember = PrismaTeamMember;

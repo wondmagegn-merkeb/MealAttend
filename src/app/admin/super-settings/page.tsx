@@ -12,13 +12,14 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Palette, Save, Settings, AlertTriangle, Home, Users, Upload, KeyRound, CreditCard } from "lucide-react";
+import { Loader2, Palette, Save, Settings, Home, Users, Upload, KeyRound, CreditCard, UserPlus, ListOrdered } from "lucide-react";
 import type { AppSettings } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Link from 'next/link';
 
 const themes = [
   { name: "default", label: "Default", primary: "hsl(207 90% 54%)", accent: "hsl(174 100% 29%)", bg: "hsl(0 0% 96%)" },
@@ -243,7 +244,7 @@ export default function SuperAdminSettingsPage() {
          <Form {...homepageForm}>
             <form onSubmit={homepageForm.handleSubmit(onHomepageSubmit)}>
                 <Card>
-                    <CardHeader><CardTitle>Homepage Settings</CardTitle><CardDescription>Control public homepage visibility.</CardDescription></CardHeader>
+                    <CardHeader><CardTitle className="flex items-center gap-2"><Home /> Homepage Settings</CardTitle><CardDescription>Control public homepage visibility and content.</CardDescription></CardHeader>
                     <CardContent className="space-y-4">
                         <FormField control={homepageForm.control} name="showHomepage" render={({ field }) => (
                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Show Public Homepage</FormLabel><FormDescription>If disabled, redirects to login.</FormDescription></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
@@ -251,6 +252,13 @@ export default function SuperAdminSettingsPage() {
                         <FormField control={homepageForm.control} name="showTeamSection" render={({ field }) => (
                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Show "Our Team" Section</FormLabel><FormDescription>Control team visibility.</FormDescription></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
                         )} />
+                        <div>
+                            <Link href="/admin/super-settings/team" passHref legacyBehavior>
+                                <Button variant="outline" className="w-full">
+                                    <ListOrdered className="mr-2 h-4 w-4" /> Manage Team Members & Order
+                                </Button>
+                            </Link>
+                        </div>
                     </CardContent>
                     <CardFooter><Button type="submit" disabled={mutation.isPending && homepageForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Homepage</Button></CardFooter>
                 </Card>
@@ -312,5 +320,3 @@ export default function SuperAdminSettingsPage() {
     </div>
   );
 }
-
-    

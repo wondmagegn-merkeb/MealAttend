@@ -4,53 +4,15 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { LogIn, Shield, Cog, Users, Sparkles, QrCode, ClipboardList, UserCog, FileDown, Loader2 } from 'lucide-react';
+import { LogIn, Shield, Cog, Users, QrCode, ClipboardList, UserCog, FileDown, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAppSettings } from '@/hooks/useAppSettings';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-
-
-const team = [
-  {
-    name: 'Leo Maxwell',
-    role: 'CEO & Full-Stack Developer',
-    avatarUrl: '/leo.png',
-    bio: 'Wachemo University Computer Science graduate, leading the vision and technology.',
-    avatarHint: 'man professional',
-    isCeo: true,
-  },
-  {
-    name: 'Owen Grant',
-    role: 'CTO & Full-Stack Developer',
-    avatarUrl: '/owen.png',
-    bio: 'Wachemo University Computer Science graduate, building robust back-end systems.',
-    avatarHint: 'man professional',
-  },
-   {
-    name: 'Eleanor Vance',
-    role: 'Project Manager & Marketing Lead',
-    avatarUrl: '/eleanor.png',
-    bio: 'Marketing graduate from Wachemo University, driving our brand and project timelines forward.',
-    avatarHint: 'woman professional',
-  },
-  {
-    name: 'Sofia Reyes',
-    role: 'Marketing Specialist',
-    avatarUrl: '/sofia.png',
-    bio: 'Wachemo University marketing graduate with a passion for digital outreach.',
-    avatarHint: 'woman professional',
-  },
-  {
-    name: 'Caleb Finn',
-    role: 'Lead Full-Stack Developer',
-    avatarUrl: '/caleb.png',
-    bio: 'Software Engineering graduate from Wachemo University, focusing on seamless user experiences.',
-    avatarHint: 'man professional',
-  },
-];
+import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import type { TeamMember } from '@prisma/client';
 
 const features = [
     {
@@ -75,19 +37,35 @@ const features = [
     }
 ];
 
+const fetchTeamMembers = async (): Promise<TeamMember[]> => {
+  const res = await fetch("/api/team");
+  if (!res.ok) {
+    throw new Error("Failed to fetch team members");
+  }
+  return res.json();
+};
 
 export default function HomePage() {
-  const { settings, isLoading } = useAppSettings();
+  const { settings, isLoading: isLoadingSettings } = useAppSettings();
   const router = useRouter();
 
+  const { data: team = [], isLoading: isLoadingTeam } = useQuery<TeamMember[]>({
+    queryKey: ['teamMembers'],
+    queryFn: fetchTeamMembers,
+    enabled: settings.showTeamSection, // Only fetch if the section is visible
+  });
+
   useEffect(() => {
-    if (!isLoading && !settings.showHomepage) {
+    if (!isLoadingSettings && !settings.showHomepage) {
       router.replace('/auth/login');
     }
-  }, [settings, isLoading, router]);
+  }, [settings, isLoadingSettings, router]);
 
-  const ceo = team.find(member => member.isCeo);
-  const otherMembers = team.filter(member => !member.isCeo);
+  const visibleTeamMembers = team.filter(member => member.isVisible);
+  const ceo = visibleTeamMembers.find(member => member.isCeo);
+  const otherMembers = visibleTeamMembers.filter(member => !member.isCeo);
+
+  const isLoading = isLoadingSettings || (settings.showTeamSection && isLoadingTeam);
 
   if (isLoading || !settings.showHomepage) {
      return (
@@ -160,7 +138,7 @@ export default function HomePage() {
                         {ceo && (
                             <div className="flex flex-col items-center text-center mb-10">
                             <Avatar className="h-28 w-28 mb-4 border-4 border-primary">
-                                <AvatarImage src={ceo.avatarUrl} alt={ceo.name} data-ai-hint={ceo.avatarHint} />
+                                <AvatarImage src={ceo.avatarUrl || `https://placehold.co/112x112.png`} alt={ceo.name} data-ai-hint="man professional" />
                                 <AvatarFallback>{ceo.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                             </Avatar>
                             <h3 className="text-xl font-bold">{ceo.name}</h3>
@@ -172,9 +150,9 @@ export default function HomePage() {
                         {/* Other Team Members */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 pt-8">
                             {otherMembers.map((member) => (
-                            <div key={member.name} className="flex flex-col items-center text-center">
+                            <div key={member.id} className="flex flex-col items-center text-center">
                                 <Avatar className="h-24 w-24 mb-4 border-4 border-primary/20">
-                                <AvatarImage src={member.avatarUrl} alt={member.name} data-ai-hint={member.avatarHint} />
+                                <AvatarImage src={member.avatarUrl || `https://placehold.co/96x96.png`} alt={member.name} data-ai-hint="professional" />
                                 <AvatarFallback>{member.name.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
                                 </Avatar>
                                 <h3 className="text-lg font-bold">{member.name}</h3>

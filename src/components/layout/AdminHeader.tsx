@@ -24,6 +24,7 @@ const getPageConfig = (pathname: string): { title: string, icon: React.ReactNode
   if (pathname === '/admin') return { title: 'Dashboard', icon: <LayoutDashboard className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/attendance')) return { title: 'Attendance', icon: <BookCopy className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/settings')) return { title: 'Settings', icon: <SettingsIcon className="h-6 w-6" /> };
+  if (pathname.startsWith('/admin/super-settings/team')) return { title: 'Manage Team', icon: <Users className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/super-settings')) return { title: 'Super Admin Settings', icon: <ShieldAlert className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/students')) {
     if (pathname.startsWith('/admin/students/new')) return { title: 'Add New Student', icon: <UserPlus className="h-6 w-6" /> };

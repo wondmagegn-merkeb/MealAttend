@@ -194,6 +194,54 @@ const activityLogs = [
   },
 ];
 
+const teamMembers = [
+  {
+    name: 'Leo Maxwell',
+    role: 'CEO & Full-Stack Developer',
+    avatarUrl: '/leo.png',
+    bio: 'Wachemo University Computer Science graduate, leading the vision and technology.',
+    displayOrder: 0,
+    isCeo: true,
+    isVisible: true,
+  },
+  {
+    name: 'Owen Grant',
+    role: 'CTO & Full-Stack Developer',
+    avatarUrl: '/owen.png',
+    bio: 'Wachemo University Computer Science graduate, building robust back-end systems.',
+    displayOrder: 1,
+    isCeo: false,
+    isVisible: true,
+  },
+   {
+    name: 'Eleanor Vance',
+    role: 'Project Manager & Marketing Lead',
+    avatarUrl: '/eleanor.png',
+    bio: 'Marketing graduate from Wachemo University, driving our brand and project timelines forward.',
+    displayOrder: 2,
+    isCeo: false,
+    isVisible: true,
+  },
+  {
+    name: 'Sofia Reyes',
+    role: 'Marketing Specialist',
+    avatarUrl: '/sofia.png',
+    bio: 'Wachemo University marketing graduate with a passion for digital outreach.',
+    displayOrder: 3,
+    isCeo: false,
+    isVisible: true,
+  },
+  {
+    name: 'Caleb Finn',
+    role: 'Lead Full-Stack Developer',
+    avatarUrl: '/caleb.png',
+    bio: 'Software Engineering graduate from Wachemo University, focusing on seamless user experiences.',
+    displayOrder: 4,
+    isCeo: false,
+    isVisible: true,
+  },
+];
+
 
 async function main() {
   console.log('Start seeding...');
@@ -261,6 +309,13 @@ async function main() {
     });
   }
   console.log('Seeded activity logs.');
+  
+  // Seed Team Members
+  await prisma.teamMember.deleteMany(); // Clear existing members first
+  for (const member of teamMembers) {
+    await prisma.teamMember.create({ data: member });
+  }
+  console.log('Seeded team members.');
   
   // Seed ID Counters to prevent ID conflicts with generator
   await prisma.idCounter.upsert({ where: { type: 'DEPARTMENT' }, update: { count: 4 }, create: { type: 'DEPARTMENT', count: 4 } });
