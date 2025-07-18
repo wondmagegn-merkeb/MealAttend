@@ -18,8 +18,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           <SidebarInset>
             <div className="flex flex-col h-screen">
               <AdminHeader />
-              <div className="flex-1 overflow-auto">
-                <main className="p-6 min-h-full">
+              <div className="flex-1 flex flex-col overflow-auto">
+                <main className="flex-1 p-6">
                   {children}
                 </main>
                 <AdminFooter />
