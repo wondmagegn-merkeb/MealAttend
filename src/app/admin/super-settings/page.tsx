@@ -157,20 +157,28 @@ export default function SuperAdminSettingsPage() {
 
   const onBrandingSubmit = async (data: z.infer<typeof brandingSchema>) => {
     let logoDataUrl = data.companyLogoUrl;
-    const file = (brandingForm.control._fields.companyLogoUrl as any)?._f.ref?.files?.[0];
+    const fileInput = (document.getElementById('company-logo-upload') as HTMLInputElement);
+    const file = fileInput?.files?.[0];
+    
     if (file) {
       toast({ title: "Processing logo...", description: "Please wait." });
       logoDataUrl = await fileToDataUri(file);
+    } else {
+      logoDataUrl = companyLogoPreview;
     }
     mutation.mutate({ ...data, companyLogoUrl: logoDataUrl });
   };
   
   const onIdCardSubmit = async (data: z.infer<typeof idCardSchema>) => {
     let logoDataUrl = data.idCardLogoUrl;
-    const file = (idCardForm.control._fields.idCardLogoUrl as any)?._f.ref?.files?.[0];
+    const fileInput = (document.getElementById('id-card-logo-upload') as HTMLInputElement);
+    const file = fileInput?.files?.[0];
+
     if (file) {
       toast({ title: "Processing logo...", description: "Please wait." });
       logoDataUrl = await fileToDataUri(file);
+    } else {
+      logoDataUrl = idCardLogoPreview;
     }
     mutation.mutate({ ...data, idCardLogoUrl: logoDataUrl });
   };
@@ -225,13 +233,17 @@ export default function SuperAdminSettingsPage() {
                         <AvatarImage src={companyLogoPreview || `https://placehold.co/96x96.png?text=Logo`} alt="Company Logo" className="object-contain" data-ai-hint="company logo" />
                         <AvatarFallback>LOGO</AvatarFallback>
                       </Avatar>
-                      <Input id="company-logo-upload" type="file" className="hidden" ref={field.ref} onChange={(e) => { field.onChange(e.target.files?.[0]); setCompanyLogoPreview(e.target.files?.[0] ? URL.createObjectURL(e.target.files[0]) : null); }} accept="image/*" />
+                      <Input id="company-logo-upload" type="file" className="hidden" onChange={(e) => { 
+                          if (e.target.files?.[0]) {
+                            setCompanyLogoPreview(URL.createObjectURL(e.target.files[0]));
+                          }
+                       }} accept="image/*" />
                       <Button type="button" variant="outline" onClick={() => document.getElementById('company-logo-upload')?.click()}><Upload className="mr-2 h-4 w-4" /> Change</Button>
                     </div>
                   </FormItem>
                 )} />
               </CardContent>
-              <CardFooter><Button type="submit" disabled={mutation.isPending && brandingForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Branding</Button></CardFooter>
+              <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && brandingForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Branding</Button></CardFooter>
             </Card>
           </form>
         </Form>
@@ -256,13 +268,17 @@ export default function SuperAdminSettingsPage() {
                         <AvatarImage src={idCardLogoPreview || `https://placehold.co/96x96.png?text=Logo`} alt="ID Card Logo" className="object-contain" data-ai-hint="school crest" />
                         <AvatarFallback>LOGO</AvatarFallback>
                       </Avatar>
-                      <Input id="id-card-logo-upload" type="file" className="hidden" ref={field.ref} onChange={(e) => { field.onChange(e.target.files?.[0]); setIdCardLogoPreview(e.target.files?.[0] ? URL.createObjectURL(e.target.files[0]) : null); }} accept="image/*" />
+                      <Input id="id-card-logo-upload" type="file" className="hidden" onChange={(e) => { 
+                          if (e.target.files?.[0]) {
+                            setIdCardLogoPreview(URL.createObjectURL(e.target.files[0]));
+                          }
+                       }} accept="image/*" />
                       <Button type="button" variant="outline" onClick={() => document.getElementById('id-card-logo-upload')?.click()}><Upload className="mr-2 h-4 w-4" /> Change</Button>
                     </div>
                   </FormItem>
                 )} />
               </CardContent>
-              <CardFooter><Button type="submit" disabled={mutation.isPending && idCardForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update ID Cards</Button></CardFooter>
+              <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && idCardForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update ID Cards</Button></CardFooter>
             </Card>
           </form>
         </Form>
@@ -298,7 +314,7 @@ export default function SuperAdminSettingsPage() {
                             </Link>
                         </div>
                     </CardContent>
-                    <CardFooter><Button type="submit" disabled={mutation.isPending && homepageForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Homepage</Button></CardFooter>
+                    <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && homepageForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Homepage</Button></CardFooter>
                 </Card>
             </form>
         </Form>
@@ -319,7 +335,7 @@ export default function SuperAdminSettingsPage() {
                             <FormItem><FormLabel>New Standard Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
                         )} />
                     </CardContent>
-                    <CardFooter><Button type="submit" disabled={mutation.isPending && passwordForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Passwords</Button></CardFooter>
+                    <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && passwordForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Passwords</Button></CardFooter>
                 </Card>
             </form>
         </Form>
@@ -354,7 +370,7 @@ export default function SuperAdminSettingsPage() {
                   </FormItem>
                 )} />
               </CardContent>
-              <CardFooter><Button type="submit" disabled={mutation.isPending && themeForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Theme</Button></CardFooter>
+              <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && themeForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Theme</Button></CardFooter>
             </Card>
           </form>
         </Form>
