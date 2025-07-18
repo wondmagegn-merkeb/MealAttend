@@ -49,6 +49,7 @@ export function TeamMemberDialog({ isOpen, onClose, member }: TeamMemberDialogPr
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const token = localStorage.getItem('mealAttendAuthToken_v1');
 
   const form = useForm<TeamMemberFormData>({
     resolver: zodResolver(teamMemberSchema),
@@ -87,7 +88,10 @@ export function TeamMemberDialog({ isOpen, onClose, member }: TeamMemberDialogPr
       const method = member ? "PUT" : "POST";
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          'Content-Type': 'application/json',  // Declares that the body content is JSON
+          'Authorization': `Bearer ${token}`   // Sends a bearer token for authorization
+        },
         body: JSON.stringify(payload),
       });
 

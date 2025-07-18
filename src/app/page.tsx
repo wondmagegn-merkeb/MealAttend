@@ -4,7 +4,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { LogIn, Shield, Cog, Users, QrCode, ClipboardList, UserCog, FileDown, Loader2, Sparkles } from 'lucide-react';
+import { LogIn, Shield, Cog, Users, Sparkles, QrCode, ClipboardList, UserCog, FileDown, Loader2 } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,47 +13,41 @@ import { useAppSettings } from '@/hooks/useAppSettings';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import type { TeamMember } from '@prisma/client';
+import type { TeamMember, HomepageFeature } from '@prisma/client';
 
-const features = [
-    {
-        icon: <QrCode className="h-6 w-6 text-accent" />,
-        title: "QR Code Scanning",
-        description: "Fast and touchless attendance tracking using individual QR codes."
-    },
-    {
-        icon: <UserCog className="h-6 w-6 text-accent" />,
-        title: "Student & User Management",
-        description: "Easily add, edit, and manage student and system user profiles."
-    },
-    {
-        icon: <ClipboardList className="h-6 w-6 text-accent" />,
-        title: "Comprehensive Dashboard",
-        description: "Get a real-time overview of attendance statistics and system activity."
-    },
-    {
-        icon: <FileDown className="h-6 w-6 text-accent" />,
-        title: "Reporting & Exports",
-        description: "Generate and export detailed attendance reports in PDF and Excel formats."
-    }
-];
+type IconName = keyof typeof LucideIcons;
 
-const fetchTeamMembers = async (): Promise<TeamMember[]> => {
-  const res = await fetch("/api/team");
-  if (!res.ok) {
-    throw new Error("Failed to fetch team members");
+const fetchHomepageData = async (): Promise<{ team: TeamMember[], features: HomepageFeature[] }> => {
+  const [teamRes, featuresRes] = await Promise.all([
+    fetch("/api/team"),
+    fetch("/api/features")
+  ]);
+
+  if (!teamRes.ok || !featuresRes.ok) {
+    throw new Error("Failed to fetch homepage data");
   }
-  return res.json();
+
+  return {
+    team: await teamRes.json(),
+    features: await featuresRes.json(),
+  };
 };
+
+const DynamicIcon = ({ name }: { name: string }) => {
+  const IconComponent = LucideIcons[name as IconName] as React.ElementType;
+  if (!IconComponent) return <Sparkles className="h-6 w-6 text-accent" />; // Fallback icon
+  return <IconComponent className="h-6 w-6 text-accent" />;
+};
+
 
 export default function HomePage() {
   const { settings, isLoading: isLoadingSettings } = useAppSettings();
   const router = useRouter();
 
-  const { data: team = [], isLoading: isLoadingTeam } = useQuery<TeamMember[]>({
-    queryKey: ['teamMembers'],
-    queryFn: fetchTeamMembers,
-    enabled: settings.showTeamSection, // Only fetch if the section is visible
+  const { data: homepageData, isLoading: isLoadingData } = useQuery<{ team: TeamMember[], features: HomepageFeature[] }>({
+    queryKey: ['homepageData'],
+    queryFn: fetchHomepageData,
+    enabled: !isLoadingSettings && settings.showHomepage, 
   });
 
   useEffect(() => {
@@ -61,11 +56,13 @@ export default function HomePage() {
     }
   }, [settings, isLoadingSettings, router]);
 
-  const visibleTeamMembers = team.filter(member => member.isVisible);
+  const visibleTeamMembers = homepageData?.team?.filter(member => member.isVisible) || [];
   const ceo = visibleTeamMembers.find(member => member.isCeo);
   const otherMembers = visibleTeamMembers.filter(member => !member.isCeo);
+  
+  const visibleFeatures = homepageData?.features?.filter(feature => feature.isVisible) || [];
 
-  const isLoading = isLoadingSettings || (settings.showTeamSection && isLoadingTeam);
+  const isLoading = isLoadingSettings || (!homepageData && settings.showHomepage);
 
   if (isLoading || !settings.showHomepage) {
      return (
@@ -85,31 +82,33 @@ export default function HomePage() {
               </div>
               <CardTitle className="text-4xl font-bold text-primary">{settings.siteName} Information Center</CardTitle>
               <CardDescription className="text-lg text-muted-foreground">
-                  Learn more about our system and the team behind it.
+                  {settings.homepageSubtitle}
               </CardDescription>
           </CardHeader>
           <CardContent className="space-y-12 px-4 sm:px-6 md:px-10">
 
             {/* About the System Section */}
-            <section className="text-left">
-              <div className="flex items-center gap-4 mb-6">
-                 <Cog className="h-10 w-10 text-primary" />
-                 <h2 className="text-3xl font-semibold text-primary">System Features</h2>
-              </div>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {features.map((feature) => (
-                    <div key={feature.title} className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
-                        <div className="flex-shrink-0">{feature.icon}</div>
-                        <div>
-                            <h3 className="text-lg font-semibold text-foreground">{feature.title}</h3>
-                            <p className="text-sm text-muted-foreground">{feature.description}</p>
+            {settings.showFeaturesSection && visibleFeatures.length > 0 && (
+                <section className="text-left">
+                  <div className="flex items-center gap-4 mb-6">
+                     <Cog className="h-10 w-10 text-primary" />
+                     <h2 className="text-3xl font-semibold text-primary">System Features</h2>
+                  </div>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {visibleFeatures.map((feature) => (
+                        <div key={feature.id} className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
+                            <div className="flex-shrink-0"><DynamicIcon name={feature.icon} /></div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-foreground">{feature.title}</h3>
+                                <p className="text-sm text-muted-foreground">{feature.description}</p>
+                            </div>
                         </div>
-                    </div>
-                ))}
-              </div>
-            </section>
+                    ))}
+                  </div>
+                </section>
+            )}
 
-            {settings.showTeamSection && (
+            {settings.showTeamSection && visibleTeamMembers.length > 0 && (
                 <>
                     <Separator />
                     
@@ -129,7 +128,7 @@ export default function HomePage() {
                                 data-ai-hint="company logo"
                             />
                             <p className="text-muted-foreground leading-relaxed flex-1">
-                            MealAttend is proudly developed by <span className="inline-flex items-center gap-1 font-bold text-primary"><Sparkles className="h-4 w-4" />AddisSpark<Sparkles className="h-4 w-4" /></span>, an innovative team dedicated to creating modern software solutions that solve real-world challenges. Our team is a blend of creative designers, skilled developers, and strategic thinkers.
+                                MealAttend is proudly developed by <span className="font-bold text-primary inline-flex items-center gap-1"><Sparkles className="h-4 w-4" />AddisSpark<Sparkles className="h-4 w-4" /></span>, an innovative team dedicated to creating modern software solutions that solve real-world challenges. Our team is a blend of creative designers, skilled developers, and strategic thinkers.
                             </p>
                         </div>
                         

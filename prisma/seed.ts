@@ -245,6 +245,37 @@ const teamMembers = [
   },
 ];
 
+const features = [
+    {
+        icon: "QrCode",
+        title: "QR Code Scanning",
+        description: "Fast and touchless attendance tracking using individual QR codes.",
+        displayOrder: 0,
+        isVisible: true,
+    },
+    {
+        icon: "UserCog",
+        title: "Student & User Management",
+        description: "Easily add, edit, and manage student and system user profiles.",
+        displayOrder: 1,
+        isVisible: true,
+    },
+    {
+        icon: "ClipboardList",
+        title: "Comprehensive Dashboard",
+        description: "Get a real-time overview of attendance statistics and system activity.",
+        displayOrder: 2,
+        isVisible: true,
+    },
+    {
+        icon: "FileDown",
+        title: "Reporting & Exports",
+        description: "Generate and export detailed attendance reports in PDF and Excel formats.",
+        displayOrder: 3,
+        isVisible: true,
+    }
+];
+
 
 async function main() {
   console.log('Start seeding...');
@@ -255,6 +286,7 @@ async function main() {
     update: {
       showHomepage: true,
       showTeamSection: true,
+      showFeaturesSection: true,
       companyLogoUrl: null,
       idCardLogoUrl: null,
     },
@@ -267,6 +299,8 @@ async function main() {
       colorTheme: "default",
       showHomepage: true,
       showTeamSection: true,
+      showFeaturesSection: true,
+      homepageSubtitle: "Learn more about our system and the team behind it.",
       companyLogoUrl: null,
       idCardLogoUrl: null,
     },
@@ -319,6 +353,13 @@ async function main() {
     await prisma.teamMember.create({ data: member });
   }
   console.log('Seeded team members.');
+  
+  // Seed Homepage Features
+  await prisma.homepageFeature.deleteMany();
+  for (const feature of features) {
+    await prisma.homepageFeature.create({ data: feature });
+  }
+  console.log('Seeded homepage features.');
   
   // Seed ID Counters to prevent ID conflicts with generator
   await prisma.idCounter.upsert({ where: { type: 'DEPARTMENT' }, update: { count: 4 }, create: { type: 'DEPARTMENT', count: 4 } });

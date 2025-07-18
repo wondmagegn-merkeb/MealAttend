@@ -1,5 +1,5 @@
 
-import type { TeamMember as PrismaTeamMember } from '@prisma/client';
+import type { TeamMember as PrismaTeamMember, HomepageFeature as PrismaHomepageFeature, AppSettings as PrismaAppSettings } from '@prisma/client';
 
 export interface Department {
   id: string;
@@ -116,3 +116,5 @@ export type PermissionKey =
   | 'canWriteDepartments';
 
 export type TeamMember = PrismaTeamMember;
+export type HomepageFeature = PrismaHomepageFeature;
+export type AppSettings = Omit<PrismaAppSettings, 'defaultUserPassword' | 'defaultAdminPassword' | 'defaultSuperAdminPassword'>;

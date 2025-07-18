@@ -95,6 +95,8 @@ export async function POST(request: Request) {
       defaultPasswordHash = settings.defaultUserPassword;
     } else if (role === 'Admin' && settings?.defaultAdminPassword) {
       defaultPasswordHash = settings.defaultAdminPassword;
+    } else if (role === 'Super Admin' && settings?.defaultSuperAdminPassword) {
+        defaultPasswordHash = settings.defaultSuperAdminPassword;
     }
     
     // Fallback if no default is set

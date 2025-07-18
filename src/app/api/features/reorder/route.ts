@@ -14,12 +14,11 @@ export async function POST(request: Request) {
     try {
         const { orderedIds } = await request.json();
         if (!Array.isArray(orderedIds)) {
-            console.error('Invalid payload:', orderedIds);
             return NextResponse.json({ message: 'Invalid payload, expected orderedIds array' }, { status: 400 });
         }
 
         const transactions = orderedIds.map((id, index) =>
-            prisma.teamMember.update({
+            prisma.homepageFeature.update({
                 where: { id },
                 data: { displayOrder: index },
             })
@@ -29,7 +28,6 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ message: 'Reorder successful' }, { status: 200 });
     } catch (error) {
-        console.error('Error in POST /api/team-reorder:', error);
-        return NextResponse.json({ message: 'Failed to reorder team members', error: (error as Error).message }, { status: 500 });
+        return NextResponse.json({ message: 'Failed to reorder features', error: (error as Error).message }, { status: 500 });
     }
 }

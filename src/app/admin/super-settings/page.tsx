@@ -12,7 +12,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Palette, Save, Settings, Home, Users, Upload, KeyRound, CreditCard, UserPlus, ListOrdered } from "lucide-react";
+import { Loader2, Palette, Save, Settings, Home, Users, Upload, KeyRound, CreditCard, UserPlus, ListOrdered, CaseSensitive, LayoutGrid } from "lucide-react";
 import type { AppSettings } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import { useAppSettings } from "@/hooks/useAppSettings";
@@ -78,12 +78,15 @@ const idCardSchema = z.object({
   idCardLogoUrl: z.string().optional().nullable(),
 });
 const homepageSchema = z.object({
+  homepageSubtitle: z.string().min(1, "Homepage subtitle is required."),
   showHomepage: z.boolean(),
   showTeamSection: z.boolean(),
+  showFeaturesSection: z.boolean(),
 });
 const passwordSchema = z.object({
   defaultUserPassword: z.string().min(6, "Password must be at least 6 characters.").optional().or(z.literal('')),
   defaultAdminPassword: z.string().min(6, "Password must be at least 6 characters.").optional().or(z.literal('')),
+  defaultSuperAdminPassword: z.string().min(6, "Password must be at least 6 characters.").optional().or(z.literal('')),
 });
 const themeSchema = z.object({
   colorTheme: z.string().min(1, "Color Theme is required."),
@@ -126,11 +129,11 @@ export default function SuperAdminSettingsPage() {
   });
   const homepageForm = useForm<z.infer<typeof homepageSchema>>({
     resolver: zodResolver(homepageSchema),
-    defaultValues: { showHomepage: true, showTeamSection: true }
+    defaultValues: { homepageSubtitle: "", showHomepage: true, showTeamSection: true, showFeaturesSection: true }
   });
   const passwordForm = useForm<z.infer<typeof passwordSchema>>({
     resolver: zodResolver(passwordSchema),
-    defaultValues: { defaultUserPassword: "", defaultAdminPassword: "" }
+    defaultValues: { defaultUserPassword: "", defaultAdminPassword: "", defaultSuperAdminPassword: "" }
   });
   const themeForm = useForm<z.infer<typeof themeSchema>>({
     resolver: zodResolver(themeSchema),
@@ -144,8 +147,8 @@ export default function SuperAdminSettingsPage() {
     if (settings) {
       brandingForm.reset({ siteName: settings.siteName, idPrefix: settings.idPrefix, companyLogoUrl: settings.companyLogoUrl });
       idCardForm.reset({ schoolName: settings.schoolName, idCardTitle: settings.idCardTitle, idCardLogoUrl: settings.idCardLogoUrl });
-      homepageForm.reset({ showHomepage: settings.showHomepage, showTeamSection: settings.showTeamSection });
-      passwordForm.reset({ defaultUserPassword: "", defaultAdminPassword: ""});
+      homepageForm.reset({ homepageSubtitle: settings.homepageSubtitle, showHomepage: settings.showHomepage, showTeamSection: settings.showTeamSection, showFeaturesSection: settings.showFeaturesSection });
+      passwordForm.reset({ defaultUserPassword: "", defaultAdminPassword: "", defaultSuperAdminPassword: ""});
       themeForm.reset({ colorTheme: settings.colorTheme });
       setCompanyLogoPreview(settings.companyLogoUrl);
       setIdCardLogoPreview(settings.idCardLogoUrl);
@@ -177,6 +180,7 @@ export default function SuperAdminSettingsPage() {
       const dataToSubmit = {
           ...(data.defaultUserPassword && { defaultUserPassword: data.defaultUserPassword }),
           ...(data.defaultAdminPassword && { defaultAdminPassword: data.defaultAdminPassword }),
+          ...(data.defaultSuperAdminPassword && { defaultSuperAdminPassword: data.defaultSuperAdminPassword }),
       };
       if (Object.keys(dataToSubmit).length > 0) {
         mutation.mutate(dataToSubmit);
@@ -267,18 +271,29 @@ export default function SuperAdminSettingsPage() {
          <Form {...homepageForm}>
             <form onSubmit={homepageForm.handleSubmit(onHomepageSubmit)}>
                 <Card>
-                    <CardHeader><CardTitle className="flex items-center gap-2"><Home /> Homepage Settings</CardTitle><CardDescription>Control public homepage visibility and content.</CardDescription></CardHeader>
+                    <CardHeader><CardTitle className="flex items-center gap-2"><Home /> Homepage Content</CardTitle><CardDescription>Control public homepage visibility and content.</CardDescription></CardHeader>
                     <CardContent className="space-y-4">
+                        <FormField control={homepageForm.control} name="homepageSubtitle" render={({ field }) => (
+                            <FormItem><FormLabel>Homepage Subtitle</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
                         <FormField control={homepageForm.control} name="showHomepage" render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Show Public Homepage</FormLabel><FormDescription>If disabled, redirects to login.</FormDescription></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3"><div className="space-y-0.5"><FormLabel>Show Public Homepage</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
                         )} />
-                        <FormField control={homepageForm.control} name="showTeamSection" render={({ field }) => (
-                           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Show "Our Team" Section</FormLabel><FormDescription>Control team visibility.</FormDescription></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
+                        <FormField control={homepageForm.control} name="showFeaturesSection" render={({ field }) => (
+                           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3"><div className="space-y-0.5"><FormLabel>Show Features Section</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
                         )} />
-                        <div>
+                         <FormField control={homepageForm.control} name="showTeamSection" render={({ field }) => (
+                           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3"><div className="space-y-0.5"><FormLabel>Show Team Section</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
+                        )} />
+                        <div className="grid grid-cols-2 gap-2 pt-2">
+                             <Link href="/admin/super-settings/features" passHref legacyBehavior>
+                                <Button variant="outline" className="w-full">
+                                    <LayoutGrid className="mr-2 h-4 w-4" /> Manage Features
+                                </Button>
+                            </Link>
                             <Link href="/admin/super-settings/team" passHref legacyBehavior>
                                 <Button variant="outline" className="w-full">
-                                    <ListOrdered className="mr-2 h-4 w-4" /> Manage Team Members & Order
+                                    <Users className="mr-2 h-4 w-4" /> Manage Team Members
                                 </Button>
                             </Link>
                         </div>
@@ -294,6 +309,9 @@ export default function SuperAdminSettingsPage() {
                 <Card>
                     <CardHeader><CardTitle>Default Passwords</CardTitle><CardDescription>Set initial password for new users.</CardDescription></CardHeader>
                     <CardContent className="space-y-6">
+                         <FormField control={passwordForm.control} name="defaultSuperAdminPassword" render={({ field }) => (
+                            <FormItem><FormLabel>New Super Admin Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
+                        )} />
                         <FormField control={passwordForm.control} name="defaultAdminPassword" render={({ field }) => (
                             <FormItem><FormLabel>New Admin Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
                         )} />

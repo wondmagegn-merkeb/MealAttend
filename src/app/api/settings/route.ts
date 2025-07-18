@@ -23,12 +23,16 @@ export async function GET(request: Request) {
           schoolName: "Tech University",
           idCardTitle: "STUDENT ID",
           colorTheme: "default",
+          showHomepage: true,
+          showTeamSection: true,
+          showFeaturesSection: true,
+          homepageSubtitle: "Learn more about our system and the team behind it.",
         }
       });
       return NextResponse.json(defaultSettings);
     }
     // Don't send password hashes to the client
-    const { defaultUserPassword, defaultAdminPassword, ...clientSettings } = settings;
+    const { defaultUserPassword, defaultAdminPassword, defaultSuperAdminPassword, ...clientSettings } = settings;
     return NextResponse.json(clientSettings);
   } catch (error: any) {
     console.error('Error fetching app settings:', error);
@@ -57,10 +61,13 @@ export async function PUT(request: Request) {
         colorTheme,
         showHomepage,
         showTeamSection,
+        showFeaturesSection,
+        homepageSubtitle,
         companyLogoUrl,
         idCardLogoUrl,
         defaultUserPassword,
         defaultAdminPassword,
+        defaultSuperAdminPassword,
     } = data;
 
     const dataToUpdate: any = {
@@ -71,6 +78,8 @@ export async function PUT(request: Request) {
       colorTheme,
       showHomepage,
       showTeamSection,
+      showFeaturesSection,
+      homepageSubtitle,
       companyLogoUrl,
       idCardLogoUrl,
     };
@@ -82,13 +91,17 @@ export async function PUT(request: Request) {
     if (defaultAdminPassword) {
       dataToUpdate.defaultAdminPassword = await hash(defaultAdminPassword, saltRounds);
     }
+    
+    if (defaultSuperAdminPassword) {
+        dataToUpdate.defaultSuperAdminPassword = await hash(defaultSuperAdminPassword, saltRounds);
+    }
 
     const updatedSettings = await prisma.appSettings.update({
       where: { id: 1 },
       data: dataToUpdate,
     });
     
-    const { defaultUserPassword: _, defaultAdminPassword: __, ...clientSettings } = updatedSettings;
+    const { defaultUserPassword: _, defaultAdminPassword: __, defaultSuperAdminPassword: ___, ...clientSettings } = updatedSettings;
 
     return NextResponse.json(clientSettings);
   } catch (error: any) {
