@@ -274,36 +274,40 @@ export default function SuperAdminSettingsPage() {
                  <FormField control={idCardForm.control} name="idCardTitle" render={({ field }) => (
                   <FormItem><FormLabel>ID Card Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
-                <FormField control={idCardForm.control} name="idCardLogoUrl" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>ID Card Logo</FormLabel>
-                    <div className="flex items-center gap-4 mt-2">
-                      <Avatar className="h-24 w-24 rounded-md">
-                        <AvatarImage src={idCardLogoPreview || `https://placehold.co/96x96.png?text=Logo`} alt="ID Card Logo" className="object-contain" data-ai-hint="school crest" />
-                        <AvatarFallback>LOGO</AvatarFallback>
-                      </Avatar>
-                      <Input id="id-card-logo-upload" type="file" className="hidden" onChange={(e) => { 
-                          if (e.target.files?.[0]) {
-                            const newUrl = URL.createObjectURL(e.target.files[0]);
-                            setIdCardLogoPreview(newUrl);
-                            idCardForm.setValue('idCardLogoUrl', newUrl);
-                          }
-                       }} accept="image/*" />
-                      <Button type="button" variant="outline" onClick={() => document.getElementById('id-card-logo-upload')?.click()}><Upload className="mr-2 h-4 w-4" /> Change</Button>
-                    </div>
-                  </FormItem>
-                )} />
-
-                <div className="space-y-2 pt-4">
-                    <Label>Live Preview</Label>
-                    <div className="flex justify-center items-center p-4 bg-muted/50 rounded-lg border">
-                         <StudentIdCard 
-                            student={sampleStudent} 
-                            previewSettings={{
-                                ...watchedIdCardValues,
-                                idCardLogoUrl: idCardLogoPreview || watchedIdCardValues.idCardLogoUrl
-                            }}
-                        />
+                <div className="space-y-2">
+                    <Label>ID Card Logo &amp; Live Preview</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                        <FormField control={idCardForm.control} name="idCardLogoUrl" render={({ field }) => (
+                        <FormItem>
+                            <div className="flex items-center gap-4 mt-2">
+                            <Avatar className="h-24 w-24 rounded-md">
+                                <AvatarImage src={idCardLogoPreview || `https://placehold.co/96x96.png?text=Logo`} alt="ID Card Logo" className="object-contain" data-ai-hint="school crest" />
+                                <AvatarFallback>LOGO</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <Input id="id-card-logo-upload" type="file" className="hidden" onChange={(e) => { 
+                                    if (e.target.files?.[0]) {
+                                        const newUrl = URL.createObjectURL(e.target.files[0]);
+                                        setIdCardLogoPreview(newUrl);
+                                        idCardForm.setValue('idCardLogoUrl', newUrl);
+                                    }
+                                }} accept="image/*" />
+                                <Button type="button" variant="outline" onClick={() => document.getElementById('id-card-logo-upload')?.click()}><Upload className="mr-2 h-4 w-4" /> Change</Button>
+                                <p className="text-xs text-muted-foreground mt-2">Upload a new logo.</p>
+                            </div>
+                            </div>
+                        </FormItem>
+                        )} />
+                        
+                        <div className="flex justify-center items-center p-2 bg-muted/50 rounded-lg border scale-90 md:scale-100">
+                            <StudentIdCard 
+                                student={sampleStudent} 
+                                previewSettings={{
+                                    ...watchedIdCardValues,
+                                    idCardLogoUrl: idCardLogoPreview || watchedIdCardValues.idCardLogoUrl
+                                }}
+                            />
+                        </div>
                     </div>
                 </div>
 

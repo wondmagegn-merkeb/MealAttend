@@ -20,6 +20,7 @@ export function StudentIdCard({ student, previewSettings }: StudentIdCardProps) 
   const schoolName = previewSettings?.schoolName ?? globalSettings.schoolName;
   const cardTitle = previewSettings?.idCardTitle ?? globalSettings.idCardTitle ?? "STUDENT ID";
   const idCardLogo = previewSettings?.idCardLogoUrl ?? globalSettings.idCardLogoUrl;
+  const idPrefix = globalSettings.idPrefix;
   
   const fullStudentId = student.studentId;
 
@@ -56,7 +57,7 @@ export function StudentIdCard({ student, previewSettings }: StudentIdCardProps) 
             <div className="text-[7px] text-center font-semibold text-primary/80 dark:text-primary/90 tracking-wide">{schoolName}</div>
         </div>
         
-        {/* Center Section: Student Info */}
+        
         <div className="flex-1 flex flex-col items-center text-center h-full">
             <Image 
               src={student.profileImageURL || `https://placehold.co/100x100.png?text=${student.name.split(' ').map(n=>n[0]).join('')}`}
