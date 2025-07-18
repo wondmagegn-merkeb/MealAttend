@@ -68,7 +68,7 @@ export function StudentIdCard({ student }: StudentIdCardProps) {
               <div className="text-[10px] font-bold text-gray-800 dark:text-gray-100 break-words leading-tight">{student.name}</div>
             </div>
             <div className="text-[8px] text-gray-700 dark:text-gray-300 space-y-[0.5mm]">
-              <div><strong>ID:</strong> {idPrefix}/{student.studentId.split('/').slice(1).join('/')}</div>
+              <div><strong>ID:</strong> {student.studentId}</div>
               <div><strong>Grade:</strong> {student.classGrade || 'N/A'}</div>
               <div><strong>Gender:</strong> {student.gender || 'N/A'}</div>
             </div>
