@@ -117,4 +117,4 @@ export type PermissionKey =
 
 export type TeamMember = PrismaTeamMember;
 export type HomepageFeature = PrismaHomepageFeature;
-export type AppSettings = Omit<PrismaAppSettings, 'defaultUserPassword' | 'defaultAdminPassword' | 'defaultSuperAdminPassword'>;
+export type AppSettings = PrismaAppSettings;

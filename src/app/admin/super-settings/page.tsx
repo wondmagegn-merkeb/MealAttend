@@ -13,13 +13,14 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Palette, Save, Settings, Home, Users, Upload, KeyRound, CreditCard, UserPlus, ListOrdered, CaseSensitive, LayoutGrid } from "lucide-react";
-import type { AppSettings } from "@prisma/client";
+import type { AppSettings, Student } from "@/types";
 import { cn } from "@/lib/utils";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from 'next/link';
+import { StudentIdCard } from "@/components/admin/students/StudentIdCard";
 
 const themes = [
   { name: "default", label: "Default", primary: "hsl(207 90% 54%)", accent: "hsl(174 100% 29%)", bg: "hsl(0 0% 96%)" },
@@ -92,13 +93,26 @@ const themeSchema = z.object({
   colorTheme: z.string().min(1, "Color Theme is required."),
 });
 
+const sampleStudent: Student = {
+    id: 'stu_sample',
+    studentId: 'ADERA/STU/2024/00000',
+    name: 'Jane Doe',
+    gender: 'Female',
+    classGrade: '12A',
+    profileImageURL: `https://placehold.co/100x100.png`,
+    qrCodeData: 'sample_qr_code_for_preview',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    createdById: 'user_super_admin'
+};
+
 
 export default function SuperAdminSettingsPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { setSettings: setGlobalSettings } = useAppSettings();
+  const { settings, setSettings: setGlobalSettings } = useAppSettings();
 
-  const { data: settings, isLoading: isLoadingSettings, error } = useQuery<AppSettings>({
+  const { data: fetchedSettings, isLoading: isLoadingSettings, error } = useQuery<AppSettings>({
     queryKey: ['appSettings'],
     queryFn: fetchSettings,
   });
@@ -143,42 +157,40 @@ export default function SuperAdminSettingsPage() {
   const [companyLogoPreview, setCompanyLogoPreview] = useState<string | null>(null);
   const [idCardLogoPreview, setIdCardLogoPreview] = useState<string | null>(null);
   
+  const watchedIdCardValues = idCardForm.watch();
+
   useEffect(() => {
-    if (settings) {
-      brandingForm.reset({ siteName: settings.siteName, idPrefix: settings.idPrefix, companyLogoUrl: settings.companyLogoUrl });
-      idCardForm.reset({ schoolName: settings.schoolName, idCardTitle: settings.idCardTitle, idCardLogoUrl: settings.idCardLogoUrl });
-      homepageForm.reset({ homepageSubtitle: settings.homepageSubtitle, showHomepage: settings.showHomepage, showTeamSection: settings.showTeamSection, showFeaturesSection: settings.showFeaturesSection });
+    if (fetchedSettings) {
+      brandingForm.reset({ siteName: fetchedSettings.siteName, idPrefix: fetchedSettings.idPrefix, companyLogoUrl: fetchedSettings.companyLogoUrl });
+      idCardForm.reset({ schoolName: fetchedSettings.schoolName, idCardTitle: fetchedSettings.idCardTitle, idCardLogoUrl: fetchedSettings.idCardLogoUrl });
+      homepageForm.reset({ homepageSubtitle: fetchedSettings.homepageSubtitle, showHomepage: fetchedSettings.showHomepage, showTeamSection: fetchedSettings.showTeamSection, showFeaturesSection: fetchedSettings.showFeaturesSection });
       passwordForm.reset({ defaultUserPassword: "", defaultAdminPassword: "", defaultSuperAdminPassword: ""});
-      themeForm.reset({ colorTheme: settings.colorTheme });
-      setCompanyLogoPreview(settings.companyLogoUrl);
-      setIdCardLogoPreview(settings.idCardLogoUrl);
+      themeForm.reset({ colorTheme: fetchedSettings.colorTheme });
+      setCompanyLogoPreview(fetchedSettings.companyLogoUrl);
+      setIdCardLogoPreview(fetchedSettings.idCardLogoUrl);
     }
-  }, [settings, brandingForm, idCardForm, homepageForm, passwordForm, themeForm]);
+  }, [fetchedSettings, brandingForm, idCardForm, homepageForm, passwordForm, themeForm]);
 
   const onBrandingSubmit = async (data: z.infer<typeof brandingSchema>) => {
-    let logoDataUrl = data.companyLogoUrl;
+    let logoDataUrl = brandingForm.getValues('companyLogoUrl');
     const fileInput = (document.getElementById('company-logo-upload') as HTMLInputElement);
     const file = fileInput?.files?.[0];
     
     if (file) {
       toast({ title: "Processing logo...", description: "Please wait." });
       logoDataUrl = await fileToDataUri(file);
-    } else {
-      logoDataUrl = companyLogoPreview;
     }
     mutation.mutate({ ...data, companyLogoUrl: logoDataUrl });
   };
   
   const onIdCardSubmit = async (data: z.infer<typeof idCardSchema>) => {
-    let logoDataUrl = data.idCardLogoUrl;
+    let logoDataUrl = idCardForm.getValues('idCardLogoUrl');
     const fileInput = (document.getElementById('id-card-logo-upload') as HTMLInputElement);
     const file = fileInput?.files?.[0];
 
     if (file) {
       toast({ title: "Processing logo...", description: "Please wait." });
       logoDataUrl = await fileToDataUri(file);
-    } else {
-      logoDataUrl = idCardLogoPreview;
     }
     mutation.mutate({ ...data, idCardLogoUrl: logoDataUrl });
   };
@@ -235,7 +247,9 @@ export default function SuperAdminSettingsPage() {
                       </Avatar>
                       <Input id="company-logo-upload" type="file" className="hidden" onChange={(e) => { 
                           if (e.target.files?.[0]) {
-                            setCompanyLogoPreview(URL.createObjectURL(e.target.files[0]));
+                            const newUrl = URL.createObjectURL(e.target.files[0]);
+                            setCompanyLogoPreview(newUrl);
+                            brandingForm.setValue('companyLogoUrl', newUrl);
                           }
                        }} accept="image/*" />
                       <Button type="button" variant="outline" onClick={() => document.getElementById('company-logo-upload')?.click()}><Upload className="mr-2 h-4 w-4" /> Change</Button>
@@ -270,13 +284,29 @@ export default function SuperAdminSettingsPage() {
                       </Avatar>
                       <Input id="id-card-logo-upload" type="file" className="hidden" onChange={(e) => { 
                           if (e.target.files?.[0]) {
-                            setIdCardLogoPreview(URL.createObjectURL(e.target.files[0]));
+                            const newUrl = URL.createObjectURL(e.target.files[0]);
+                            setIdCardLogoPreview(newUrl);
+                            idCardForm.setValue('idCardLogoUrl', newUrl);
                           }
                        }} accept="image/*" />
                       <Button type="button" variant="outline" onClick={() => document.getElementById('id-card-logo-upload')?.click()}><Upload className="mr-2 h-4 w-4" /> Change</Button>
                     </div>
                   </FormItem>
                 )} />
+
+                <div className="space-y-2 pt-4">
+                    <Label>Live Preview</Label>
+                    <div className="flex justify-center items-center p-4 bg-muted/50 rounded-lg border">
+                         <StudentIdCard 
+                            student={sampleStudent} 
+                            previewSettings={{
+                                ...watchedIdCardValues,
+                                idCardLogoUrl: idCardLogoPreview || watchedIdCardValues.idCardLogoUrl
+                            }}
+                        />
+                    </div>
+                </div>
+
               </CardContent>
               <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && idCardForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update ID Cards</Button></CardFooter>
             </Card>

@@ -7,14 +7,20 @@ import { useAppSettings } from '@/hooks/useAppSettings';
 
 interface StudentIdCardProps {
   student: Student;
+  previewSettings?: {
+    schoolName?: string;
+    idCardTitle?: string;
+    idCardLogoUrl?: string | null;
+  }
 }
 
-export function StudentIdCard({ student }: StudentIdCardProps) {
-  const { settings } = useAppSettings();
-  const schoolName = settings.schoolName;
-  const cardTitle = settings.idCardTitle || "STUDENT ID";
-  const idCardLogo = settings.idCardLogoUrl;
-  const idPrefix = settings.idPrefix;
+export function StudentIdCard({ student, previewSettings }: StudentIdCardProps) {
+  const { settings: globalSettings } = useAppSettings();
+
+  const schoolName = previewSettings?.schoolName ?? globalSettings.schoolName;
+  const cardTitle = previewSettings?.idCardTitle ?? globalSettings.idCardTitle ?? "STUDENT ID";
+  const idCardLogo = previewSettings?.idCardLogoUrl ?? globalSettings.idCardLogoUrl;
+  const idPrefix = globalSettings.idPrefix;
   
   const fullStudentId = student.studentId;
 
