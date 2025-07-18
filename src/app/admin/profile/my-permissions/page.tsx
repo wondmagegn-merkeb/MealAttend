@@ -40,6 +40,12 @@ export default function MyPermissionsPage() {
 
   const permissionGroups = [
     {
+      title: 'Scanner Access',
+      permissions: [
+        { label: 'Scan ID Cards', granted: currentUser.canScanId },
+      ],
+    },
+    {
       title: 'Student Management',
       permissions: [
         { label: 'View Students', granted: currentUser.canReadStudents },

@@ -7,7 +7,7 @@ import { AuthGuard } from "@/components/auth/AuthGuard";
 
 export default function ScanPage() {
   return (
-    <AuthGuard>
+    <AuthGuard permission="canScanId">
       <div className="flex flex-col min-h-screen bg-background">
         <header className="p-4 pb-0 sm:p-4 sm:pb-0">
             <Link href="/admin" passHref legacyBehavior>

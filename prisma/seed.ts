@@ -27,6 +27,7 @@ const users = [
     canReadActivityLog: true,
     canReadUsers: true, canWriteUsers: true,
     canReadDepartments: true, canWriteDepartments: true,
+    canScanId: true,
   },
   {
     id: 'user_admin',
@@ -48,6 +49,7 @@ const users = [
     canReadActivityLog: true,
     canReadUsers: true, canWriteUsers: true,
     canReadDepartments: true, canWriteDepartments: true,
+    canScanId: true,
   },
   {
     id: 'user_normal',
@@ -69,6 +71,7 @@ const users = [
     canReadActivityLog: false,
     canReadUsers: false, canWriteUsers: false,
     canReadDepartments: false, canWriteDepartments: false,
+    canScanId: false,
   },
   {
     id: 'user_password_change',
@@ -90,6 +93,7 @@ const users = [
     canReadActivityLog: false,
     canReadUsers: false, canWriteUsers: false,
     canReadDepartments: false, canWriteDepartments: false,
+    canScanId: false,
   },
 ];
 

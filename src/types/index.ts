@@ -24,6 +24,7 @@ export interface User {
   createdById: string | null; // ID of the user who created this user
   
   // Permissions
+  canScanId: boolean;
   canReadStudents: boolean;
   canWriteStudents: boolean;
   canCreateStudents: boolean;
@@ -100,6 +101,7 @@ export interface UserActivityLog {
 }
 
 export type PermissionKey =
+  | 'canScanId'
   | 'canReadStudents'
   | 'canWriteStudents'
   | 'canCreateStudents'

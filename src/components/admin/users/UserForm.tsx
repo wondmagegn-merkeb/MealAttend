@@ -6,9 +6,23 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState, useRef } from "react";
 import { Loader2, Upload, ShieldCheck, KeyRound } from "lucide-react";
@@ -21,6 +35,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 
 const permissionsSchema = {
+  canScanId: z.boolean().default(false),
   canReadStudents: z.boolean().default(false),
   canWriteStudents: z.boolean().default(false),
   canCreateStudents: z.boolean().default(false),
@@ -75,6 +90,7 @@ const fileToDataUri = (file: File): Promise<string | null> => {
 };
 
 const permissionFields: { id: PermissionKey, label: string, section: string }[] = [
+    { id: 'canScanId', label: 'Scan ID Cards', section: 'Scanner Access' },
     { id: 'canCreateStudents', label: 'Create Students', section: 'Student Management' },
     { id: 'canReadStudents', label: 'Read Students', section: 'Student Management' },
     { id: 'canWriteStudents', label: 'Update Students', section: 'Student Management' },
@@ -381,12 +397,12 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
             </CardHeader>
             <CardContent>
               {Object.entries(permissionGroups).map(([section, perms]) => (
-                <div key={section} className="space-y-4">
-                  <h3 className="font-semibold text-lg text-primary">{section}</h3>
+                <div key={section} className="mb-6 last:mb-0">
+                  <h3 className="font-semibold text-lg text-primary mb-2">{section}</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
                     {perms.map(p => renderPermissionSwitch(p.id, p.label))}
                     </div>
-                    {section !== 'Administration' && <Separator />}
+                    {section !== 'Administration' && <Separator className="mt-6"/>}
                 </div>
               ))}
             </CardContent>
