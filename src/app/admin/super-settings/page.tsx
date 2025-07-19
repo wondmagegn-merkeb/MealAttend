@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type UseFormReturn } from "react-hook-form";
 import { z } from "zod";
@@ -94,20 +94,6 @@ const themeSchema = z.object({
   colorTheme: z.string().min(1, "Color Theme is required."),
 });
 
-const sampleStudent: Student = {
-    id: 'stu_sample',
-    studentId: 'ADERA/STU/2024/00000',
-    name: 'Jane Doe',
-    gender: 'Female',
-    classGrade: '12A',
-    profileImageURL: `https://placehold.co/100x100.png`,
-    qrCodeData: 'sample_qr_code_for_preview',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    createdById: 'user_super_admin'
-};
-
-
 export default function SuperAdminSettingsPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -159,6 +145,23 @@ export default function SuperAdminSettingsPage() {
   const [idCardLogoPreview, setIdCardLogoPreview] = useState<string | null>(null);
   
   const watchedIdCardValues = idCardForm.watch();
+  
+  const sampleStudent = useMemo((): Student => {
+    const year = new Date().getFullYear();
+    const prefix = watchedIdCardValues.idPrefix || "PREFIX";
+    return {
+      id: 'stu_sample',
+      studentId: `${prefix}/STU/${year}/00000`,
+      name: 'Jane Doe',
+      gender: 'Female',
+      classGrade: '12A',
+      profileImageURL: `https://placehold.co/100x100.png`,
+      qrCodeData: 'sample_qr_code_for_preview',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      createdById: 'user_super_admin'
+    };
+  }, [watchedIdCardValues.idPrefix]);
 
   useEffect(() => {
     if (fetchedSettings) {
