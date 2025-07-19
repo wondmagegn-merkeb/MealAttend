@@ -19,7 +19,10 @@ import { format, isWithinInterval, startOfDay, endOfDay, parseISO } from 'date-f
 import { AuthGuard } from '@/components/auth/AuthGuard';
 
 const fetchActivityLogs = async (): Promise<UserActivityLog[]> => {
-  const response = await fetch('/api/activity-log');
+  const token = localStorage.getItem('mealAttendAuthToken_v1');
+  const response = await fetch('/api/activity-log',{
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
   if (!response.ok) {
     throw new Error('Failed to fetch activity logs');
   }

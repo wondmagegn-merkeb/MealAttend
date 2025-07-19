@@ -24,13 +24,19 @@ import type { AttendanceRecordWithStudent, Student, MealType } from '@/types';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 
 const fetchAttendanceRecords = async (): Promise<AttendanceRecordWithStudent[]> => {
-  const response = await fetch('/api/attendance');
+  const token = localStorage.getItem('mealAttendAuthToken_v1');
+  const response = await fetch('/api/attendance',{
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
   if (!response.ok) throw new Error('Failed to fetch attendance records');
   return response.json();
 };
 
 const fetchStudents = async (): Promise<Student[]> => {
-  const response = await fetch('/api/students');
+  const token = localStorage.getItem('mealAttendAuthToken_v1');
+  const response = await fetch('/api/students',{
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
   if (!response.ok) throw new Error('Failed to fetch students');
   return response.json();
 };
