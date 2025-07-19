@@ -16,11 +16,10 @@ export async function GET(request: Request) {
     }
 
     const whereClause: any = {};
+    // Only Super Admins see all students. Admins and Users see only their own.
     if (user.role === 'Admin' || user.role === 'User') {
-      // Admins and Users can only see the students they created
       whereClause.createdById = user.id;
     }
-    // Super Admins have no 'where' clause, so they get all students
 
     const students = await prisma.student.findMany({
       where: whereClause,
