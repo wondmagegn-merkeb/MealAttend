@@ -173,7 +173,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
                 {user.passwordResetRequested ? (
                     <Badge variant="destructive">Requested</Badge>
                 ) : (
-                    <span className="text-muted-foreground">No</span>
+                    <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-200 dark:border-green-800">No</Badge>
                 )}
               </div>
             </CardContent>
@@ -242,7 +242,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
                     {user.passwordResetRequested ? (
                         <Badge variant="destructive">Requested</Badge>
                     ) : (
-                        <span className="text-muted-foreground">No</span>
+                         <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-200 dark:border-green-800">No</Badge>
                     )}
                  </TableCell>
                  {showCreatedByColumn && (
