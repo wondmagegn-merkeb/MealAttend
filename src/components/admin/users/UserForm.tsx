@@ -133,7 +133,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     },
   });
   
-  const watchedRole = form.watch('role');
+  const watchedRole = form.watch('role' as any); // Use 'as any' to satisfy TS on profile edit mode
 
   useEffect(() => {
     if (initialData) {
@@ -214,7 +214,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     return (
       <FormField
         key={id}
-        control={form.control}
+        control={form.control as any}
         name={id}
         render={({ field }) => (
           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
@@ -269,8 +269,8 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                             )} />
                             
                             {!isProfileEditMode && (
-                                <FormField control={form.control} name="position" render={({ field }) => (
-                                <FormItem><FormLabel>Position</FormLabel><FormControl><Input placeholder="e.g., Kitchen Manager" {...(field as any)} /></FormControl><FormMessage /></FormItem>
+                                <FormField control={form.control as any} name="position" render={({ field }) => (
+                                <FormItem><FormLabel>Position</FormLabel><FormControl><Input placeholder="e.g., Kitchen Manager" {...field} /></FormControl><FormMessage /></FormItem>
                                 )} />
                             )}
                             
@@ -282,8 +282,8 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                     type="email" 
                                     placeholder="e.g., jane.smith@example.com" 
                                     {...field}
-                                    readOnly={isProfileEditMode || !!initialData}
-                                    className={(isProfileEditMode || !!initialData) ? "bg-muted/50" : ""}
+                                    readOnly={!!initialData && !isProfileEditMode}
+                                    className={(!!initialData && !isProfileEditMode) ? "bg-muted/50" : ""}
                                 />
                                 </FormControl>
                                 {isProfileEditMode 
@@ -295,10 +295,10 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
 
                             {!isProfileEditMode && (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    <FormField control={form.control} name="role" render={({ field }) => (
+                                    <FormField control={form.control as any} name="role" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Role</FormLabel>
-                                        <Select onValueChange={(field as any).onChange} value={(field as any).value} defaultValue={(field as any).value} disabled={isEditingSelf}>
+                                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={isEditingSelf}>
                                         <FormControl><SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger></FormControl>
                                         <SelectContent>
                                             {currentUser?.role === 'Super Admin' && <SelectItem value="Super Admin">Super Admin</SelectItem>}
@@ -310,10 +310,10 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                     </FormItem>
                                     )} />
 
-                                    <FormField control={form.control} name="status" render={({ field }) => (
+                                    <FormField control={form.control as any} name="status" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Status</FormLabel>
-                                        <Select onValueChange={(field as any).onChange} value={(field as any).value} defaultValue={(field as any).value}>
+                                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                                         <FormControl><SelectTrigger><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl>
                                         <SelectContent>
                                             <SelectItem value="Active">Active</SelectItem>
@@ -369,11 +369,11 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                             </CardDescription>
                             </CardHeader>
                             <CardContent>
-                            <FormField control={form.control} name="password" render={({ field }) => (
+                            <FormField control={form.control as any} name="password" render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>Password</FormLabel>
                                 <FormControl>
-                                    <Input type="password" placeholder={initialData ? "Leave blank to keep current password" : "Enter initial password"} {...(field as any)} />
+                                    <Input type="password" placeholder={initialData ? "Leave blank to keep current password" : "Enter initial password"} {...field} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
