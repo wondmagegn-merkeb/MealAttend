@@ -252,13 +252,13 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     }
     switch (watchedRole) {
         case 'User':
-            return appSettings.defaultUserPassword ? "Default password for User is set" : "No default password set for User";
+            return appSettings.defaultUserPassword ? "Default password for User is set" : "Default will be: 'password123'";
         case 'Admin':
-            return appSettings.defaultAdminPassword ? "Default password for Admin is set" : "No default password set for Admin";
+            return appSettings.defaultAdminPassword ? "Default password for Admin is set" : "Default will be: 'password123'";
         case 'Super Admin':
-             return appSettings.defaultSuperAdminPassword ? "Default password for Super Admin is set" : "No default password set for Super Admin";
+             return appSettings.defaultSuperAdminPassword ? "Default password for Super Admin is set" : "Default will be: 'password123'";
         default:
-            return "A system default will be used";
+            return "Default will be: 'password123'";
     }
   };
 
@@ -346,7 +346,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                 </div>
                             )}
 
-                             {(!isEditMode || isProfileEditMode) && (
+                             {(!isEditMode || isProfileEditMode) && !isProfileEditMode && (
                                 <FormItem>
                                     <FormLabel>Profile Image</FormLabel>
                                     <div className="flex items-center gap-4">
@@ -445,5 +445,3 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     </Form>
   );
 }
-
-    

@@ -93,28 +93,27 @@ export async function POST(request: Request) {
 
     const settings = await prisma.appSettings.findUnique({ where: { id: 1 }});
     let passwordToHash = 'password123'; // Fallback password
-    let passwordSourceIsDefault = false;
+    let passwordForDb = '';
 
     if (role === 'User' && settings?.defaultUserPassword) {
-      passwordSourceIsDefault = true;
-      // We don't need to hash it again, it's already hashed in the DB
+      passwordForDb = settings.defaultUserPassword;
     } else if (role === 'Admin' && settings?.defaultAdminPassword) {
-       passwordSourceIsDefault = true;
+      passwordForDb = settings.defaultAdminPassword;
     } else if (role === 'Super Admin' && settings?.defaultSuperAdminPassword) {
-        passwordSourceIsDefault = true;
+      passwordForDb = settings.defaultSuperAdminPassword;
     }
     
-    const passwordForDb = passwordSourceIsDefault
-        ? (role === 'User' ? settings!.defaultUserPassword : (role === 'Admin' ? settings!.defaultAdminPassword : settings!.defaultSuperAdminPassword))
-        : await hash(passwordToHash, saltRounds);
-
+    // If no default password is set in DB for the role, use and hash the fallback
+    if (!passwordForDb) {
+        passwordForDb = await hash(passwordToHash, saltRounds);
+    }
 
     const newUser = await prisma.user.create({
       data: {
         userId: newUserId,
         fullName,
         email,
-        password: passwordForDb!,
+        password: passwordForDb,
         position,
         role,
         status,

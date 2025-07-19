@@ -148,8 +148,8 @@ export default function SuperAdminSettingsPage() {
     return {
       id: 'stu_sample',
       studentId: `${prefix}/STU/${year}/00000`,
-      name: 'Jane Doe',
-      gender: 'Female',
+      name: 'Abenezer Terfe',
+      gender: 'Male',
       classGrade: '12A',
       profileImageURL: `https://placehold.co/100x100.png`,
       qrCodeData: 'sample_qr_code_for_preview',
