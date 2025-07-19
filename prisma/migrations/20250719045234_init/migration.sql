@@ -8,6 +8,8 @@ CREATE TABLE "AppSettings" (
     "colorTheme" TEXT NOT NULL DEFAULT 'default',
     "showHomepage" BOOLEAN NOT NULL DEFAULT true,
     "showTeamSection" BOOLEAN NOT NULL DEFAULT true,
+    "showFeaturesSection" BOOLEAN NOT NULL DEFAULT true,
+    "homepageSubtitle" TEXT NOT NULL DEFAULT 'Learn more about our system and the team behind it.',
     "companyLogoUrl" TEXT,
     "idCardLogoUrl" TEXT,
     "defaultUserPassword" TEXT,
@@ -30,11 +32,12 @@ CREATE TABLE "User" (
     "status" TEXT NOT NULL,
     "passwordChangeRequired" BOOLEAN NOT NULL DEFAULT true,
     "profileImageURL" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
     "passwordResetToken" TEXT,
     "passwordResetExpires" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdById" TEXT,
+    "canScanId" BOOLEAN NOT NULL DEFAULT false,
     "canReadStudents" BOOLEAN NOT NULL DEFAULT false,
     "canWriteStudents" BOOLEAN NOT NULL DEFAULT false,
     "canCreateStudents" BOOLEAN NOT NULL DEFAULT false,
@@ -47,7 +50,6 @@ CREATE TABLE "User" (
     "canWriteUsers" BOOLEAN NOT NULL DEFAULT false,
     "canReadDepartments" BOOLEAN NOT NULL DEFAULT false,
     "canWriteDepartments" BOOLEAN NOT NULL DEFAULT false,
-    "canScanId" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -87,10 +89,10 @@ CREATE TABLE "ActivityLog" (
     "id" TEXT NOT NULL,
     "logId" TEXT NOT NULL,
     "userIdentifier" TEXT NOT NULL,
-    "userId" TEXT,
     "action" TEXT NOT NULL,
     "details" TEXT,
     "activityTimestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userId" TEXT,
 
     CONSTRAINT "ActivityLog_pkey" PRIMARY KEY ("id")
 );
@@ -107,6 +109,18 @@ CREATE TABLE "TeamMember" (
     "isVisible" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "TeamMember_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "HomepageFeature" (
+    "id" TEXT NOT NULL,
+    "icon" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "displayOrder" INTEGER NOT NULL DEFAULT 0,
+    "isVisible" BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT "HomepageFeature_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -130,13 +144,7 @@ CREATE UNIQUE INDEX "User_passwordResetToken_key" ON "User"("passwordResetToken"
 CREATE UNIQUE INDEX "Student_studentId_key" ON "Student"("studentId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Student_qrCodeData_key" ON "Student"("qrCodeData");
-
--- CreateIndex
 CREATE UNIQUE INDEX "AttendanceRecord_attendanceId_key" ON "AttendanceRecord"("attendanceId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "AttendanceRecord_studentId_mealType_recordDate_key" ON "AttendanceRecord"("studentId", "mealType", "recordDate");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ActivityLog_logId_key" ON "ActivityLog"("logId");
