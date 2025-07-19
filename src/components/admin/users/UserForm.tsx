@@ -32,6 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
 
 const permissionsSchema = {
@@ -108,6 +109,7 @@ const permissionFields: { id: PermissionKey, label: string, section: string }[] 
 export function UserForm({ onSubmit, initialData, isLoading = false, submitButtonText = "Submit", isProfileEditMode = false }: UserFormProps) {
   const { toast } = useToast();
   const { currentUser } = useAuth();
+  const { settings: appSettings } = useAppSettings();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -243,6 +245,22 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     acc[perm.section].push(perm);
     return acc;
   }, {} as Record<string, typeof permissionFields>);
+  
+  const getPasswordPlaceholder = () => {
+    if (isEditMode) {
+        return "Leave blank to keep current password";
+    }
+    switch (watchedRole) {
+        case 'User':
+            return appSettings.defaultUserPassword ? "Default password for User is set" : "No default password set for User";
+        case 'Admin':
+            return appSettings.defaultAdminPassword ? "Default password for Admin is set" : "No default password set for Admin";
+        case 'Super Admin':
+             return appSettings.defaultSuperAdminPassword ? "Default password for Super Admin is set" : "No default password set for Super Admin";
+        default:
+            return "A system default will be used";
+    }
+  };
 
 
   return (
@@ -363,11 +381,11 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                     {!isProfileEditMode && (
                         <Card className="shadow-md border-border">
                             <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><KeyRound /> {initialData ? 'Reset Password' : 'Set Initial Password'}</CardTitle>
+                            <CardTitle className="flex items-center gap-2"><KeyRound /> {isEditMode ? 'Reset Password' : 'Initial Password'}</CardTitle>
                             <CardDescription>
-                                {initialData
+                                {isEditMode
                                 ? "Optionally enter a new password. The user will be required to change it on their next login."
-                                : "Set an initial password. The user must change it on first login. If blank, a system default is used."
+                                : "The system default password for the selected role will be used. The user must change it on first login."
                                 }
                             </CardDescription>
                             </CardHeader>
@@ -376,7 +394,13 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                 <FormItem>
                                 <FormLabel>Password</FormLabel>
                                 <FormControl>
-                                    <Input type="password" placeholder={initialData ? "Leave blank to keep current password" : "Enter initial password"} {...field} />
+                                    <Input 
+                                        type="password" 
+                                        placeholder={getPasswordPlaceholder()}
+                                        {...field}
+                                        readOnly={!isEditMode}
+                                        className={!isEditMode ? "bg-muted/50" : ""}
+                                    />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -421,3 +445,5 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     </Form>
   );
 }
+
+    
