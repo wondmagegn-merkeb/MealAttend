@@ -357,20 +357,23 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                         </CardContent>
                     </Card>
 
-                    {initialData && (
+                    {!isProfileEditMode && (
                         <Card className="shadow-md border-border">
                             <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><KeyRound /> Reset Password</CardTitle>
+                            <CardTitle className="flex items-center gap-2"><KeyRound /> {initialData ? 'Reset Password' : 'Set Initial Password'}</CardTitle>
                             <CardDescription>
-                                Optionally enter a new password for this user. They will be required to change it on their next login.
+                                {initialData
+                                ? "Optionally enter a new password. The user will be required to change it on their next login."
+                                : "Set an initial password. The user must change it on first login. If blank, a system default is used."
+                                }
                             </CardDescription>
                             </CardHeader>
                             <CardContent>
                             <FormField control={form.control} name="password" render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>New Password</FormLabel>
+                                <FormLabel>Password</FormLabel>
                                 <FormControl>
-                                    <Input type="password" placeholder="Leave blank to keep current password" {...(field as any)} />
+                                    <Input type="password" placeholder={initialData ? "Leave blank to keep current password" : "Enter initial password"} {...(field as any)} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -415,5 +418,3 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     </Form>
   );
 }
-
-    
