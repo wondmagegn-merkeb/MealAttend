@@ -7,10 +7,10 @@ import { WelcomeBanner } from "@/components/admin/WelcomeBanner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Loader2, Users, CalendarDays, LineChart as LineChartIcon, FileDown, PieChart as PieChartLucideIcon, UserCheck, AlertTriangle, History, ArrowRight } from "lucide-react";
-import { LineChart, Line, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip as RechartsTooltip, Legend as RechartsLegend, PieChart, Pie, Cell } from "recharts";
+import { Loader2, Users, CalendarDays, LineChart as LineChartIcon, FileDown, PieChart as PieChartLucideIcon, UserCheck, AlertTriangle, History, ArrowRight, Utensils, BarChart2 } from "lucide-react";
+import { LineChart, Line, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip as RechartsTooltip, Legend as RechartsLegend, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, type ChartConfig } from "@/components/ui/chart";
-import { format, formatDistanceToNow, getDaysInMonth, getMonth, getYear, parseISO } from 'date-fns';
+import { format, formatDistanceToNow, getDaysInMonth, getMonth, getYear, parseISO, startOfMonth } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -18,7 +18,7 @@ import * as XLSX from 'xlsx';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import { QuickActions } from '@/components/admin/QuickActions';
-import type { Student, User, AttendanceRecordWithStudent, UserActivityLog } from '@/types';
+import type { Student, User, AttendanceRecordWithStudent, UserActivityLog, MealType } from '@/types';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 
 const fetchDashboardData = async (): Promise<{ students: Student[], users: User[], attendance: AttendanceRecordWithStudent[], activity: UserActivityLog[] }> => {
@@ -146,6 +146,32 @@ function AdminDashboardPageContent() {
     return monthlyCounts;
   }, [allAttendanceRecords, yearForCharts]);
 
+  const mealTypeDistributionData = useMemo(() => {
+    if (!allAttendanceRecords.length) return [];
+    const mealCounts: Record<MealType, number> = { BREAKFAST: 0, LUNCH: 0, DINNER: 0 };
+    const recordsInSelectedMonth = allAttendanceRecords.filter(record => {
+      const recordDate = parseISO(record.recordDate as unknown as string);
+      return getYear(recordDate) === yearForCharts && getMonth(recordDate) === selectedMonth && record.status === 'PRESENT';
+    });
+    recordsInSelectedMonth.forEach(record => {
+        mealCounts[record.mealType] = (mealCounts[record.mealType] || 0) + 1;
+    });
+    return Object.entries(mealCounts).map(([name, value]) => ({ name: name.charAt(0) + name.slice(1).toLowerCase(), value }));
+  }, [allAttendanceRecords, yearForCharts, selectedMonth]);
+
+
+  const studentAdmissionTrendData = useMemo(() => {
+    const admissionsByMonth: { month: string; count: number }[] = shortMonthNames.map(m => ({ month: m, count: 0 }));
+    const studentsInSelectedYear = allStudents.filter(student => getYearFromStudentId(student.studentId) === String(yearForCharts));
+    
+    studentsInSelectedYear.forEach(student => {
+      const admissionMonth = getMonth(parseISO(student.createdAt));
+      admissionsByMonth[admissionMonth].count += 1;
+    });
+    
+    return admissionsByMonth;
+  }, [allStudents, yearForCharts]);
+
   const studentGradeDistributionData = useMemo(() => {
     if (!allStudents.length) return [];
     const gradeCounts: { [key: string]: number } = {};
@@ -166,7 +192,16 @@ function AdminDashboardPageContent() {
   }, [allUsers]);
 
   const attendanceChartConfig = { count: { label: "Attendance", color: "hsl(var(--primary))" } } satisfies ChartConfig;
+  const admissionChartConfig = { count: { label: "Admissions", color: "hsl(var(--primary))" } } satisfies ChartConfig;
   
+  const mealChartConfig = useMemo(() => {
+    const config: ChartConfig = {};
+    mealTypeDistributionData.forEach((item, index) => {
+        config[item.name] = { label: item.name, color: PIE_CHART_COLORS[index % PIE_CHART_COLORS.length] };
+    });
+    return config;
+  }, [mealTypeDistributionData]);
+
   const gradeChartConfig = useMemo(() => {
     const config: ChartConfig = {};
     studentGradeDistributionData.forEach((item, index) => {
@@ -231,6 +266,12 @@ function AdminDashboardPageContent() {
       const monthlyWS = XLSX.utils.json_to_sheet(monthlyAttendanceData);
       XLSX.utils.book_append_sheet(wb, monthlyWS, `Monthly Attendance - ${yearForCharts}`);
 
+      const admissionWS = XLSX.utils.json_to_sheet(studentAdmissionTrendData);
+      XLSX.utils.book_append_sheet(wb, admissionWS, `Student Admissions - ${yearForCharts}`);
+
+      const mealWS = XLSX.utils.json_to_sheet(mealTypeDistributionData);
+      XLSX.utils.book_append_sheet(wb, mealWS, `Meal Attendance - ${monthNames[selectedMonth]}`);
+
       const gradeWS = XLSX.utils.json_to_sheet(studentGradeDistributionData);
       XLSX.utils.book_append_sheet(wb, gradeWS, 'Grade Distribution');
       
@@ -239,7 +280,7 @@ function AdminDashboardPageContent() {
 
       XLSX.writeFile(wb, `MealAttend_Dashboard_${format(new Date(), 'yyyyMMdd')}.xlsx`);
       toast({ title: 'Excel Exported', description: 'Dashboard data has been exported.' });
-  }, [selectedYear, selectedMonth, totalStudentsInSelectedYear, dailyAttendanceData, monthlyAttendanceData, studentGradeDistributionData, userRoleDistributionData, allUsers.length, allAttendanceRecords.length, yearForCharts, toast]);
+  }, [selectedYear, selectedMonth, totalStudentsInSelectedYear, dailyAttendanceData, monthlyAttendanceData, mealTypeDistributionData, studentAdmissionTrendData, studentGradeDistributionData, userRoleDistributionData, allUsers.length, allAttendanceRecords.length, yearForCharts, toast]);
 
   // If a user doesn't have permissions for the dashboard, show a welcome/info page instead.
   if (!currentUser?.canReadDashboard) {
@@ -387,6 +428,54 @@ function AdminDashboardPageContent() {
           </CardContent>
         </Card>
       </div>
+
+       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><BarChart2 className="h-5 w-5 text-primary" />Student Admission Trend: {yearForCharts}</CardTitle>
+            <CardDescription>New student registrations per month for the selected year.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {studentAdmissionTrendData.some(d => d.count > 0) ? (
+              <ChartContainer config={admissionChartConfig} className="h-[300px] w-full">
+                <BarChart data={studentAdmissionTrendData} accessibilityLayer margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                  <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
+                  <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={30} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="count" fill="var(--color-count)" radius={4} />
+                </BarChart>
+              </ChartContainer>
+            ) : (
+              <p className="text-center text-muted-foreground py-10">No new student admissions for {yearForCharts}.</p>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Utensils className="h-5 w-5 text-primary" />Attendance by Meal Type: {monthNames[selectedMonth]}</CardTitle>
+            <CardDescription>Breakdown of meals served in the selected month.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {mealTypeDistributionData.some(item => item.value > 0) ? (
+              <ChartContainer config={mealChartConfig} className="h-[300px] w-full">
+                <PieChart>
+                  <ChartTooltip content={<ChartTooltipContent nameKey="value" hideLabel />} />
+                  <Pie data={mealTypeDistributionData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
+                    {mealTypeDistributionData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={PIE_CHART_COLORS[index % PIE_CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+                </PieChart>
+              </ChartContainer>
+            ) : (
+              <p className="text-center text-muted-foreground py-10">No meal attendance data for {monthNames[selectedMonth]}, {yearForCharts}.</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
     </div>
   );
 }
@@ -398,3 +487,5 @@ export default function AdminDashboardPage() {
         </AuthGuard>
     )
 }
+
+    
