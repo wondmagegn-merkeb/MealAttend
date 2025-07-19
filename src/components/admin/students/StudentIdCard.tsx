@@ -69,9 +69,9 @@ export function StudentIdCard({ student, previewSettings }: StudentIdCardProps) 
                     data-ai-hint="student profile"
                  />
               </div>
-              <div className="text-[10px] font-bold text-foreground break-words leading-tight">{student.name}</div>
+              <div className="text-sm font-bold text-foreground break-words leading-tight">{student.name}</div>
             </div>
-            <div className="text-[8px] text-muted-foreground space-y-[0.5mm]">
+            <div className="text-[9px] text-muted-foreground space-y-[0.5mm]">
               <div><strong className="text-foreground/80">ID:</strong> {student.studentId}</div>
               <div><strong className="text-foreground/80">Grade:</strong> {student.classGrade || 'N/A'}</div>
               <div><strong className="text-foreground/80">Gender:</strong> {student.gender || 'N/A'}</div>
