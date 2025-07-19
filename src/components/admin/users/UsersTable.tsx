@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Edit, Trash2, ChevronsUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Edit, Trash2, ChevronsUpDown, ArrowUp, ArrowDown, KeyRound, Loader2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import React from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -20,13 +20,17 @@ import { format } from "date-fns";
 import type { UserWithCreator } from "@/types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { logUserActivity } from "@/lib/activityLogger";
 
-type SortableUserKeys = 'userId' | 'fullName' | 'position' | 'email' | 'role' | 'status' | 'createdAt' | 'createdBy';
+
+type SortableUserKeys = 'userId' | 'fullName' | 'position' | 'email' | 'role' | 'status' | 'createdAt' | 'createdBy' | 'passwordResetRequested';
 type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
   key: SortableUserKeys | null;
-  direction: SortDirection;
+  direction: 'ascending' | 'descending';
 }
 
 interface UsersTableProps {
@@ -37,10 +41,45 @@ interface UsersTableProps {
   onSort: (key: SortableUserKeys) => void;
 }
 
+const resetPassword = async (userId: string) => {
+    const token = localStorage.getItem('mealAttendAuthToken_v1');
+    const response = await fetch(`/api/users/${userId}/reset-password`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to reset password');
+    }
+    return response.json();
+};
+
+
 export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: UsersTableProps) {
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
   const [userToDelete, setUserToDelete] = React.useState<UserWithCreator | null>(null);
-  const { currentUser } = useAuth();
+  const { currentUser, currentUserId: actorUserId } = useAuth();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: resetPassword,
+    onSuccess: (data, userId) => {
+        toast({ title: "Password Reset", description: data.message });
+        const user = users.find(u => u.id === userId);
+        if (user) {
+            logUserActivity(actorUserId, "PASSWORD_RESET_SUCCESS", `Reset password for user: ${user.fullName} (${user.userId})`);
+        }
+        queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+    onError: (error: Error, userId) => {
+        toast({ title: "Reset Failed", description: error.message, variant: "destructive" });
+        const user = users.find(u => u.id === userId);
+         if (user) {
+            logUserActivity(actorUserId, "PASSWORD_RESET_FAILURE", `Failed to reset password for user: ${user.fullName} (${user.userId}). Error: ${error.message}`);
+        }
+    }
+  });
 
   const handleDeleteClick = (user: UserWithCreator) => {
     setUserToDelete(user);
@@ -103,7 +142,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
               </div>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <div className="flex justify-between">
+               <div className="flex justify-between">
                 <span className="text-muted-foreground">User ID:</span>
                 <span className="font-mono text-xs">{user.userId}</span>
               </div>
@@ -129,8 +168,22 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
                 <span className="text-muted-foreground">Created:</span>
                 <span>{format(new Date(user.createdAt), "yyyy-MM-dd")}</span>
               </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Reset Request:</span>
+                {user.passwordResetRequested ? (
+                    <Badge variant="destructive">Requested</Badge>
+                ) : (
+                    <span>No</span>
+                )}
+              </div>
             </CardContent>
             <CardFooter className="flex justify-end gap-2">
+              {user.passwordResetRequested && (
+                <Button variant="secondary" size="sm" onClick={() => resetPasswordMutation.mutate(user.id)} disabled={resetPasswordMutation.isPending && resetPasswordMutation.variables === user.id}>
+                    {resetPasswordMutation.isPending && resetPasswordMutation.variables === user.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <KeyRound className="mr-2 h-4 w-4" />}
+                    Reset Pass
+                </Button>
+              )}
               <Button variant="outline" size="sm" onClick={() => onEdit(user)}>
                 <Edit className="mr-2 h-4 w-4" /> Edit
               </Button>
@@ -149,10 +202,9 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
             <TableRow>
               <SortableTableHead columnKey="userId">User ID</SortableTableHead>
               <SortableTableHead columnKey="fullName">Full Name</SortableTableHead>
-              <SortableTableHead columnKey="position">Position</SortableTableHead>
-              <SortableTableHead columnKey="email">Email</SortableTableHead>
               <SortableTableHead columnKey="role">Role</SortableTableHead>
               <SortableTableHead columnKey="status">Status</SortableTableHead>
+              <SortableTableHead columnKey="passwordResetRequested">Reset Request</SortableTableHead>
               {showCreatedByColumn && <SortableTableHead columnKey="createdBy">Created By</SortableTableHead>}
               <SortableTableHead columnKey="createdAt">Created At</SortableTableHead>
               <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
@@ -175,8 +227,6 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
                     <span className="font-medium">{user.fullName}</span>
                   </div>
                 </TableCell>
-                <TableCell className="whitespace-nowrap">{user.position || 'N/A'}</TableCell>
-                <TableCell className="whitespace-nowrap">{user.email}</TableCell>
                 <TableCell className="whitespace-nowrap">
                   <Badge variant={user.role === 'Admin' || user.role === 'Super Admin' ? 'default' : 'secondary'}>
                     {user.role}
@@ -188,12 +238,30 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
                         {user.status}
                     </Badge>
                 </TableCell>
+                 <TableCell>
+                    {user.passwordResetRequested ? (
+                        <Badge variant="destructive">Requested</Badge>
+                    ) : (
+                        <span className="text-muted-foreground">No</span>
+                    )}
+                 </TableCell>
                  {showCreatedByColumn && (
                     <TableCell className="whitespace-nowrap">{user.createdBy?.fullName || 'N/A'}</TableCell>
                  )}
                 <TableCell className="whitespace-nowrap">{format(new Date(user.createdAt), "yyyy-MM-dd")}</TableCell>
                 <TableCell className="text-right whitespace-nowrap">
                   <div className="flex justify-end items-center gap-1">
+                    {user.passwordResetRequested && (
+                       <Tooltip>
+                         <TooltipTrigger asChild>
+                            <Button variant="secondary" size="icon" onClick={() => resetPasswordMutation.mutate(user.id)} disabled={resetPasswordMutation.isPending && resetPasswordMutation.variables === user.id}>
+                               {resetPasswordMutation.isPending && resetPasswordMutation.variables === user.id ? <Loader2 className="h-4 w-4 animate-spin"/> : <KeyRound className="h-4 w-4" />}
+                               <span className="sr-only">Reset Password</span>
+                            </Button>
+                         </TooltipTrigger>
+                         <TooltipContent><p>Reset Password</p></TooltipContent>
+                       </Tooltip>
+                    )}
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button variant="ghost" size="icon" onClick={() => onEdit(user)}>

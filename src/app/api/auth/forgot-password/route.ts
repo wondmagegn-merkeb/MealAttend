@@ -1,8 +1,6 @@
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { sendForgotPasswordNotification } from '@/lib/email';
-import type { User } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,33 +12,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Email is required' }, { status: 400 });
     }
 
-    const [user, settings] = await Promise.all([
-        prisma.user.findUnique({
-            where: { email: email.toLowerCase() },
-            include: { createdBy: true }
-        }),
-        prisma.appSettings.findUnique({ where: { id: 1 } })
-    ]);
+    // Find the user and update their status.
+    // We use `updateMany` because `update` would throw an error if the user is not found.
+    const updateResult = await prisma.user.updateMany({
+        where: { email: email.toLowerCase() },
+        data: { passwordResetRequested: true },
+    });
 
-    // Don't reveal if user exists.
-    // If user and their creator exists, send the notification.
-    if (user && user.createdBy) {
-      const admin = user.createdBy;
-      try {
-        await sendForgotPasswordNotification({
-            adminEmail: admin.email,
-            userName: user.fullName,
-            userEmail: user.email,
-            siteName: settings?.siteName || 'MealAttend'
-        });
-      } catch (emailError: any) {
-        // Log the email sending error but still return a generic success message to the user.
-        console.error("Forgot Password API - Email Sending Error:", emailError);
-      }
-    }
-
-    // Always return a generic message to prevent user enumeration attacks.
-    return NextResponse.json({ message: 'If an account with that email exists and has an associated administrator, a password reset request has been sent to them.' }, { status: 200 });
+    // We don't want to reveal if an email exists in the system or not.
+    // So we always return a generic success message.
+    return NextResponse.json(
+      { message: 'If an account with that email exists, a password reset request has been submitted to an administrator.' },
+      { status: 200 }
+    );
 
   } catch (error: any) {
     console.error("Forgot Password API Error:", error);

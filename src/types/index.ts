@@ -16,6 +16,7 @@ export interface User {
   role: 'Super Admin' | 'Admin' | 'User';
   status: 'Active' | 'Inactive';
   passwordChangeRequired: boolean;
+  passwordResetRequested: boolean;
   profileImageURL: string | null;
   createdAt: string;
   updatedAt: string;
