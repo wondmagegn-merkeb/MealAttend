@@ -30,7 +30,7 @@ type SortDirection = 'ascending' | 'descending';
 
 interface SortConfig {
   key: SortableUserKeys | null;
-  direction: 'ascending' | 'descending';
+  direction: SortDirection;
 }
 
 interface UsersTableProps {
@@ -173,7 +173,7 @@ export function UsersTable({ users, onEdit, onDelete, sortConfig, onSort }: User
                 {user.passwordResetRequested ? (
                     <Badge variant="destructive">Requested</Badge>
                 ) : (
-                    <span>No</span>
+                    <span className="text-muted-foreground">No</span>
                 )}
               </div>
             </CardContent>
