@@ -106,14 +106,10 @@ export default function SuperAdminSettingsPage() {
 
   const mutation = useMutation({
     mutationFn: updateSettings,
-    onSuccess: (updatedData, variables) => {
+    onSuccess: (updatedData) => {
       queryClient.setQueryData(['appSettings'], updatedData);
       setGlobalSettings(updatedData);
       toast({ title: "Settings Updated", description: "Your changes have been saved." });
-      if ('colorTheme' in variables) {
-          toast({ title: "Theme Changed", description: "Page will now reload to apply theme changes." });
-          setTimeout(() => window.location.reload(), 1500);
-      }
     },
     onError: (error: Error) => {
       toast({ title: "Save Failed", description: error.message, variant: "destructive" });
