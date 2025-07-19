@@ -16,6 +16,7 @@ interface AuthContextType {
   currentUserRole: User['role'] | null;
   currentUserId: string | null; // ADERA User ID
   isPasswordChangeRequired: boolean;
+  siteName: string;
   login: (email: string, password?: string) => Promise<boolean>;
   logout: () => void;
   changePassword: (newPassword: string) => Promise<UserWithCreator>;
@@ -27,8 +28,8 @@ export function useAuth(): AuthContextType {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [currentUser, setCurrentUser] = useState<UserWithCreator | null>(null);
   const [isPasswordChangeRequired, setIsPasswordChangeRequired] = useState<boolean>(false);
+  const [siteName, setSiteName] = useState('MealAttend');
   const router = useRouter();
-  const pathname = usePathname();
   const { toast } = useToast();
 
   const currentUserRole = currentUser?.role || null;
@@ -59,6 +60,16 @@ export function useAuth(): AuthContextType {
       } else {
         updateClientAuth(null);
       }
+
+      fetch('/api/settings/site-management')
+        .then(res => res.json())
+        .then((settings: SiteSettings) => {
+          if (settings.siteName) {
+            setSiteName(settings.siteName);
+            document.title = settings.siteName;
+          }
+        });
+
     } catch (e) {
       console.error("localStorage access error:", e);
       updateClientAuth(null);
@@ -178,6 +189,7 @@ export function useAuth(): AuthContextType {
     currentUserRole, 
     currentUserId, 
     isPasswordChangeRequired, 
+    siteName,
     login, 
     logout, 
     changePassword, 

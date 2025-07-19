@@ -1,3 +1,4 @@
+
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -6,68 +7,61 @@ generator client {
 }
 
 datasource db {
-  provider     = "postgresql"
-  url          = env("DATABASE_URL")
-  relationMode = "prisma"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-model AppSettings {
-  id                        Int      @id @default(1)
-  siteName                  String   @default("MealAttend")
-  idPrefix                  String   @default("ADERA")
-  schoolName                String   @default("Tech University")
-  idCardTitle               String   @default("STUDENT ID")
-  colorTheme                String   @default("default") // e.g., "default", "ocean", "forest"
-  showHomepage              Boolean  @default(true)
-  showTeamSection           Boolean  @default(true)
-  showFeaturesSection       Boolean  @default(true)
-  homepageSubtitle          String   @default("Learn more about our system and the team behind it.")
-  companyLogoUrl            String?
-  idCardLogoUrl             String?
-  defaultUserPassword       String?
-  defaultAdminPassword      String?
-  defaultSuperAdminPassword String?
-  createdAt                 DateTime @default(now())
-  updatedAt                 DateTime @updatedAt
+// ========================================
+// Models
+// ========================================
+
+model Department {
+  id           String @id @default(cuid())
+  departmentId String @unique
+  name         String @unique
+  users        User[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model User {
-  id                      String    @id @default(cuid())
-  userId                  String    @unique @default(cuid())
-  fullName                String
-  email                   String    @unique
-  password                String
-  position                String?
-  role                    String    @default("User") // Super Admin, Admin, User
-  status                  String    @default("Active") // Active, Inactive
-  passwordChangeRequired  Boolean   @default(true)
-  passwordResetRequested  Boolean   @default(false)
-  profileImageURL         String?
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
-  canSeeAllRecords        Boolean   @default(false) // If true, user can see all data, not just their own
+  id                     String      @id @default(cuid())
+  userId                 String      @unique
+  fullName               String
+  email                  String      @unique
+  password               String
+  role                   String      @default("User") // 'Admin' or 'User'
+  status                 String      @default("Active") // 'Active' or 'Inactive'
+  passwordChangeRequired Boolean     @default(true)
+  profileImageURL        String?
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+  departmentId           String?
+  department             Department? @relation(fields: [departmentId], references: [id])
 
   // Permissions
-  canReadDashboard      Boolean @default(false)
-  canScanId             Boolean @default(false)
-  canReadStudents       Boolean @default(false)
-  canWriteStudents      Boolean @default(false)
-  canCreateStudents     Boolean @default(false)
-  canDeleteStudents     Boolean @default(false)
-  canExportStudents     Boolean @default(false)
-  canReadAttendance     Boolean @default(false)
-  canExportAttendance   Boolean @default(false)
-  canReadActivityLog    Boolean @default(false)
-  canReadUsers          Boolean @default(false)
-  canWriteUsers         Boolean @default(false)
+  canReadStudents         Boolean @default(false)
+  canWriteStudents        Boolean @default(false)
+  canCreateStudents       Boolean @default(false)
+  canDeleteStudents       Boolean @default(false)
+  canExportStudents       Boolean @default(false)
+  canReadAttendance       Boolean @default(false)
+  canExportAttendance     Boolean @default(false)
+  canReadActivityLog      Boolean @default(false)
+  canReadUsers            Boolean @default(false)
+  canWriteUsers           Boolean @default(false)
+  canReadDepartments      Boolean @default(false)
+  canWriteDepartments     Boolean @default(false)
 
-  // Relations
-  createdById    String?
-  createdBy      User?     @relation("UserCreations", fields: [createdById], references: [id], onDelete: SetNull, onUpdate: NoAction)
-  createdUsers   User[]    @relation("UserCreations")
-  createdStudents Student[] @relation("StudentCreations")
-  scannedRecords  AttendanceRecord[] @relation("ScannedByUsers")
-  activityLogs    ActivityLog[]
+
+  createdStudents      Student[] @relation("CreatedBy")
+  scannedAttendance    AttendanceRecord[] @relation("ScannedBy")
+  activityLogs         ActivityLog[]
+
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
+
+  @@index([departmentId])
 }
 
 model Student {
@@ -81,10 +75,12 @@ model Student {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  // Relations
+  createdById     String?
+  createdBy       User?    @relation("CreatedBy", fields: [createdById], references: [id])
+
   attendanceRecords AttendanceRecord[]
-  createdById       String?
-  createdBy         User?              @relation("StudentCreations", fields: [createdById], references: [id], onDelete: SetNull, onUpdate: NoAction)
+
+  @@index([createdById])
 }
 
 model AttendanceRecord {
@@ -98,29 +94,35 @@ model AttendanceRecord {
   // Relations
   studentId          String
   student            Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  mealType           String
+  status             String // "PRESENT" or "ABSENT"
+  recordDate         DateTime @db.Date
+  scannedAtTimestamp DateTime?
   scannedById        String?
-  scannedBy          User?    @relation("ScannedByUsers", fields: [scannedById], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  scannedBy          User?    @relation("ScannedBy", fields: [scannedById], references: [id])
 
-  @@unique([studentId, recordDate, mealType])
+
+  @@index([studentId])
+  @@index([scannedById])
+  @@index([recordDate])
 }
 
 
 model ActivityLog {
-  id                  String   @id @default(cuid())
-  logId               String   @unique
-  userIdentifier      String // Can be User ID or email for failed attempts
-  action              String
-  details             String?
-  activityTimestamp   DateTime @default(now())
+  id                String   @id @default(cuid())
+  logId             String   @unique
+  userIdentifier    String // This could be userId or email for failed logins
+  action            String
+  details           String?
+  activityTimestamp DateTime @default(now())
+  userId            String?  
+  user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  // Relations
-  userId              String?
-  user                User?       @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  @@index([userId])
 }
 
-// Model for auto-incrementing IDs
-model IDCounter {
-  type  String @id // 'STUDENT', 'USER', 'ATTENDANCE', 'ACTIVITY_LOG'
+model IdCounter {
+  type  String @id // 'STUDENT', 'USER', 'DEPARTMENT', 'ATTENDANCE', 'ACTIVITY_LOG'
   count Int    @default(0)
 }
 

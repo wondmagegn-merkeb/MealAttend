@@ -77,7 +77,7 @@ const users = [
     userId: 'ADERA/USR/2024/00004',
     fullName: 'Jane Doe',
     email: 'jane.doe@example.com',
-    password: hashSync('password', saltRounds), // Password for user that needs to change it
+    password: hashSync('password', saltRounds),
     role: 'User',
     status: 'Active',
     position: 'Faculty Member',
@@ -96,7 +96,7 @@ const users = [
   },
 ];
 
-const students = [
+const studentsData = [
   {
     id: 'stu_1',
     studentId: 'ADERA/STU/2023/00101',
@@ -135,7 +135,7 @@ const students = [
   },
 ];
 
-const attendanceRecords = [
+const attendanceRecordsData = [
    {
     id: 'att_1',
     attendanceId: 'ADERA/ATT/2024/00001',
@@ -168,7 +168,7 @@ const attendanceRecords = [
   },
 ];
 
-const activityLogs = [
+const activityLogsData = [
   {
     id: 'log_1',
     logId: 'ADERA/LOG/2024/00001',
@@ -182,6 +182,7 @@ const activityLogs = [
     id: 'log_2',
     logId: 'ADERA/LOG/2024/00002',
     userIdentifier: 'ADERA/USR/2024/00003',
+    userId: 'user_normal',
     action: 'ATTENDANCE_RECORD_SUCCESS',
     details: 'Student: Bob Williams, Meal: LUNCH',
     activityTimestamp: subDays(new Date(), 1),
@@ -308,42 +309,69 @@ async function main() {
   console.log('Seeded app settings.');
 
   // Seed Users
-  for (const user of users) {
+  for (const userData of usersData) {
+    const { departmentId, createdById, ...restOfUserData } = userData;
+    const createPayload: any = { ...restOfUserData };
+    if (departmentId) {
+        createPayload.department = { connect: { id: departmentId } };
+    }
+    if (createdById) {
+        createPayload.createdBy = { connect: { id: createdById } };
+    }
+
     await prisma.user.upsert({
-      where: { id: user.id },
+      where: { id: userData.id },
       update: {},
-      create: user,
+      create: createPayload,
     });
   }
   console.log('Seeded users.');
 
   // Seed Students
-  for (const student of students) {
+  for (const studentData of studentsData) {
+    const { createdById, ...restOfStudentData } = studentData;
+    const createPayload: any = { ...restOfStudentData };
+    if (createdById) {
+        createPayload.createdBy = { connect: { id: createdById } };
+    }
     await prisma.student.upsert({
-      where: { id: student.id },
+      where: { id: studentData.id },
       update: {},
-      create: student,
+      create: createPayload,
     });
   }
   console.log('Seeded students.');
   
   // Seed Attendance Records
-  for (const record of attendanceRecords) {
+  for (const recordData of attendanceRecordsData) {
+    const { studentId, scannedById, ...restOfRecordData } = recordData;
+    const createPayload: any = { ...restOfRecordData };
+    if (studentId) {
+        createPayload.student = { connect: { id: studentId } };
+    }
+    if (scannedById) {
+        createPayload.scannedBy = { connect: { id: scannedById } };
+    }
     await prisma.attendanceRecord.upsert({
-      where: { id: record.id },
+      where: { id: recordData.id },
       update: {},
-      create: record,
+      create: createPayload,
     });
   }
   console.log('Seeded attendance records.');
 
   // Seed Activity Logs
-  for (const log of activityLogs) {
-    await prisma.activityLog.upsert({
-      where: { id: log.id },
-      update: {},
-      create: log,
-    });
+  for (const logData of activityLogsData) {
+      const { userId, ...restOfLogData } = logData;
+      const createPayload: any = { ...restOfLogData };
+      if (userId) {
+          createPayload.user = { connect: { id: userId } };
+      }
+      await prisma.activityLog.upsert({
+          where: { id: logData.id },
+          update: {},
+          create: createPayload,
+      });
   }
   console.log('Seeded activity logs.');
   

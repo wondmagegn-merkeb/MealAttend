@@ -6,11 +6,11 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
-import type { PermissionKey } from '@/types';
+import type { PermissionKey, User } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { Logo } from '../shared/Logo';
 
-const PUBLIC_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-password'];
+const PUBLIC_PATHS = ['/', '/auth/login', '/auth/forgot-password', '/auth/reset-password'];
 const AUTH_FLOW_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-password', '/auth/change-password'];
 
 
@@ -20,6 +20,7 @@ interface AuthGuardProps {
   requiredRole?: 'Super Admin' | 'Admin' | 'User';
 }
 
+export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps) {
 export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps) {
   const { 
     isAuthenticated, 
@@ -35,10 +36,11 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
       return;
     }
 
+    const isPublicPage = PUBLIC_PATHS.includes(pathname);
     const isAuthFlowPage = AUTH_FLOW_PATHS.includes(pathname);
 
-    // If not authenticated and not on a public auth flow page, redirect to login.
-    if (!isAuthenticated && !isAuthFlowPage) {
+    // If not authenticated and trying to access a protected page, redirect to login.
+    if (!isAuthenticated && !isPublicPage) {
       router.replace('/auth/login');
       return;
     }
@@ -50,8 +52,8 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
         return;
       }
       
-      // If on an auth flow page but password change is NOT required, redirect to dashboard.
-      if (!isPasswordChangeRequired && isAuthFlowPage) {
+      // If logged in and trying to access a regular auth page (not change password), redirect to dashboard.
+      if (!isPasswordChangeRequired && isAuthFlowPage && pathname !== '/auth/change-password') {
         router.replace('/admin');
         return;
       }
@@ -71,7 +73,7 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
       if (permission && currentUser.role !== 'Super Admin' && !currentUser[permission]) {
         toast({
           title: "Access Denied",
-          description: "You do not have permission to view this page.",
+          description: "You do not have permission to perform this action or view this page.",
           variant: "destructive"
         });
         router.replace('/admin');

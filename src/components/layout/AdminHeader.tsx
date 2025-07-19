@@ -10,6 +10,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, UserCircle, Settings as SettingsIcon, Edit3, PanelLeft, LayoutDashboard, BookCopy, UsersRound, Users, History, UserPlus, FileDown, CreditCard, UserCog, ScanLine, ShieldCheck, ShieldAlert } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar"; 
@@ -23,6 +27,7 @@ const getPageConfig = (pathname: string): { title: string, icon: React.ReactNode
   // Main Navigation
   if (pathname === '/admin') return { title: 'Dashboard', icon: <LayoutDashboard className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/attendance')) return { title: 'Attendance', icon: <BookCopy className="h-6 w-6" /> };
+  if (pathname.startsWith('/admin/settings/site-management')) return { title: 'Site Management', icon: <MonitorCog className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/settings')) return { title: 'Settings', icon: <SettingsIcon className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/super-settings/team')) return { title: 'Manage Team', icon: <Users className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/super-settings')) return { title: 'Super Admin Settings', icon: <ShieldAlert className="h-6 w-6" /> };
@@ -44,7 +49,7 @@ const getPageConfig = (pathname: string): { title: string, icon: React.ReactNode
   if (pathname.startsWith('/admin/profile/my-permissions')) return { title: 'My Permissions', icon: <ShieldCheck className="h-6 w-6" /> };
   if (pathname.startsWith('/scan')) return { title: 'QR Code Scanner', icon: <ScanLine className="h-6 w-6" /> };
   
-  return { title: 'MealAttend', icon: null };
+  return { title: '', icon: null };
 };
 
 
@@ -60,7 +65,7 @@ export function AdminHeader() {
 
   const PageTitle = () => (
     <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
-      {icon} {title}
+      {icon} {title || siteName}
     </h1>
   );
 
@@ -79,7 +84,21 @@ export function AdminHeader() {
           <PageTitle />
        </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
+         <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                    <Languages />
+                    <span className="sr-only">Change language</span>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuItem>English</DropdownMenuItem>
+                <DropdownMenuItem>Amharic</DropdownMenuItem>
+                <DropdownMenuItem>Afan Oromo</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
