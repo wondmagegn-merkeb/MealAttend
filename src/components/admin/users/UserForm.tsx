@@ -148,9 +148,39 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
         password: "",
       });
       setImagePreview(initialData.profileImageURL || null);
+    } else {
+       // Set initial permissions for a new user form
+       permissionFields.forEach(p => {
+            form.setValue(p.id as any, false);
+       });
     }
     setSelectedFile(null);
   }, [initialData, form]);
+  
+  // Effect to automatically set permissions when role changes
+  useEffect(() => {
+    // Don't run this logic in profile edit mode
+    if (isProfileEditMode || !watchedRole) return;
+
+    if (watchedRole === 'Admin' || watchedRole === 'Super Admin') {
+        permissionFields.forEach(p => {
+            form.setValue(p.id as any, true);
+        });
+    } else if (watchedRole === 'User') {
+        // When switching back to User, reset permissions unless there's initial data
+        if (!initialData || (initialData.role !== 'User')) {
+             permissionFields.forEach(p => {
+                form.setValue(p.id as any, false);
+            });
+        } else {
+            // If editing an existing user, restore their original permissions
+            permissionFields.forEach(p => {
+                form.setValue(p.id as any, !!initialData[p.id]);
+            });
+        }
+    }
+  }, [watchedRole, form, isProfileEditMode, initialData]);
+
 
   useEffect(() => {
     if (imagePreview && imagePreview.startsWith("blob:")) {
@@ -346,7 +376,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                 </div>
                             )}
 
-                             {(!isEditMode || isProfileEditMode) && !isProfileEditMode && (
+                             {!isProfileEditMode && !isEditMode && (
                                 <FormItem>
                                     <FormLabel>Profile Image</FormLabel>
                                     <div className="flex items-center gap-4">
