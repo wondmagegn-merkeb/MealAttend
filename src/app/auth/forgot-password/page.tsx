@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -44,7 +43,7 @@ export default function ForgotPasswordPage() {
         }
 
         toast({
-            title: "Reset Link Sent",
+            title: "Reset Request Sent",
             description: data.message,
         });
 
@@ -71,7 +70,7 @@ export default function ForgotPasswordPage() {
               </div>
               <CardTitle className="text-3xl font-bold">Forgot Password?</CardTitle>
               <CardDescription className="text-muted-foreground">
-                No worries! Enter your email address below and we&apos;ll send you a link to reset your password.
+                No worries! Enter your email address below. Your administrator will be notified to reset your password.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
@@ -95,7 +94,7 @@ export default function ForgotPasswordPage() {
                   ) : (
                     <Mail className="mr-2 h-5 w-5" />
                   )}
-                  Send Reset Link
+                  Send Reset Request
                 </Button>
               </form>
             </CardContent>
