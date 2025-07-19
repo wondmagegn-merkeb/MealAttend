@@ -1,10 +1,9 @@
 
 'use server';
 
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const fromEmail = process.env.FROM_EMAIL;
+const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, FROM_EMAIL } = process.env;
 
 interface WelcomeEmailProps {
   fullName: string;
@@ -13,19 +12,30 @@ interface WelcomeEmailProps {
   siteName: string;
 }
 
+const transporter = nodemailer.createTransport({
+  host: SMTP_HOST,
+  port: Number(SMTP_PORT),
+  secure: Number(SMTP_PORT) === 465, // true for 465, false for other ports
+  auth: {
+    user: SMTP_USER,
+    pass: SMTP_PASS,
+  },
+});
+
+
 export async function sendWelcomeEmail({
   fullName,
   email,
   loginUrl,
   siteName,
 }: WelcomeEmailProps) {
-  if (!process.env.RESEND_API_KEY || !fromEmail) {
-    throw new Error('Email service is not configured. Missing RESEND_API_KEY or FROM_EMAIL.');
+  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !FROM_EMAIL) {
+    throw new Error('Email service (SMTP) is not configured. Please set SMTP variables in .env file.');
   }
 
-  const { data, error } = await resend.emails.send({
-    from: fromEmail,
-    to: [email],
+  const mailOptions = {
+    from: `"${siteName}" <${FROM_EMAIL}>`,
+    to: email,
     subject: `Welcome to ${siteName}!`,
     html: `
       <h1>Welcome to ${siteName}, ${fullName}!</h1>
@@ -37,11 +47,48 @@ export async function sendWelcomeEmail({
       <p>Thank you,</p>
       <p>The ${siteName} Team</p>
     `,
-  });
+  };
 
-  if (error) {
-    throw new Error(`Failed to send email: ${error.message}`);
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Welcome email sent: %s', info.messageId);
+    return info;
+  } catch (error) {
+    console.error(`Failed to send email to ${email}:`, error);
+    throw new Error(`Failed to send email: ${(error as Error).message}`);
   }
+}
 
-  return data;
+interface ForgotPasswordEmailProps {
+    adminEmail: string;
+    userName: string;
+    userEmail: string;
+    siteName: string;
+}
+
+export async function sendForgotPasswordNotification({ adminEmail, userName, userEmail, siteName }: ForgotPasswordEmailProps) {
+    if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !FROM_EMAIL) {
+        throw new Error('Email service (SMTP) is not configured. Please set SMTP variables in .env file.');
+    }
+
+    const mailOptions = {
+        from: `"${siteName} Security" <${FROM_EMAIL}>`,
+        to: adminEmail,
+        subject: `${siteName} - Password Reset Request for ${userName}`,
+        html: `
+            <h1>Password Reset Request</h1>
+            <p>User <strong>${userName} (${userEmail})</strong> has requested a password reset for their account.</p>
+            <p>Please log in to the ${siteName} admin panel, navigate to the User Management section, and set a new password for them.</p>
+            <p>This is a notification only. No further action is required from this email.</p>
+        `,
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Forgot password notification sent: %s', info.messageId);
+        return info;
+    } catch (error) {
+        console.error(`Failed to send forgot password email to admin ${adminEmail}:`, error);
+        throw new Error(`Failed to send email: ${(error as Error).message}`);
+    }
 }
