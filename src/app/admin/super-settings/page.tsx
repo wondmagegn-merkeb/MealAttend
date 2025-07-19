@@ -28,6 +28,7 @@ const themes = [
   { name: "ocean", label: "Ocean", primary: "hsl(222 84% 50%)", accent: "hsl(187 100% 42%)", bg: "hsl(210 20% 97%)" },
   { name: "sunset", label: "Sunset", primary: "hsl(24 96% 53%)", accent: "hsl(45 93% 47%)", bg: "hsl(30 50% 97%)" },
   { name: "rose", label: "Rose", primary: "hsl(346 77% 49%)", accent: "hsl(240 5% 65%)", bg: "hsl(330 20% 97%)" },
+  { name: "violet", label: "Violet", primary: "hsl(262 80% 58%)", accent: "hsl(262 80% 70%)", bg: "hsl(262 20% 97%)" },
 ];
 
 const fileToDataUri = (file: File): Promise<string> => {
