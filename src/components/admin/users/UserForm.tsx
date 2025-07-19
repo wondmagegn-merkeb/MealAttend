@@ -161,37 +161,21 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   
   // Effect to automatically set permissions when role changes
   useEffect(() => {
-    if (isProfileEditMode) return;
+    if (isProfileEditMode || !form.formState.isDirty) return;
   
     const setAllPermissions = (value: boolean) => {
       permissionFields.forEach(p => form.setValue(p.id as any, value, { shouldValidate: true }));
     };
   
-    const setSpecificPermissions = (sections: string[], value: boolean) => {
-        permissionFields.forEach(p => {
-            if (sections.includes(p.section) || (p.id === 'canScanId' && sections.includes('General Access'))) {
-                 form.setValue(p.id as any, value, { shouldValidate: true });
-            }
-        });
-    };
-  
-    // When editing, if role is Admin/Super Admin, all perms are true and locked.
-    if (isEditMode) {
-      if (watchedRole === 'Admin' || watchedRole === 'Super Admin') {
-        setAllPermissions(true);
-      }
-      // If role is User, we don't change anything, preserving their saved permissions.
-    } else {
-      // When creating a new user, set defaults based on role.
-      // Reset all to false first to ensure a clean state
-      setAllPermissions(false);
-      if (watchedRole === 'Admin' || watchedRole === 'Super Admin') {
-        setSpecificPermissions(['Administration'], true);
-      } else if (watchedRole === 'User') {
-        setSpecificPermissions(['Student Management', 'Attendance', 'General Access'], true);
-      }
+    if (watchedRole === 'Admin' || watchedRole === 'Super Admin') {
+      setAllPermissions(true);
+    } else if (watchedRole === 'User') {
+      setAllPermissions(false); // Reset to false, let admin choose
+      // Set specific defaults for 'User' role
+      const userDefaultPerms: PermissionKey[] = ['canScanId', 'canReadStudents', 'canWriteStudents', 'canCreateStudents', 'canDeleteStudents', 'canExportStudents', 'canReadAttendance', 'canExportAttendance'];
+      userDefaultPerms.forEach(p => form.setValue(p as any, true, { shouldValidate: true }));
     }
-  }, [watchedRole, form, isProfileEditMode, isEditMode]);
+  }, [watchedRole, form, isProfileEditMode]);
 
 
   useEffect(() => {
@@ -343,11 +327,11 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                     type="email" 
                                     placeholder="e.g., jane.smith@example.com" 
                                     {...field}
-                                    readOnly={isEditMode}
-                                    className={isEditMode ? "bg-muted/50" : ""}
+                                    readOnly={isEditMode && !isProfileEditMode}
+                                    className={(isEditMode && !isProfileEditMode) ? "bg-muted/50" : ""}
                                 />
                                 </FormControl>
-                                {isEditMode && <FormDescription>User email cannot be changed after creation.</FormDescription>}
+                                {isEditMode && !isProfileEditMode && <FormDescription>User email cannot be changed after creation.</FormDescription>}
                                 <FormMessage />
                             </FormItem>
                             )} />

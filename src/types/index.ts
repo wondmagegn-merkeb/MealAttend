@@ -18,8 +18,6 @@ export interface User {
   passwordChangeRequired: boolean;
   passwordResetRequested: boolean;
   profileImageURL: string | null;
-  createdAt: string;
-  updatedAt: string;
   passwordResetToken?: string | null;
   passwordResetExpires?: string | null;
   createdById: string | null; // ID of the user who created this user
@@ -120,4 +118,8 @@ export type PermissionKey =
 
 export type TeamMember = PrismaTeamMember;
 export type HomepageFeature = PrismaHomepageFeature;
-export type AppSettings = PrismaAppSettings;
+export type AppSettings = Omit<PrismaAppSettings, 'defaultUserPassword' | 'defaultAdminPassword' | 'defaultSuperAdminPassword'> & {
+    defaultUserPassword?: string | null;
+    defaultAdminPassword?: string | null;
+    defaultSuperAdminPassword?: string | null;
+};

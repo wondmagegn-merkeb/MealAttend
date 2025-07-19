@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     const newUserId = await generateNextId('USER');
 
     const settings = await prisma.appSettings.findUnique({ where: { id: 1 }});
-    let passwordToHash = 'password123'; // Fallback password
+    const passwordToHash = 'password123'; // Fallback password
     let passwordForDb = '';
 
     if (role === 'User' && settings?.defaultUserPassword) {
