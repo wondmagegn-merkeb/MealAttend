@@ -159,27 +159,26 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   
   // Effect to automatically set permissions when role changes
   useEffect(() => {
-    // Don't run this logic in profile edit mode
-    if (isProfileEditMode || !watchedRole) return;
+    // Don't run this logic in profile edit mode or if editing an existing user
+    if (isProfileEditMode || isEditMode) return;
+
+    // Reset all to false first
+    permissionFields.forEach(p => form.setValue(p.id as any, false));
 
     if (watchedRole === 'Admin' || watchedRole === 'Super Admin') {
-        permissionFields.forEach(p => {
+      permissionFields.forEach(p => {
+        if (p.section === 'Administration') {
             form.setValue(p.id as any, true);
-        });
-    } else if (watchedRole === 'User') {
-        // When switching back to User, reset permissions unless there's initial data
-        if (!initialData || (initialData.role !== 'User')) {
-             permissionFields.forEach(p => {
-                form.setValue(p.id as any, false);
-            });
-        } else {
-            // If editing an existing user, restore their original permissions
-            permissionFields.forEach(p => {
-                form.setValue(p.id as any, !!initialData[p.id]);
-            });
         }
+      });
+    } else if (watchedRole === 'User') {
+      permissionFields.forEach(p => {
+        if (p.section === 'Student Management' || p.section === 'Attendance' || p.id === 'canScanId') {
+          form.setValue(p.id as any, true);
+        }
+      });
     }
-  }, [watchedRole, form, isProfileEditMode, initialData]);
+  }, [watchedRole, form, isProfileEditMode, isEditMode]);
 
 
   useEffect(() => {
@@ -236,7 +235,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   const isEditingSelf = currentUser?.id === initialData?.id;
 
   const renderPermissionSwitch = (id: PermissionKey, label: string) => {
-    let isDisabled = watchedRole === 'Admin' || watchedRole === 'Super Admin';
+    let isDisabled = (watchedRole === 'Admin' || watchedRole === 'Super Admin') && isEditMode;
     let toolTipContent = "Admins have this permission by default.";
 
     if (currentUser?.role === 'Admin' && !currentUser[id]) {
@@ -376,7 +375,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                 </div>
                             )}
 
-                             {!isProfileEditMode && !isEditMode && (
+                             {isEditMode ? null : (
                                 <FormItem>
                                     <FormLabel>Profile Image</FormLabel>
                                     <div className="flex items-center gap-4">
