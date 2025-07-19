@@ -17,13 +17,14 @@ import {
 import { Logo } from '@/components/shared/Logo';
 import { Button } from '../ui/button';
 import { useAuth } from '@/hooks/useAuth'; 
+import type { PermissionKey } from '@/types';
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const { currentUser } = useAuth(); 
 
   const navItems = [
-    { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, tooltip: 'Dashboard Overview', permission: 'canReadUsers' },
+    { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, tooltip: 'Dashboard Overview', permission: 'canReadDashboard' },
     { href: '/admin/attendance', label: 'Attendance', icon: BookUser, tooltip: 'Manage Attendance Records', permission: 'canReadAttendance' },
     { href: '/admin/students', label: 'Students', icon: UsersRound, tooltip: 'Manage Students', permission: 'canReadStudents' },
     { href: '/admin/users', label: 'Users', icon: UsersIcon, tooltip: 'Manage Users (Admin)', permission: 'canReadUsers' },
@@ -36,14 +37,20 @@ export function AdminSidebar() {
      { href: '/admin/settings', label: 'Settings', icon: Settings, tooltip: 'Application Settings', permission: true },
   ];
 
-  const isNavItemVisible = (permission: string | boolean) => {
+  const isNavItemVisible = (permission: PermissionKey | 'Super Admin' | boolean) => {
     if (permission === true) return true;
-    // Special check for role-based permission
-    if (permission === 'Super Admin') return currentUser?.role === 'Super Admin';
-    if (!currentUser || typeof permission !== 'string') return false;
-    // Admins have all permissions, so always show for them
-    if (currentUser.role === 'Admin' || currentUser.role === 'Super Admin') return true;
-    return currentUser[permission as keyof typeof currentUser] === true;
+    if (!currentUser) return false;
+    
+    // Super Admins see everything.
+    if (currentUser.role === 'Super Admin') return true;
+    
+    // For other roles, check the specific permission string.
+    if (typeof permission === 'string') {
+        if (permission === 'Super Admin') return false; // Already handled above
+        return currentUser[permission] === true;
+    }
+    
+    return false;
   };
   
   const isActive = (href: string) => {
@@ -60,7 +67,7 @@ export function AdminSidebar() {
       </ShadSidebarHeader>
       <ShadSidebarContent className="p-4 flex flex-col justify-between">
         <SidebarMenu>
-          {navItems.filter(item => isNavItemVisible(item.permission)).map((item) => (
+          {navItems.filter(item => isNavItemVisible(item.permission as PermissionKey)).map((item) => (
             <SidebarMenuItem key={item.label}>
               <Link href={item.href} passHref legacyBehavior>
                 <SidebarMenuButton
@@ -84,7 +91,7 @@ export function AdminSidebar() {
         <div className="mt-auto">
             <SidebarSeparator />
              <SidebarMenu className="pt-2">
-                {bottomNavItems.filter(item => isNavItemVisible(item.permission)).map((item) => (
+                {bottomNavItems.filter(item => isNavItemVisible(item.permission as PermissionKey)).map((item) => (
                     <SidebarMenuItem key={item.label}>
                     <Link href={item.href} passHref legacyBehavior>
                         <SidebarMenuButton
@@ -108,12 +115,14 @@ export function AdminSidebar() {
       </ShadSidebarContent>
 
       <ShadSidebarFooter className="p-4 border-t border-sidebar-border">
-        <Link href="/scan" passHref legacyBehavior>
-            <Button variant="outline" className="w-full bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/80 group-data-[collapsible=icon]:px-2">
-                <QrCode className="h-5 w-5 mr-0 md:mr-2 group-data-[collapsible=icon]:mr-0 shrink-0"/>
-                <span className="truncate group-data-[collapsible=icon]:hidden">Go to Scanner</span>
-            </Button>
-        </Link>
+        {currentUser?.canScanId && (
+            <Link href="/scan" passHref legacyBehavior>
+                <Button variant="outline" className="w-full bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/80 group-data-[collapsible=icon]:px-2">
+                    <QrCode className="h-5 w-5 mr-0 md:mr-2 group-data-[collapsible=icon]:mr-0 shrink-0"/>
+                    <span className="truncate group-data-[collapsible=icon]:hidden">Go to Scanner</span>
+                </Button>
+            </Link>
+        )}
       </ShadSidebarFooter>
     </>
   );
