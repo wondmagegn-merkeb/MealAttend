@@ -223,7 +223,7 @@ export default function SuperAdminSettingsPage() {
           <p className="text-muted-foreground">Manage global application settings. Changes here affect all users.</p>
         </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
 
         {/* Branding Card */}
         <Form {...brandingForm}>
@@ -274,9 +274,9 @@ export default function SuperAdminSettingsPage() {
                  <FormField control={idCardForm.control} name="idCardTitle" render={({ field }) => (
                   <FormItem><FormLabel>ID Card Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
-                <div className="space-y-2">
+                <div className="space-y-0">
                     <Label>ID Card Logo &amp; Live Preview</Label>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-0 items-center">
                         <FormField control={idCardForm.control} name="idCardLogoUrl" render={({ field }) => (
                         <FormItem>
                             <div className="flex items-center gap-4 mt-2">
