@@ -291,6 +291,27 @@ export default function SuperAdminSettingsPage() {
                 </Card>
             </form>
             </Form>
+            
+            {/* Passwords Card */}
+            <Form {...passwordForm}>
+                <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}>
+                    <Card>
+                        <CardHeader><CardTitle>Default Passwords</CardTitle><CardDescription>Set initial password for new users.</CardDescription></CardHeader>
+                        <CardContent className="space-y-6">
+                            <FormField control={passwordForm.control} name="defaultSuperAdminPassword" render={({ field }) => (
+                                <FormItem><FormLabel>New Super Admin Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={passwordForm.control} name="defaultAdminPassword" render={({ field }) => (
+                                <FormItem><FormLabel>New Admin Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={passwordForm.control} name="defaultUserPassword" render={({ field }) => (
+                                <FormItem><FormLabel>New Standard Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
+                            )} />
+                        </CardContent>
+                        <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && passwordForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Passwords</Button></CardFooter>
+                    </Card>
+                </form>
+            </Form>
         </div>
 
         <div className="flex flex-col gap-6">
@@ -388,26 +409,6 @@ export default function SuperAdminSettingsPage() {
                 </form>
             </Form>
 
-            {/* Passwords Card */}
-            <Form {...passwordForm}>
-                <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}>
-                    <Card>
-                        <CardHeader><CardTitle>Default Passwords</CardTitle><CardDescription>Set initial password for new users.</CardDescription></CardHeader>
-                        <CardContent className="space-y-6">
-                            <FormField control={passwordForm.control} name="defaultSuperAdminPassword" render={({ field }) => (
-                                <FormItem><FormLabel>New Super Admin Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
-                            )} />
-                            <FormField control={passwordForm.control} name="defaultAdminPassword" render={({ field }) => (
-                                <FormItem><FormLabel>New Admin Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
-                            )} />
-                            <FormField control={passwordForm.control} name="defaultUserPassword" render={({ field }) => (
-                                <FormItem><FormLabel>New Standard Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
-                            )} />
-                        </CardContent>
-                        <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && passwordForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Passwords</Button></CardFooter>
-                    </Card>
-                </form>
-            </Form>
         </div>
       </div>
     </div>
