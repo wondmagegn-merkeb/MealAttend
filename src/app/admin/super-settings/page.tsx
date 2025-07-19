@@ -223,191 +223,193 @@ export default function SuperAdminSettingsPage() {
           <p className="text-muted-foreground">Manage global application settings. Changes here affect all users.</p>
         </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-        {/* Branding Card */}
-        <Form {...brandingForm}>
-          <form onSubmit={brandingForm.handleSubmit(onBrandingSubmit)}>
-            <Card>
-              <CardHeader><CardTitle>General Branding</CardTitle><CardDescription>Customize names and logos.</CardDescription></CardHeader>
-              <CardContent className="space-y-6">
-                <FormField control={brandingForm.control} name="siteName" render={({ field }) => (
-                  <FormItem><FormLabel>Site Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={brandingForm.control} name="companyLogoUrl" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Company Logo</FormLabel>
-                    <div className="flex items-center gap-4 mt-2">
-                       <Avatar className="h-24 w-24 rounded-md">
-                        <AvatarImage src={companyLogoPreview || `https://placehold.co/96x96.png?text=Logo`} alt="Company Logo" className="object-contain" data-ai-hint="company logo" />
-                        <AvatarFallback>LOGO</AvatarFallback>
-                      </Avatar>
-                      <Input id="company-logo-upload" type="file" className="hidden" onChange={(e) => { 
-                          if (e.target.files?.[0]) {
-                            const newUrl = URL.createObjectURL(e.target.files[0]);
-                            setCompanyLogoPreview(newUrl);
-                            brandingForm.setValue('companyLogoUrl', newUrl);
-                          }
-                       }} accept="image/*" />
-                      <Button type="button" variant="outline" onClick={() => document.getElementById('company-logo-upload')?.click()}><Upload className="mr-2 h-4 w-4" /> Change</Button>
-                    </div>
-                  </FormItem>
-                )} />
-              </CardContent>
-              <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && brandingForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Branding</Button></CardFooter>
-            </Card>
-          </form>
-        </Form>
-        
-        {/* ID Card Card */}
-        <Form {...idCardForm}>
-          <form onSubmit={idCardForm.handleSubmit(onIdCardSubmit)}>
-            <Card>
-              <CardHeader><CardTitle>ID Card Settings</CardTitle><CardDescription>Customize generated ID cards.</CardDescription></CardHeader>
-              <CardContent className="space-y-6">
-                 <FormField control={idCardForm.control} name="idPrefix" render={({ field }) => (
-                  <FormItem><FormLabel>ID Prefix</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                 <FormField control={idCardForm.control} name="schoolName" render={({ field }) => (
-                  <FormItem><FormLabel>School/Organization Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                 <FormField control={idCardForm.control} name="idCardTitle" render={({ field }) => (
-                  <FormItem><FormLabel>ID Card Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <div className="space-y-0">
-                    <Label>ID Card Logo &amp; Live Preview</Label>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-0 items-center">
-                        <FormField control={idCardForm.control} name="idCardLogoUrl" render={({ field }) => (
-                        <FormItem>
-                            <div className="flex items-center gap-4 mt-2">
-                            <Avatar className="h-24 w-24 rounded-md">
-                                <AvatarImage src={idCardLogoPreview || `https://placehold.co/96x96.png?text=Logo`} alt="ID Card Logo" className="object-contain" data-ai-hint="school crest" />
-                                <AvatarFallback>LOGO</AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <Input id="id-card-logo-upload" type="file" className="hidden" onChange={(e) => { 
-                                    if (e.target.files?.[0]) {
-                                        const newUrl = URL.createObjectURL(e.target.files[0]);
-                                        setIdCardLogoPreview(newUrl);
-                                        idCardForm.setValue('idCardLogoUrl', newUrl);
-                                    }
-                                }} accept="image/*" />
-                                <Button type="button" variant="outline" onClick={() => document.getElementById('id-card-logo-upload')?.click()}><Upload className="mr-2 h-4 w-4" /> Change</Button>
-                                <p className="text-xs text-muted-foreground mt-2">Upload a new logo.</p>
-                            </div>
-                            </div>
-                        </FormItem>
-                        )} />
-                        
-                        <div className="flex justify-center items-center p-2 bg-muted/50 rounded-lg border scale-90 md:scale-100">
-                            <StudentIdCard 
-                                student={sampleStudent} 
-                                previewSettings={{
-                                    ...watchedIdCardValues,
-                                    idCardLogoUrl: idCardLogoPreview || watchedIdCardValues.idCardLogoUrl
-                                }}
-                            />
-                        </div>
-                    </div>
-                </div>
-
-              </CardContent>
-              <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && idCardForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update ID Cards</Button></CardFooter>
-            </Card>
-          </form>
-        </Form>
-        
-        {/* Homepage Card */}
-         <Form {...homepageForm}>
-            <form onSubmit={homepageForm.handleSubmit(onHomepageSubmit)}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <div className="flex flex-col gap-6">
+            {/* Branding Card */}
+            <Form {...brandingForm}>
+            <form onSubmit={brandingForm.handleSubmit(onBrandingSubmit)}>
                 <Card>
-                    <CardHeader><CardTitle className="flex items-center gap-2"><Home /> Homepage Content</CardTitle><CardDescription>Control public homepage visibility and content.</CardDescription></CardHeader>
-                    <CardContent className="space-y-4">
-                        <FormField control={homepageForm.control} name="homepageSubtitle" render={({ field }) => (
-                            <FormItem><FormLabel>Homepage Subtitle</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                        )} />
-                        <FormField control={homepageForm.control} name="showHomepage" render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3"><div className="space-y-0.5"><FormLabel>Show Public Homepage</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
-                        )} />
-                        <FormField control={homepageForm.control} name="showFeaturesSection" render={({ field }) => (
-                           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3"><div className="space-y-0.5"><FormLabel>Show Features Section</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
-                        )} />
-                         <FormField control={homepageForm.control} name="showTeamSection" render={({ field }) => (
-                           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3"><div className="space-y-0.5"><FormLabel>Show Team Section</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
-                        )} />
-                        <div className="grid grid-cols-2 gap-2 pt-2">
-                             <Link href="/admin/super-settings/features" passHref legacyBehavior>
-                                <Button variant="outline" className="w-full">
-                                    <LayoutGrid className="mr-2 h-4 w-4" /> Manage Features
-                                </Button>
-                            </Link>
-                            <Link href="/admin/super-settings/team" passHref legacyBehavior>
-                                <Button variant="outline" className="w-full">
-                                    <Users className="mr-2 h-4 w-4" /> Manage Team Members
-                                </Button>
-                            </Link>
+                <CardHeader><CardTitle>General Branding</CardTitle><CardDescription>Customize names and logos.</CardDescription></CardHeader>
+                <CardContent className="space-y-6">
+                    <FormField control={brandingForm.control} name="siteName" render={({ field }) => (
+                    <FormItem><FormLabel>Site Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={brandingForm.control} name="companyLogoUrl" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Company Logo</FormLabel>
+                        <div className="flex items-center gap-4 mt-2">
+                        <Avatar className="h-24 w-24 rounded-md">
+                            <AvatarImage src={companyLogoPreview || `https://placehold.co/96x96.png?text=Logo`} alt="Company Logo" className="object-contain" data-ai-hint="company logo" />
+                            <AvatarFallback>LOGO</AvatarFallback>
+                        </Avatar>
+                        <Input id="company-logo-upload" type="file" className="hidden" onChange={(e) => { 
+                            if (e.target.files?.[0]) {
+                                const newUrl = URL.createObjectURL(e.target.files[0]);
+                                setCompanyLogoPreview(newUrl);
+                                brandingForm.setValue('companyLogoUrl', newUrl);
+                            }
+                        }} accept="image/*" />
+                        <Button type="button" variant="outline" onClick={() => document.getElementById('company-logo-upload')?.click()}><Upload className="mr-2 h-4 w-4" /> Change</Button>
                         </div>
-                    </CardContent>
-                    <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && homepageForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Homepage</Button></CardFooter>
+                    </FormItem>
+                    )} />
+                </CardContent>
+                <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && brandingForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Branding</Button></CardFooter>
                 </Card>
             </form>
-        </Form>
+            </Form>
 
-         {/* Passwords Card */}
-        <Form {...passwordForm}>
-            <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}>
+            {/* Color Theme Card */}
+            <Form {...themeForm}>
+            <form onSubmit={themeForm.handleSubmit(onThemeSubmit)}>
                 <Card>
-                    <CardHeader><CardTitle>Default Passwords</CardTitle><CardDescription>Set initial password for new users.</CardDescription></CardHeader>
-                    <CardContent className="space-y-6">
-                         <FormField control={passwordForm.control} name="defaultSuperAdminPassword" render={({ field }) => (
-                            <FormItem><FormLabel>New Super Admin Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
-                        )} />
-                        <FormField control={passwordForm.control} name="defaultAdminPassword" render={({ field }) => (
-                            <FormItem><FormLabel>New Admin Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
-                        )} />
-                        <FormField control={passwordForm.control} name="defaultUserPassword" render={({ field }) => (
-                            <FormItem><FormLabel>New Standard Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
-                        )} />
-                    </CardContent>
-                    <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && passwordForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Passwords</Button></CardFooter>
+                <CardHeader><CardTitle>Color Theme</CardTitle><CardDescription>Select a color palette for the application.</CardDescription></CardHeader>
+                <CardContent>
+                    <FormField control={themeForm.control} name="colorTheme" render={({ field }) => (
+                    <FormItem>
+                        <RadioGroup onValueChange={field.onChange} value={field.value} className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            {themes.map((theme) => (
+                                <FormItem key={theme.name}>
+                                    <FormControl>
+                                    <RadioGroupItem value={theme.name} id={theme.name} className="sr-only" />
+                                    </FormControl>
+                                    <Label htmlFor={theme.name} className={cn("flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer", field.value === theme.name && "border-primary")}>
+                                    <span className="mb-3 font-semibold">{theme.label}</span>
+                                    <div className="flex gap-2">
+                                        <div className="w-6 h-6 rounded-full" style={{ backgroundColor: theme.primary }}></div>
+                                        <div className="w-6 h-6 rounded-full" style={{ backgroundColor: theme.accent }}></div>
+                                        <div className="w-6 h-6 rounded-full border" style={{ backgroundColor: theme.bg }}></div>
+                                    </div>
+                                    </Label>
+                                </FormItem>
+                            ))}
+                        </RadioGroup>
+                    </FormItem>
+                    )} />
+                </CardContent>
+                <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && themeForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Theme</Button></CardFooter>
                 </Card>
             </form>
-        </Form>
+            </Form>
+        </div>
 
+        <div className="flex flex-col gap-6">
+            {/* ID Card Card */}
+            <Form {...idCardForm}>
+            <form onSubmit={idCardForm.handleSubmit(onIdCardSubmit)}>
+                <Card>
+                <CardHeader><CardTitle>ID Card Settings</CardTitle><CardDescription>Customize generated ID cards.</CardDescription></CardHeader>
+                <CardContent className="space-y-6">
+                    <FormField control={idCardForm.control} name="idPrefix" render={({ field }) => (
+                    <FormItem><FormLabel>ID Prefix</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={idCardForm.control} name="schoolName" render={({ field }) => (
+                    <FormItem><FormLabel>School/Organization Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={idCardForm.control} name="idCardTitle" render={({ field }) => (
+                    <FormItem><FormLabel>ID Card Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <div className="space-y-0">
+                        <Label>ID Card Logo &amp; Live Preview</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-0 items-center">
+                            <FormField control={idCardForm.control} name="idCardLogoUrl" render={({ field }) => (
+                            <FormItem>
+                                <div className="flex items-center gap-4 mt-2">
+                                <Avatar className="h-24 w-24 rounded-md">
+                                    <AvatarImage src={idCardLogoPreview || `https://placehold.co/96x96.png?text=Logo`} alt="ID Card Logo" className="object-contain" data-ai-hint="school crest" />
+                                    <AvatarFallback>LOGO</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <Input id="id-card-logo-upload" type="file" className="hidden" onChange={(e) => { 
+                                        if (e.target.files?.[0]) {
+                                            const newUrl = URL.createObjectURL(e.target.files[0]);
+                                            setIdCardLogoPreview(newUrl);
+                                            idCardForm.setValue('idCardLogoUrl', newUrl);
+                                        }
+                                    }} accept="image/*" />
+                                    <Button type="button" variant="outline" onClick={() => document.getElementById('id-card-logo-upload')?.click()}><Upload className="mr-2 h-4 w-4" /> Change</Button>
+                                    <p className="text-xs text-muted-foreground mt-2">Upload a new logo.</p>
+                                </div>
+                                </div>
+                            </FormItem>
+                            )} />
+                            
+                            <div className="flex justify-center items-center p-2 bg-muted/50 rounded-lg border scale-90 md:scale-100">
+                                <StudentIdCard 
+                                    student={sampleStudent} 
+                                    previewSettings={{
+                                        ...watchedIdCardValues,
+                                        idCardLogoUrl: idCardLogoPreview || watchedIdCardValues.idCardLogoUrl
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                </CardContent>
+                <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && idCardForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update ID Cards</Button></CardFooter>
+                </Card>
+            </form>
+            </Form>
+            
+            {/* Homepage Card */}
+            <Form {...homepageForm}>
+                <form onSubmit={homepageForm.handleSubmit(onHomepageSubmit)}>
+                    <Card>
+                        <CardHeader><CardTitle className="flex items-center gap-2"><Home /> Homepage Content</CardTitle><CardDescription>Control public homepage visibility and content.</CardDescription></CardHeader>
+                        <CardContent className="space-y-4">
+                            <FormField control={homepageForm.control} name="homepageSubtitle" render={({ field }) => (
+                                <FormItem><FormLabel>Homepage Subtitle</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={homepageForm.control} name="showHomepage" render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3"><div className="space-y-0.5"><FormLabel>Show Public Homepage</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
+                            )} />
+                            <FormField control={homepageForm.control} name="showFeaturesSection" render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3"><div className="space-y-0.5"><FormLabel>Show Features Section</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
+                            )} />
+                            <FormField control={homepageForm.control} name="showTeamSection" render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3"><div className="space-y-0.5"><FormLabel>Show Team Section</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
+                            )} />
+                            <div className="grid grid-cols-2 gap-2 pt-2">
+                                <Link href="/admin/super-settings/features" passHref legacyBehavior>
+                                    <Button variant="outline" className="w-full">
+                                        <LayoutGrid className="mr-2 h-4 w-4" /> Manage Features
+                                    </Button>
+                                </Link>
+                                <Link href="/admin/super-settings/team" passHref legacyBehavior>
+                                    <Button variant="outline" className="w-full">
+                                        <Users className="mr-2 h-4 w-4" /> Manage Team Members
+                                    </Button>
+                                </Link>
+                            </div>
+                        </CardContent>
+                        <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && homepageForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Homepage</Button></CardFooter>
+                    </Card>
+                </form>
+            </Form>
+
+            {/* Passwords Card */}
+            <Form {...passwordForm}>
+                <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}>
+                    <Card>
+                        <CardHeader><CardTitle>Default Passwords</CardTitle><CardDescription>Set initial password for new users.</CardDescription></CardHeader>
+                        <CardContent className="space-y-6">
+                            <FormField control={passwordForm.control} name="defaultSuperAdminPassword" render={({ field }) => (
+                                <FormItem><FormLabel>New Super Admin Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={passwordForm.control} name="defaultAdminPassword" render={({ field }) => (
+                                <FormItem><FormLabel>New Admin Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={passwordForm.control} name="defaultUserPassword" render={({ field }) => (
+                                <FormItem><FormLabel>New Standard Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
+                            )} />
+                        </CardContent>
+                        <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && passwordForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Passwords</Button></CardFooter>
+                    </Card>
+                </form>
+            </Form>
+        </div>
       </div>
-      
-      {/* Color Theme Card (Full Width) */}
-      <Form {...themeForm}>
-          <form onSubmit={themeForm.handleSubmit(onThemeSubmit)}>
-            <Card>
-              <CardHeader><CardTitle>Color Theme</CardTitle><CardDescription>Select a color palette for the application.</CardDescription></CardHeader>
-              <CardContent>
-                <FormField control={themeForm.control} name="colorTheme" render={({ field }) => (
-                  <FormItem>
-                      <RadioGroup onValueChange={field.onChange} value={field.value} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                          {themes.map((theme) => (
-                             <FormItem key={theme.name}>
-                                 <FormControl>
-                                  <RadioGroupItem value={theme.name} id={theme.name} className="sr-only" />
-                                 </FormControl>
-                                 <Label htmlFor={theme.name} className={cn("flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer", field.value === theme.name && "border-primary")}>
-                                  <span className="mb-3 font-semibold">{theme.label}</span>
-                                  <div className="flex gap-2">
-                                      <div className="w-6 h-6 rounded-full" style={{ backgroundColor: theme.primary }}></div>
-                                      <div className="w-6 h-6 rounded-full" style={{ backgroundColor: theme.accent }}></div>
-                                      <div className="w-6 h-6 rounded-full border" style={{ backgroundColor: theme.bg }}></div>
-                                  </div>
-                                 </Label>
-                             </FormItem>
-                          ))}
-                      </RadioGroup>
-                  </FormItem>
-                )} />
-              </CardContent>
-              <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && themeForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Theme</Button></CardFooter>
-            </Card>
-          </form>
-        </Form>
     </div>
   );
 }
