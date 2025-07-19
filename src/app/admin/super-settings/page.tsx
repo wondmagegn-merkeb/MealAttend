@@ -70,10 +70,10 @@ const updateSettings = async (data: Partial<AppSettings>): Promise<AppSettings> 
 // --- Form Schemas ---
 const brandingSchema = z.object({
   siteName: z.string().min(1, "Site Name is required."),
-  idPrefix: z.string().min(1, "ID Prefix is required.").max(5, "Prefix cannot exceed 5 characters."),
   companyLogoUrl: z.string().optional().nullable(),
 });
 const idCardSchema = z.object({
+  idPrefix: z.string().min(1, "ID Prefix is required.").max(5, "Prefix cannot exceed 5 characters."),
   schoolName: z.string().min(1, "School Name is required."),
   idCardTitle: z.string().min(1, "ID Card Title is required."),
   idCardLogoUrl: z.string().optional().nullable(),
@@ -135,11 +135,11 @@ export default function SuperAdminSettingsPage() {
   
   const brandingForm = useForm<z.infer<typeof brandingSchema>>({
     resolver: zodResolver(brandingSchema),
-    defaultValues: { siteName: "", idPrefix: "", companyLogoUrl: "" }
+    defaultValues: { siteName: "", companyLogoUrl: "" }
   });
   const idCardForm = useForm<z.infer<typeof idCardSchema>>({
     resolver: zodResolver(idCardSchema),
-    defaultValues: { schoolName: "", idCardTitle: "", idCardLogoUrl: "" }
+    defaultValues: { idPrefix: "", schoolName: "", idCardTitle: "", idCardLogoUrl: "" }
   });
   const homepageForm = useForm<z.infer<typeof homepageSchema>>({
     resolver: zodResolver(homepageSchema),
@@ -161,8 +161,8 @@ export default function SuperAdminSettingsPage() {
 
   useEffect(() => {
     if (fetchedSettings) {
-      brandingForm.reset({ siteName: fetchedSettings.siteName, idPrefix: fetchedSettings.idPrefix, companyLogoUrl: fetchedSettings.companyLogoUrl });
-      idCardForm.reset({ schoolName: fetchedSettings.schoolName, idCardTitle: fetchedSettings.idCardTitle, idCardLogoUrl: fetchedSettings.idCardLogoUrl });
+      brandingForm.reset({ siteName: fetchedSettings.siteName, companyLogoUrl: fetchedSettings.companyLogoUrl });
+      idCardForm.reset({ idPrefix: fetchedSettings.idPrefix, schoolName: fetchedSettings.schoolName, idCardTitle: fetchedSettings.idCardTitle, idCardLogoUrl: fetchedSettings.idCardLogoUrl });
       homepageForm.reset({ homepageSubtitle: fetchedSettings.homepageSubtitle, showHomepage: fetchedSettings.showHomepage, showTeamSection: fetchedSettings.showTeamSection, showFeaturesSection: fetchedSettings.showFeaturesSection });
       passwordForm.reset({ defaultUserPassword: "", defaultAdminPassword: "", defaultSuperAdminPassword: ""});
       themeForm.reset({ colorTheme: fetchedSettings.colorTheme });
@@ -234,9 +234,6 @@ export default function SuperAdminSettingsPage() {
                 <FormField control={brandingForm.control} name="siteName" render={({ field }) => (
                   <FormItem><FormLabel>Site Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
-                <FormField control={brandingForm.control} name="idPrefix" render={({ field }) => (
-                  <FormItem><FormLabel>ID Prefix</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
                 <FormField control={brandingForm.control} name="companyLogoUrl" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Company Logo</FormLabel>
@@ -268,6 +265,9 @@ export default function SuperAdminSettingsPage() {
             <Card>
               <CardHeader><CardTitle>ID Card Settings</CardTitle><CardDescription>Customize generated ID cards.</CardDescription></CardHeader>
               <CardContent className="space-y-6">
+                 <FormField control={idCardForm.control} name="idPrefix" render={({ field }) => (
+                  <FormItem><FormLabel>ID Prefix</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
                  <FormField control={idCardForm.control} name="schoolName" render={({ field }) => (
                   <FormItem><FormLabel>School/Organization Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />

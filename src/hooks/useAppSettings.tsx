@@ -20,10 +20,13 @@ const defaultSettings: AppSettings = {
   colorTheme: "default",
   showHomepage: true,
   showTeamSection: true,
+  showFeaturesSection: true,
+  homepageSubtitle: "Subtitle",
   companyLogoUrl: null,
   idCardLogoUrl: null,
   defaultUserPassword: null,
   defaultAdminPassword: null,
+  defaultSuperAdminPassword: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 };

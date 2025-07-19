@@ -6,6 +6,8 @@
   "/api/activity-log/route": "app/api/activity-log/route.js",
   "/api/attendance/route": "app/api/attendance/route.js",
   "/api/auth/login/route": "app/api/auth/login/route.js",
+  "/api/features/[id]/route": "app/api/features/[id]/route.js",
+  "/api/features/reorder/route": "app/api/features/reorder/route.js",
   "/api/features/route": "app/api/features/route.js",
   "/api/settings/route": "app/api/settings/route.js",
   "/api/students/route": "app/api/students/route.js",
