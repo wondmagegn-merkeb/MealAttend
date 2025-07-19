@@ -2,10 +2,8 @@
 'use server';
 /**
  * @fileOverview An AI flow to generate a welcome email for new users.
- *
- * - generateWelcomeEmail - A function that handles the email content generation.
- * - WelcomeEmailInput - The input type for the welcome email generation.
- * - WelcomeEmailOutput - The return type for the welcome email generation.
+ * THIS FLOW IS OBSOLETE AND NO LONGER USED.
+ * The system now uses a direct email service via /src/lib/email.ts
  */
 
 import { ai } from '@/ai/genkit';

@@ -10,7 +10,6 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
-import { generateWelcomeEmail } from '@/ai/flows/send-welcome-email-flow';
 
 const createUser = async (data: UserFormData) => {
   const token = localStorage.getItem('mealAttendAuthToken_v1');
@@ -40,32 +39,12 @@ export default function NewUserPage() {
     mutationFn: createUser,
     onSuccess: async (newUser) => {
       toast({
-          title: "User Added",
-          description: `${newUser.fullName} has been successfully added.`,
+          title: "User Added & Welcome Email Sent",
+          description: `${newUser.fullName} has been added and a welcome email was sent to them.`,
       });
       logUserActivity(actorUserId, "USER_CREATE_SUCCESS", `Created user ID: ${newUser.userId}, Name: ${newUser.fullName}`);
       queryClient.invalidateQueries({ queryKey: ['users'] });
       
-      // We are not sending a real email, but we can generate the content
-      try {
-        await generateWelcomeEmail({
-          userName: newUser.fullName,
-          userEmail: newUser.email,
-          tempPassword: '[password set by admin]', // Generic placeholder for security
-          loginUrl: `${window.location.origin}/auth/login`,
-        });
-        toast({
-          title: "Welcome Email Generated (AI)",
-          description: "A welcome email with temporary password has been generated.",
-        });
-      } catch (aiError) {
-        toast({
-          title: "AI Email Generation Failed",
-          description: "Could not generate the welcome email content.",
-          variant: "destructive"
-        })
-      }
-
       router.push('/admin/users');
     },
     onError: (error: Error) => {

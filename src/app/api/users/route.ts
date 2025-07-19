@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { generateNextId } from '@/lib/idGenerator';
 import { hash } from 'bcryptjs';
 import { getAuthFromRequest } from '@/lib/auth';
+import { sendWelcomeEmail } from '@/lib/email';
 
 const saltRounds = 10;
 export const dynamic = 'force-dynamic';
@@ -81,7 +82,7 @@ export async function POST(request: Request) {
     }
     
     // Enforce role creation rules
-    if (creator.role === 'Admin' && role === 'Admin') {
+    if (creator.role === 'Admin' && (role === 'Admin' || role === 'Super Admin')) {
         return NextResponse.json({ message: 'Admins cannot create other Admins.' }, { status: 403 });
     }
     if (creator.role === 'User') {
@@ -91,26 +92,29 @@ export async function POST(request: Request) {
     const newUserId = await generateNextId('USER');
 
     const settings = await prisma.appSettings.findUnique({ where: { id: 1 }});
-    let defaultPasswordHash: string | null = null;
+    let passwordToHash = 'password123'; // Fallback password
+    let passwordSourceIsDefault = false;
+
     if (role === 'User' && settings?.defaultUserPassword) {
-      defaultPasswordHash = settings.defaultUserPassword;
+      passwordSourceIsDefault = true;
+      // We don't need to hash it again, it's already hashed in the DB
     } else if (role === 'Admin' && settings?.defaultAdminPassword) {
-      defaultPasswordHash = settings.defaultAdminPassword;
+       passwordSourceIsDefault = true;
     } else if (role === 'Super Admin' && settings?.defaultSuperAdminPassword) {
-        defaultPasswordHash = settings.defaultSuperAdminPassword;
+        passwordSourceIsDefault = true;
     }
     
-    // Fallback if no default is set
-    if (!defaultPasswordHash) {
-        defaultPasswordHash = await hash('password123', saltRounds);
-    }
+    const passwordForDb = passwordSourceIsDefault
+        ? (role === 'User' ? settings!.defaultUserPassword : (role === 'Admin' ? settings!.defaultAdminPassword : settings!.defaultSuperAdminPassword))
+        : await hash(passwordToHash, saltRounds);
+
 
     const newUser = await prisma.user.create({
       data: {
         userId: newUserId,
         fullName,
         email,
-        password: defaultPasswordHash,
+        password: passwordForDb!,
         position,
         role,
         status,
@@ -126,6 +130,19 @@ export async function POST(request: Request) {
         canReadDepartments, canWriteDepartments,
       },
     });
+    
+    // Send welcome email after successful creation
+    try {
+        await sendWelcomeEmail({
+            fullName: newUser.fullName,
+            email: newUser.email,
+            loginUrl: `${new URL(request.url).origin}/auth/login`,
+            siteName: settings?.siteName || 'MealAttend'
+        });
+    } catch(emailError) {
+        console.error(`User ${newUser.userId} created, but failed to send welcome email:`, emailError);
+        // Don't fail the entire request, but maybe log this for monitoring
+    }
 
     // Don't return the password in the response
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

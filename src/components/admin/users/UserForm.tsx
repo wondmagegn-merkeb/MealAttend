@@ -265,7 +265,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
 
   return (
     <Form {...form}>
-        <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-2">
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                 {/* Left Column */}
@@ -436,7 +436,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                 )}
             </div>
 
-            <div className="flex justify-end pt-4">
+            <div className="flex justify-end pt-1">
                 <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
                     {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
                 </Button>
