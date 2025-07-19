@@ -1,4 +1,3 @@
-
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -7,167 +6,163 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
-  shadowDatabaseUrl = env("POSTGRES_URL_NON_POOLING")
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
-// ==============================================================================
-// Models
-// ==============================================================================
+// ==================================
+// Application Specific Models
+// ==================================
 
-model User {
-  id                      String        @id @default(cuid())
-  userId                  String        @unique @default(cuid()) // Human-readable, e.g., ADERA/USR/2024/00001
-  fullName                String
-  email                   String        @unique
-  password                String
-  position                String?
-  role                    String        @default("User") // e.g., Super Admin, Admin, User
-  status                  String        @default("Active") // e.g., Active, Inactive
-  passwordChangeRequired  Boolean       @default(true)
-  passwordResetRequested  Boolean       @default(false)
-  profileImageURL         String?
-  passwordResetToken      String?       @unique
-  passwordResetExpires    DateTime?
-  
-  createdById             String?
-  createdBy               User?         @relation("UserCreations", fields: [createdById], references: [id], onDelete: SetNull)
-  createdUsers            User[]        @relation("UserCreations")
-
-  createdStudents         Student[]           @relation("StudentCreations")
-  scannedAttendance       AttendanceRecord[]  @relation("ScannedBy")
-  activityLogs            ActivityLog[]
-
-  createdAt               DateTime      @default(now())
-  updatedAt               DateTime      @updatedAt
-  
-  // Permissions
-  canReadDashboard      Boolean       @default(false)
-  canScanId             Boolean       @default(false)
-  
-  canReadStudents       Boolean       @default(false)
-  canWriteStudents      Boolean       @default(false)
-  canCreateStudents     Boolean       @default(false)
-  canDeleteStudents     Boolean       @default(false)
-  canExportStudents     Boolean       @default(false)
-  
-  canReadAttendance     Boolean       @default(false)
-  canExportAttendance   Boolean       @default(false)
-  
-  canReadActivityLog    Boolean       @default(false)
-  
-  canReadUsers          Boolean       @default(false)
-  canWriteUsers         Boolean       @default(false)
-  
-  canReadDepartments    Boolean       @default(false)
-  canWriteDepartments   Boolean       @default(false)
-
-  @@index([email])
-}
-
-model Student {
-  id              String      @id @default(cuid())
-  studentId       String      @unique // Human-readable, e.g., ADERA/STU/2024/00001
-  name            String
-  gender          String?     // Male, Female
-  classGrade      String?     // e.g., 11A
-  profileImageURL String?
-  qrCodeData      String?     @unique
-  
-  createdById     String?
-  createdBy       User?       @relation("StudentCreations", fields: [createdById], references: [id], onDelete: SetNull)
-  
-  attendanceRecords AttendanceRecord[]
-
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-}
-
-model AttendanceRecord {
-  id                  String    @id @default(cuid())
-  attendanceId        String    @unique
-  studentId           String
-  student             Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  
-  scannedById         String?
-  scannedBy           User?     @relation("ScannedBy", fields: [scannedById], references: [id], onDelete: SetNull)
-
-  mealType            String // BREAKFAST, LUNCH, DINNER
-  status              String // PRESENT, ABSENT
-  recordDate          DateTime  @db.Date
-  scannedAtTimestamp  DateTime  @default(now())
-
-  @@index([studentId, recordDate, mealType])
-}
-
-model ActivityLog {
-  id                  String    @id @default(cuid())
-  logId               String    @unique
-  userIdentifier      String    // This stores the UserID or email address for context
-  userId              String?
-  user                User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  action              String    // e.g., LOGIN_SUCCESS, STUDENT_CREATED
-  details             String?
-  activityTimestamp   DateTime  @default(now())
+model AppSettings {
+  id                          Int      @id @default(1)
+  siteName                    String   @default("MealAttend")
+  idPrefix                    String   @default("ADERA")
+  schoolName                  String   @default("Tech University")
+  idCardTitle                 String   @default("STUDENT ID")
+  colorTheme                  String   @default("default") // e.g., "default", "ocean", "forest"
+  showHomepage                Boolean  @default(true)
+  showTeamSection             Boolean  @default(true)
+  showFeaturesSection         Boolean  @default(true)
+  homepageSubtitle            String   @default("Learn more about our system and the team behind it.")
+  companyLogoUrl              String?
+  idCardLogoUrl               String?
+  defaultUserPassword         String?
+  defaultAdminPassword        String?
+  defaultSuperAdminPassword   String?
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
 }
 
 model TeamMember {
-  id            String    @id @default(cuid())
-  name          String
-  role          String
-  avatarUrl     String?
-  bio           String
-  displayOrder  Int       @default(0)
-  isCeo         Boolean   @default(false)
-  isVisible     Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id           String  @id @default(cuid())
+  name         String
+  role         String
+  bio          String
+  avatarUrl    String?
+  displayOrder Int
+  isCeo        Boolean @default(false)
+  isVisible    Boolean @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model HomepageFeature {
-    id            String    @id @default(cuid())
-    icon          String
-    title         String
-    description   String
-    displayOrder  Int       @default(0)
-    isVisible     Boolean   @default(true)
-    createdAt     DateTime  @default(now())
-    updatedAt     DateTime  @updatedAt
+  id           String @id @default(cuid())
+  icon         String
+  title        String
+  description  String
+  displayOrder Int
+  isVisible    Boolean @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 
-// ==============================================================================
-// System & Settings
-// ==============================================================================
+// ==================================
+// Core Application Models
+// ==================================
 
-model AppSettings {
-  id                        Int       @id @default(1)
-  siteName                  String    @default("MealAttend")
-  idPrefix                  String    @default("ADERA")
-  schoolName                String    @default("Tech University")
-  idCardTitle               String    @default("STUDENT ID")
-  colorTheme                String    @default("default") // e.g., 'default', 'forest', 'ocean'
-  showHomepage              Boolean   @default(true)
-  showTeamSection           Boolean   @default(true)
-  showFeaturesSection       Boolean   @default(true)
-  homepageSubtitle          String
+model User {
+  id                      String    @id @default(cuid())
+  userId                  String    @unique // Format: ADERA/USR/2024/00001
+  fullName                String
+  email                   String    @unique
+  password                String
+  position                String?
+  role                    String    // "Super Admin", "Admin", "User"
+  status                  String    // "Active", "Inactive"
+  passwordChangeRequired  Boolean   @default(true)
+  passwordResetRequested  Boolean   @default(false)
+  passwordResetToken      String?   @unique
+  passwordResetExpires    DateTime?
+  profileImageURL         String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
   
-  companyLogoUrl            String?
-  idCardLogoUrl             String?
+  // Permissions
+  canReadDashboard      Boolean @default(false)
+  canScanId             Boolean @default(false)
+  canSeeAllRecords      Boolean @default(false)
+
+  // Student Permissions
+  canReadStudents       Boolean @default(false)
+  canWriteStudents      Boolean @default(false)
+  canCreateStudents     Boolean @default(false)
+  canDeleteStudents     Boolean @default(false)
+  canExportStudents     Boolean @default(false)
+
+  // Attendance Permissions
+  canReadAttendance     Boolean @default(false)
+  canExportAttendance   Boolean @default(false)
   
-  defaultUserPassword       String?
-  defaultAdminPassword      String?
-  defaultSuperAdminPassword String?
+  // Admin Permissions
+  canReadActivityLog    Boolean @default(false)
+  canReadUsers          Boolean @default(false)
+  canWriteUsers         Boolean @default(false)
+  canReadDepartments    Boolean @default(false) // Not used yet
+  canWriteDepartments   Boolean @default(false) // Not used yet
+
+  // Relations
+  createdById             String?
+  createdBy               User?     @relation("UserCreations", fields: [createdById], references: [id], onDelete: SetNull)
+  createdUsers            User[]    @relation("UserCreations")
   
-  createdAt                 DateTime  @default(now())
-  updatedAt                 DateTime  @updatedAt
+  createdStudents         Student[] @relation("StudentCreations")
+  scannedAttendance       AttendanceRecord[] @relation("ScannedByUsers")
+  
+  activityLogs            ActivityLog[]
 }
 
+model Student {
+  id                String   @id @default(cuid())
+  studentId         String   @unique
+  name              String
+  gender            String?
+  classGrade        String?
+  profileImageURL   String?
+  qrCodeData        String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-// Counter for generating sequential IDs
+  // Relations
+  attendanceRecords AttendanceRecord[]
+  createdById       String?
+  createdBy         User?              @relation("StudentCreations", fields: [createdById], references: [id], onDelete: SetNull)
+}
+
+model AttendanceRecord {
+  id                 String   @id @default(cuid())
+  attendanceId       String   @unique
+  mealType           String
+  status             String // PRESENT or ABSENT
+  recordDate         DateTime @db.Date
+  scannedAtTimestamp DateTime @default(now())
+
+  // Relations
+  studentId          String
+  student            Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  scannedById        String?
+  scannedBy          User?    @relation("ScannedByUsers", fields: [scannedById], references: [id], onDelete: SetNull)
+  
+  @@unique([studentId, mealType, recordDate])
+}
+
+model ActivityLog {
+    id                  String      @id @default(cuid())
+    logId               String      @unique
+    userIdentifier      String      // This is the ADERA ID or email for failed logins
+    action              String
+    details             String?
+    activityTimestamp   DateTime    @default(now())
+
+    // Relations
+    userId              String?
+    user                User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
 model IdCounter {
-  type  String @id // 'STUDENT', 'USER', 'DEPARTMENT'
-  count Int
+  type  String @id // e.g., "STUDENT", "USER"
+  count Int    @default(0)
 }
