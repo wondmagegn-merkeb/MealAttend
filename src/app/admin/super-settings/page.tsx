@@ -223,7 +223,7 @@ export default function SuperAdminSettingsPage() {
           <p className="text-muted-foreground">Manage global application settings. Changes here affect all users.</p>
         </div>
 
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Branding Card */}
         <Form {...brandingForm}>
