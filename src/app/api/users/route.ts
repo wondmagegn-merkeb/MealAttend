@@ -68,6 +68,7 @@ export async function POST(request: Request) {
     const data = await request.json();
     const { 
         fullName, email, position, role, status, profileImageURL,
+        canReadDashboard, canScanId,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
         canReadAttendance, canExportAttendance,
         canReadActivityLog,
@@ -117,6 +118,7 @@ export async function POST(request: Request) {
         passwordChangeRequired: true,
         createdById: creator.id,
         // Permissions
+        canReadDashboard, canScanId,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
         canReadAttendance, canExportAttendance,
         canReadActivityLog,

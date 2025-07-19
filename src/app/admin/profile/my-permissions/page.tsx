@@ -40,8 +40,9 @@ export default function MyPermissionsPage() {
 
   const permissionGroups = [
     {
-      title: 'Scanner Access',
+      title: 'General Access',
       permissions: [
+        { label: 'View Dashboard', granted: currentUser.canReadDashboard },
         { label: 'Scan ID Cards', granted: currentUser.canScanId },
       ],
     },

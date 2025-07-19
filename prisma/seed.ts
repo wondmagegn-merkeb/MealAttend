@@ -21,12 +21,12 @@ const users = [
     createdAt: subDays(new Date(), 30),
     updatedAt: subDays(new Date(), 1),
     // Super Admin has all permissions implicitly
+    canReadDashboard: true, canScanId: true,
     canReadStudents: true, canWriteStudents: true, canCreateStudents: true, canDeleteStudents: true, canExportStudents: true,
     canReadAttendance: true, canExportAttendance: true,
     canReadActivityLog: true,
     canReadUsers: true, canWriteUsers: true,
     canReadDepartments: true, canWriteDepartments: true,
-    canScanId: true,
   },
   {
     id: 'user_admin',
@@ -43,12 +43,12 @@ const users = [
     updatedAt: subDays(new Date(), 1),
     createdBy: { connect: { id: 'user_super_admin' } },
     // Admin has all permissions for this demo
+    canReadDashboard: true, canScanId: true,
     canReadStudents: true, canWriteStudents: true, canCreateStudents: true, canDeleteStudents: true, canExportStudents: true,
     canReadAttendance: true, canExportAttendance: true,
     canReadActivityLog: true,
     canReadUsers: true, canWriteUsers: true,
     canReadDepartments: true, canWriteDepartments: true,
-    canScanId: true,
   },
   {
     id: 'user_normal',
@@ -65,12 +65,12 @@ const users = [
     updatedAt: subDays(new Date(), 5),
     createdBy: { connect: { id: 'user_admin' } },
     // Standard user has student permissions but no others
+    canReadDashboard: false, canScanId: false,
     canReadStudents: true, canWriteStudents: true, canCreateStudents: true, canDeleteStudents: true, canExportStudents: true,
     canReadAttendance: false, canExportAttendance: false,
     canReadActivityLog: false,
     canReadUsers: false, canWriteUsers: false,
     canReadDepartments: false, canWriteDepartments: false,
-    canScanId: false,
   },
   {
     id: 'user_password_change',
@@ -87,12 +87,12 @@ const users = [
     updatedAt: subDays(new Date(), 2),
     createdBy: { connect: { id: 'user_admin' } },
     // This user only has create/read access to students
+    canReadDashboard: false, canScanId: false,
     canReadStudents: true, canWriteStudents: false, canCreateStudents: true, canDeleteStudents: false, canExportStudents: false,
     canReadAttendance: false, canExportAttendance: false,
     canReadActivityLog: false,
     canReadUsers: false, canWriteUsers: false,
     canReadDepartments: false, canWriteDepartments: false,
-    canScanId: false,
   },
 ];
 

@@ -79,7 +79,7 @@ function AdminDashboardPageContent() {
   const { data, isLoading, error: dataError } = useQuery({
       queryKey: ['dashboardData'],
       queryFn: fetchDashboardData,
-      enabled: !!currentUser?.canReadUsers && !!currentUser?.canReadStudents,
+      enabled: !!currentUser?.canReadDashboard,
   });
 
   const allStudents = data?.students || [];
@@ -241,6 +241,15 @@ function AdminDashboardPageContent() {
       toast({ title: 'Excel Exported', description: 'Dashboard data has been exported.' });
   }, [selectedYear, selectedMonth, totalStudentsInSelectedYear, dailyAttendanceData, monthlyAttendanceData, studentGradeDistributionData, userRoleDistributionData, allUsers.length, allAttendanceRecords.length, yearForCharts, toast]);
 
+  // If a user doesn't have permissions for the dashboard, show a welcome/info page instead.
+  if (!currentUser?.canReadDashboard) {
+    return (
+       <div className="space-y-6">
+        <WelcomeBanner />
+        <QuickActions />
+       </div>
+    )
+  }
 
   if (isLoading) {
     return (
@@ -260,16 +269,6 @@ function AdminDashboardPageContent() {
         </Card>
       </div>
     );
-  }
-
-  // If a user doesn't have permissions for the dashboard, show a welcome/info page instead.
-  if (!currentUser?.canReadUsers) {
-    return (
-       <div className="space-y-6">
-        <WelcomeBanner />
-        <QuickActions />
-       </div>
-    )
   }
 
   return (
@@ -394,7 +393,7 @@ function AdminDashboardPageContent() {
 
 export default function AdminDashboardPage() {
     return (
-        <AuthGuard>
+        <AuthGuard permission="canReadDashboard">
             <AdminDashboardPageContent />
         </AuthGuard>
     )

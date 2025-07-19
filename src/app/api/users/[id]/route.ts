@@ -54,6 +54,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
     const data = await request.json();
     const { 
         fullName, email, position, role, status, profileImageURL, password,
+        canReadDashboard, canScanId,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
         canReadAttendance, canExportAttendance,
         canReadActivityLog,
@@ -83,6 +84,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
         status,
         profileImageURL,
         // Permissions
+        canReadDashboard, canScanId,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
         canReadAttendance, canExportAttendance,
         canReadActivityLog,

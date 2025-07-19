@@ -35,6 +35,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 
 const permissionsSchema = {
+  canReadDashboard: z.boolean().default(false),
   canScanId: z.boolean().default(false),
   canReadStudents: z.boolean().default(false),
   canWriteStudents: z.boolean().default(false),
@@ -90,7 +91,8 @@ const fileToDataUri = (file: File): Promise<string | null> => {
 };
 
 const permissionFields: { id: PermissionKey, label: string, section: string }[] = [
-    { id: 'canScanId', label: 'Scan ID Cards', section: 'Scanner Access' },
+    { id: 'canReadDashboard', label: 'View Dashboard', section: 'General Access' },
+    { id: 'canScanId', label: 'Scan ID Cards', section: 'General Access' },
     { id: 'canCreateStudents', label: 'Create Students', section: 'Student Management' },
     { id: 'canReadStudents', label: 'Read Students', section: 'Student Management' },
     { id: 'canWriteStudents', label: 'Update Students', section: 'Student Management' },
