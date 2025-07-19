@@ -18,7 +18,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const fetchStudents = async (): Promise<Student[]> => {
-    const response = await fetch('/api/students');
+  const token = localStorage.getItem('mealAttendAuthToken_v1');
+
+    const response = await fetch('/api/students',{
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
     if (!response.ok) throw new Error('Failed to fetch students');
     return response.json();
 };

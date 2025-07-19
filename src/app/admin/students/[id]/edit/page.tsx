@@ -16,7 +16,10 @@ import type { Student } from '@/types';
 type ApiStudentUpdateData = Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string | null };
 
 const fetchStudent = async (id: string): Promise<Student> => {
-    const response = await fetch(`/api/students/${id}`);
+    const token = localStorage.getItem('mealAttendAuthToken_v1');
+    const response = await fetch(`/api/students/${id}`,{
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
     if (!response.ok) {
         if (response.status === 404) throw new Error('Student not found');
         throw new Error('Failed to fetch student');

@@ -12,7 +12,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import type { Student } from '@/types';
 
 const fetchStudent = async (id: string): Promise<Student> => {
-    const response = await fetch(`/api/students/${id}`);
+    const token = localStorage.getItem('mealAttendAuthToken_v1');
+ 
+    const response = await fetch(`/api/students/${id}`,{
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
     if (!response.ok) {
         if (response.status === 404) throw new Error('Student not found');
         throw new Error('Failed to fetch student data');

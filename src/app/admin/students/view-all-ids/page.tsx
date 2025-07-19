@@ -14,7 +14,10 @@ import { useToast } from '@/hooks/use-toast';
 import type { Student } from '@/types';
 
 const fetchStudents = async (): Promise<Student[]> => {
-    const response = await fetch('/api/students');
+    const token = localStorage.getItem('mealAttendAuthToken_v1');
+    const response = await fetch('/api/students',{
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
     if (!response.ok) throw new Error('Failed to fetch students');
     return response.json();
 };

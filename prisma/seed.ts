@@ -26,7 +26,7 @@ const users = [
     canReadAttendance: true, canExportAttendance: true,
     canReadActivityLog: true,
     canReadUsers: true, canWriteUsers: true,
-    canReadDepartments: true, canWriteDepartments: true,
+    canSeeAllRecords: true,
   },
   {
     id: 'user_admin',
@@ -48,7 +48,7 @@ const users = [
     canReadAttendance: true, canExportAttendance: true,
     canReadActivityLog: true,
     canReadUsers: true, canWriteUsers: true,
-    canReadDepartments: true, canWriteDepartments: true,
+    canSeeAllRecords: true,
   },
   {
     id: 'user_normal',
@@ -70,7 +70,7 @@ const users = [
     canReadAttendance: false, canExportAttendance: false,
     canReadActivityLog: false,
     canReadUsers: false, canWriteUsers: false,
-    canReadDepartments: false, canWriteDepartments: false,
+    canSeeAllRecords: false,
   },
   {
     id: 'user_password_change',
@@ -92,7 +92,7 @@ const users = [
     canReadAttendance: false, canExportAttendance: false,
     canReadActivityLog: false,
     canReadUsers: false, canWriteUsers: false,
-    canReadDepartments: false, canWriteDepartments: false,
+    canSeeAllRecords: false,
   },
 ];
 
@@ -362,7 +362,6 @@ async function main() {
   console.log('Seeded homepage features.');
   
   // Seed ID Counters to prevent ID conflicts with generator
-  await prisma.idCounter.upsert({ where: { type: 'DEPARTMENT' }, update: { count: 4 }, create: { type: 'DEPARTMENT', count: 4 } });
   await prisma.idCounter.upsert({ where: { type: 'USER' }, update: { count: 4 }, create: { type: 'USER', count: 4 } });
   await prisma.idCounter.upsert({ where: { type: 'STUDENT' }, update: { count: 205 }, create: { type: 'STUDENT', count: 205 } });
   await prisma.idCounter.upsert({ where: { type: 'ATTENDANCE' }, update: { count: 3 }, create: { type: 'ATTENDANCE', count: 3 } });
