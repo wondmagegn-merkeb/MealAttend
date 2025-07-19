@@ -113,6 +113,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const currentSchema = isProfileEditMode ? profileEditFormSchema : userFormSchema;
+  const isEditMode = !!initialData;
 
   const form = useForm<z.infer<typeof currentSchema>>({
     resolver: zodResolver(currentSchema),
@@ -282,13 +283,13 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                     type="email" 
                                     placeholder="e.g., jane.smith@example.com" 
                                     {...field}
-                                    readOnly={!!initialData && !isProfileEditMode}
-                                    className={(!!initialData && !isProfileEditMode) ? "bg-muted/50" : ""}
+                                    readOnly={isEditMode && !isProfileEditMode}
+                                    className={(isEditMode && !isProfileEditMode) ? "bg-muted/50" : ""}
                                 />
                                 </FormControl>
                                 {isProfileEditMode 
                                 ? <FormDescription>Your email address cannot be changed.</FormDescription>
-                                : (!!initialData ? <FormDescription>User email cannot be changed after creation.</FormDescription> : <FormMessage />)
+                                : (isEditMode ? <FormDescription>User email cannot be changed after creation.</FormDescription> : <FormMessage />)
                                 }
                             </FormItem>
                             )} />
@@ -327,33 +328,35 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                 </div>
                             )}
 
-                             <FormItem>
-                                <FormLabel>Profile Image</FormLabel>
-                                <div className="flex items-center gap-4">
-                                    <Avatar className="h-20 w-20 rounded-md">
-                                        <AvatarImage src={imagePreview || `https://placehold.co/80x80.png?text=No+Img`} alt="Profile preview" className="object-cover" data-ai-hint="user avatar" />
-                                        <AvatarFallback>IMG</AvatarFallback>
-                                    </Avatar>
-                                    <Input 
-                                    id="picture" 
-                                    type="file" 
-                                    className="hidden" 
-                                    ref={fileInputRef} 
-                                    onChange={handleImageChange}
-                                    accept="image/*"
-                                    disabled={isLoading}
-                                    />
-                                    <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isLoading}>
-                                    <Upload className="mr-2 h-4 w-4" />
-                                    {selectedFile ? 'Change Image' : 'Upload Image'}
-                                    </Button>
-                                </div>
-                                <FormDescription>
-                                    {selectedFile ? `Selected: ${selectedFile.name}` : "Select an image (max 2MB)."} It will be processed on submission.
-                                </FormDescription>
-                                <FormField control={form.control} name="profileImageURL" render={({ field }) => <Input type="hidden" {...field} />} />
-                                {form.formState.errors.profileImageURL && (<FormMessage>{(form.formState.errors.profileImageURL as any).message}</FormMessage>)}
+                             {(!isEditMode || isProfileEditMode) && (
+                                <FormItem>
+                                    <FormLabel>Profile Image</FormLabel>
+                                    <div className="flex items-center gap-4">
+                                        <Avatar className="h-20 w-20 rounded-md">
+                                            <AvatarImage src={imagePreview || `https://placehold.co/80x80.png?text=No+Img`} alt="Profile preview" className="object-cover" data-ai-hint="user avatar" />
+                                            <AvatarFallback>IMG</AvatarFallback>
+                                        </Avatar>
+                                        <Input 
+                                        id="picture" 
+                                        type="file" 
+                                        className="hidden" 
+                                        ref={fileInputRef} 
+                                        onChange={handleImageChange}
+                                        accept="image/*"
+                                        disabled={isLoading}
+                                        />
+                                        <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isLoading}>
+                                        <Upload className="mr-2 h-4 w-4" />
+                                        {selectedFile ? 'Change Image' : 'Upload Image'}
+                                        </Button>
+                                    </div>
+                                    <FormDescription>
+                                        {selectedFile ? `Selected: ${selectedFile.name}` : "Select an image (max 2MB)."} It will be processed on submission.
+                                    </FormDescription>
+                                    <FormField control={form.control} name="profileImageURL" render={({ field }) => <Input type="hidden" {...field} />} />
+                                    {form.formState.errors.profileImageURL && (<FormMessage>{(form.formState.errors.profileImageURL as any).message}</FormMessage>)}
                                 </FormItem>
+                            )}
                         </CardContent>
                     </Card>
 
