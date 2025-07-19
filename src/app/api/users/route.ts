@@ -19,12 +19,9 @@ export async function GET(request: Request) {
     }
 
     const whereClause: any = {};
-    if (user.role === 'Admin') {
-      // Admins can see the users they created
+    if (user.role === 'Admin' || user.role === 'User') {
+      // Admins and Users can only see the users they created
       whereClause.createdById = user.id;
-    } else if (user.role === 'User') {
-      // Users can only see themselves (or no one, depending on policy)
-      whereClause.id = user.id;
     }
     // Super Admins have no whereClause, so they see everyone.
 
@@ -68,7 +65,7 @@ export async function POST(request: Request) {
 
     const data = await request.json();
     const { 
-        fullName, email, position, role, status, profileImageURL,
+        fullName, email, position, role, status, profileImageURL, passwordChangeRequired,
         canReadDashboard, canScanId,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
         canReadAttendance, canExportAttendance,
@@ -118,7 +115,7 @@ export async function POST(request: Request) {
         role,
         status,
         profileImageURL,
-        passwordChangeRequired: true,
+        passwordChangeRequired: passwordChangeRequired,
         createdById: creator.id,
         // Permissions
         canReadDashboard, canScanId,

@@ -62,6 +62,7 @@ const userFormSchema = z.object({
   password: z.string().optional().refine(val => !val || val.length >= 6, {
     message: "Password must be at least 6 characters long if provided.",
   }),
+  passwordChangeRequired: z.boolean().default(true),
   ...permissionsSchema,
 });
 
@@ -133,6 +134,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       status: "Active",
       profileImageURL: "",
       password: "",
+      passwordChangeRequired: true,
     },
   });
   
@@ -159,24 +161,35 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   
   // Effect to automatically set permissions when role changes
   useEffect(() => {
-    // Don't run this logic in profile edit mode or if editing an existing user
-    if (isProfileEditMode || isEditMode) return;
-
-    // Reset all to false first
-    permissionFields.forEach(p => form.setValue(p.id as any, false));
-
-    if (watchedRole === 'Admin' || watchedRole === 'Super Admin') {
-      permissionFields.forEach(p => {
-        if (p.section === 'Administration') {
-            form.setValue(p.id as any, true);
-        }
-      });
-    } else if (watchedRole === 'User') {
-      permissionFields.forEach(p => {
-        if (p.section === 'Student Management' || p.section === 'Attendance' || p.id === 'canScanId') {
-          form.setValue(p.id as any, true);
-        }
-      });
+    if (isProfileEditMode) return;
+  
+    const setAllPermissions = (value: boolean) => {
+      permissionFields.forEach(p => form.setValue(p.id as any, value, { shouldValidate: true }));
+    };
+  
+    const setSpecificPermissions = (sections: string[], value: boolean) => {
+        permissionFields.forEach(p => {
+            if (sections.includes(p.section) || (p.id === 'canScanId' && sections.includes('General Access'))) {
+                 form.setValue(p.id as any, value, { shouldValidate: true });
+            }
+        });
+    };
+  
+    // When editing, if role is Admin/Super Admin, all perms are true and locked.
+    if (isEditMode) {
+      if (watchedRole === 'Admin' || watchedRole === 'Super Admin') {
+        setAllPermissions(true);
+      }
+      // If role is User, we don't change anything, preserving their saved permissions.
+    } else {
+      // When creating a new user, set defaults based on role.
+      // Reset all to false first to ensure a clean state
+      setAllPermissions(false);
+      if (watchedRole === 'Admin' || watchedRole === 'Super Admin') {
+        setSpecificPermissions(['Administration'], true);
+      } else if (watchedRole === 'User') {
+        setSpecificPermissions(['Student Management', 'Attendance', 'General Access'], true);
+      }
     }
   }, [watchedRole, form, isProfileEditMode, isEditMode]);
 
@@ -235,7 +248,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   const isEditingSelf = currentUser?.id === initialData?.id;
 
   const renderPermissionSwitch = (id: PermissionKey, label: string) => {
-    let isDisabled = (watchedRole === 'Admin' || watchedRole === 'Super Admin') && isEditMode;
+    let isDisabled = (watchedRole === 'Admin' || watchedRole === 'Super Admin');
     let toolTipContent = "Admins have this permission by default.";
 
     if (currentUser?.role === 'Admin' && !currentUser[id]) {
@@ -330,14 +343,12 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                     type="email" 
                                     placeholder="e.g., jane.smith@example.com" 
                                     {...field}
-                                    readOnly={isEditMode && !isProfileEditMode}
-                                    className={(isEditMode && !isProfileEditMode) ? "bg-muted/50" : ""}
+                                    readOnly={isEditMode}
+                                    className={isEditMode ? "bg-muted/50" : ""}
                                 />
                                 </FormControl>
-                                {isProfileEditMode 
-                                ? <FormDescription>Your email address cannot be changed.</FormDescription>
-                                : (isEditMode ? <FormDescription>User email cannot be changed after creation.</FormDescription> : <FormMessage />)
-                                }
+                                {isEditMode && <FormDescription>User email cannot be changed after creation.</FormDescription>}
+                                <FormMessage />
                             </FormItem>
                             )} />
 
@@ -375,7 +386,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                 </div>
                             )}
 
-                             {isEditMode ? null : (
+                             {!isEditMode && (
                                 <FormItem>
                                     <FormLabel>Profile Image</FormLabel>
                                     <div className="flex items-center gap-4">
@@ -418,7 +429,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                 }
                             </CardDescription>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="space-y-4">
                             <FormField control={form.control as any} name="password" render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>Password</FormLabel>
@@ -434,6 +445,16 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                 <FormMessage />
                                 </FormItem>
                             )} />
+                            {!isEditMode && (
+                                <FormField control={form.control as any} name="passwordChangeRequired" render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                                        <div className="space-y-0.5">
+                                            <FormLabel>Force password change on next login</FormLabel>
+                                        </div>
+                                        <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                                    </FormItem>
+                                )} />
+                             )}
                             </CardContent>
                         </Card>
                     )}

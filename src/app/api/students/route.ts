@@ -10,20 +10,17 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   try {
     const user = await getAuthFromRequest(request);
-    console.log('User:', user);
-    console.log('Role:', request.headers.get('Authorization'));
 
     if (!user) {
         return NextResponse.json({ message: 'Authentication required' }, { status: 401 });
     }
 
     const whereClause: any = {};
-    if (user.role === 'Admin') {
-      whereClause.createdById = user.id;
-    } else if (user.role === 'User') {
+    if (user.role === 'Admin' || user.role === 'User') {
+      // Admins and Users can only see the students they created
       whereClause.createdById = user.id;
     }
-    // Super Admin has no 'where' clause, so they get all students
+    // Super Admins have no 'where' clause, so they get all students
 
     const students = await prisma.student.findMany({
       where: whereClause,
