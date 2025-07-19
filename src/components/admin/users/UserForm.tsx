@@ -245,187 +245,175 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
 
 
   return (
-    <>
-    <Card className="shadow-md border-border">
-      <CardHeader>
-          <CardTitle>User Details</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6">
-            {initialData?.userId && !isProfileEditMode && (
-              <FormItem>
-                <FormLabel>User ID</FormLabel>
-                <FormControl><Input value={initialData.userId} readOnly className="bg-muted/50" /></FormControl>
-                <FormDescription>This ID is system-generated and cannot be changed.</FormDescription>
-              </FormItem>
-            )}
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField control={form.control} name="fullName" render={({ field }) => (
-                <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="e.g., Jane Smith" {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-              {!isProfileEditMode && (
-                <FormField control={form.control} name="position" render={({ field }) => (
-                  <FormItem><FormLabel>Position</FormLabel><FormControl><Input placeholder="e.g., Kitchen Manager" {...(field as any)} /></FormControl><FormMessage /></FormItem>
-                )} />
-              )}
-            </div>
-
-            <FormField control={form.control} name="email" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email Address</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="email" 
-                    placeholder="e.g., jane.smith@example.com" 
-                    {...field}
-                    readOnly={isProfileEditMode || !!initialData}
-                    className={(isProfileEditMode || !!initialData) ? "bg-muted/50" : ""}
-                  />
-                </FormControl>
-                {isProfileEditMode 
-                  ? <FormDescription>Your email address cannot be changed.</FormDescription>
-                  : (!!initialData ? <FormDescription>User email cannot be changed after creation.</FormDescription> : <FormMessage />)
-                }
-              </FormItem>
-            )} />
-
-            {!isProfileEditMode && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField control={form.control} name="role" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Role</FormLabel>
-                    <Select onValueChange={(field as any).onChange} value={(field as any).value} defaultValue={(field as any).value} disabled={isEditingSelf}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger></FormControl>
-                      <SelectContent>
-                          {currentUser?.role === 'Super Admin' && <SelectItem value="Super Admin">Super Admin</SelectItem>}
-                          {currentUser?.role === 'Super Admin' && <SelectItem value="Admin">Admin</SelectItem>}
-                          {(currentUser?.role === 'Super Admin' || currentUser?.role === 'Admin') && <SelectItem value="User">User</SelectItem>}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>{isEditingSelf ? "You cannot change your own role." : "The user's role in the system."}</FormDescription><FormMessage />
-                  </FormItem>
-                )} />
-
-                <FormField control={form.control} name="status" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={(field as any).onChange} value={(field as any).value} defaultValue={(field as any).value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl>
-                      <SelectContent>
-                          <SelectItem value="Active">Active</SelectItem>
-                          <SelectItem value="Inactive">Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>The user's current status in the system.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-              </div>
-            )}
-
-            <FormItem>
-              <FormLabel>Profile Image</FormLabel>
-              <div className="flex items-center gap-4">
-                <Avatar className="h-20 w-20 rounded-md">
-                    <AvatarImage src={imagePreview || `https://placehold.co/80x80.png?text=No+Img`} alt="Profile preview" className="object-cover" data-ai-hint="user avatar" />
-                    <AvatarFallback>IMG</AvatarFallback>
-                </Avatar>
-                <Input 
-                  id="picture" 
-                  type="file" 
-                  className="hidden" 
-                  ref={fileInputRef} 
-                  onChange={handleImageChange}
-                  accept="image/*"
-                  disabled={isLoading}
-                />
-                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isLoading}>
-                  <Upload className="mr-2 h-4 w-4" />
-                  {selectedFile ? 'Change Image' : 'Upload Image'}
-                </Button>
-              </div>
-              <FormDescription>
-                 {selectedFile ? `Selected: ${selectedFile.name}` : "Select an image (max 2MB)."} It will be processed on submission.
-              </FormDescription>
-              <FormField control={form.control} name="profileImageURL" render={({ field }) => <Input type="hidden" {...field} />} />
-              {form.formState.errors.profileImageURL && (<FormMessage>{(form.formState.errors.profileImageURL as any).message}</FormMessage>)}
-            </FormItem>
-             <div className="flex justify-end pt-2">
-                 {!isProfileEditMode && (
-                    <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
-                        {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
-                    </Button>
-                 )}
-            </div>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
-    
-    {!isProfileEditMode && (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6">
 
-        {initialData && (
-          <Card className="shadow-md border-border mt-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2"><KeyRound /> Reset Password</CardTitle>
-              <CardDescription>
-                Optionally enter a new password for this user. They will be required to change it on their next login.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <FormField control={form.control} name="password" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>New Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="Leave blank to keep current password" {...(field as any)} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-            </CardContent>
-          </Card>
-        )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                {/* Left Column */}
+                <div className="space-y-6">
+                    <Card className="shadow-md border-border">
+                        <CardHeader>
+                            <CardTitle>User Details</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            {initialData?.userId && !isProfileEditMode && (
+                                <FormItem>
+                                <FormLabel>User ID</FormLabel>
+                                <FormControl><Input value={initialData.userId} readOnly className="bg-muted/50" /></FormControl>
+                                <FormDescription>This ID is system-generated and cannot be changed.</FormDescription>
+                                </FormItem>
+                            )}
 
-        <Card className="shadow-md border-border mt-6">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><ShieldCheck /> User Permissions</CardTitle>
-                 <CardDescription>
-                  {watchedRole === 'User' ? 'Assign permissions for this user.' : `The '${watchedRole}' role has all permissions by default.`}
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {Object.entries(permissionGroups).map(([section, perms]) => (
-                <div key={section} className="mb-6 last:mb-0">
-                  <h3 className="font-semibold text-lg text-primary mb-2">{section}</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-                    {perms.map(p => renderPermissionSwitch(p.id, p.label))}
-                    </div>
-                    {section !== 'Administration' && <Separator className="mt-6"/>}
+                            <FormField control={form.control} name="fullName" render={({ field }) => (
+                                <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="e.g., Jane Smith" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            
+                            {!isProfileEditMode && (
+                                <FormField control={form.control} name="position" render={({ field }) => (
+                                <FormItem><FormLabel>Position</FormLabel><FormControl><Input placeholder="e.g., Kitchen Manager" {...(field as any)} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                            )}
+                            
+                            <FormField control={form.control} name="email" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Email Address</FormLabel>
+                                <FormControl>
+                                <Input 
+                                    type="email" 
+                                    placeholder="e.g., jane.smith@example.com" 
+                                    {...field}
+                                    readOnly={isProfileEditMode || !!initialData}
+                                    className={(isProfileEditMode || !!initialData) ? "bg-muted/50" : ""}
+                                />
+                                </FormControl>
+                                {isProfileEditMode 
+                                ? <FormDescription>Your email address cannot be changed.</FormDescription>
+                                : (!!initialData ? <FormDescription>User email cannot be changed after creation.</FormDescription> : <FormMessage />)
+                                }
+                            </FormItem>
+                            )} />
+
+                            {!isProfileEditMode && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    <FormField control={form.control} name="role" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Role</FormLabel>
+                                        <Select onValueChange={(field as any).onChange} value={(field as any).value} defaultValue={(field as any).value} disabled={isEditingSelf}>
+                                        <FormControl><SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger></FormControl>
+                                        <SelectContent>
+                                            {currentUser?.role === 'Super Admin' && <SelectItem value="Super Admin">Super Admin</SelectItem>}
+                                            {currentUser?.role === 'Super Admin' && <SelectItem value="Admin">Admin</SelectItem>}
+                                            {(currentUser?.role === 'Super Admin' || currentUser?.role === 'Admin') && <SelectItem value="User">User</SelectItem>}
+                                        </SelectContent>
+                                        </Select>
+                                        <FormDescription>{isEditingSelf ? "You cannot change your own role." : "The user's role."}</FormDescription><FormMessage />
+                                    </FormItem>
+                                    )} />
+
+                                    <FormField control={form.control} name="status" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Status</FormLabel>
+                                        <Select onValueChange={(field as any).onChange} value={(field as any).value} defaultValue={(field as any).value}>
+                                        <FormControl><SelectTrigger><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="Active">Active</SelectItem>
+                                            <SelectItem value="Inactive">Inactive</SelectItem>
+                                        </SelectContent>
+                                        </Select>
+                                        <FormDescription>The user's status.</FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )} />
+                                </div>
+                            )}
+
+                             <FormItem>
+                                <FormLabel>Profile Image</FormLabel>
+                                <div className="flex items-center gap-4">
+                                    <Avatar className="h-20 w-20 rounded-md">
+                                        <AvatarImage src={imagePreview || `https://placehold.co/80x80.png?text=No+Img`} alt="Profile preview" className="object-cover" data-ai-hint="user avatar" />
+                                        <AvatarFallback>IMG</AvatarFallback>
+                                    </Avatar>
+                                    <Input 
+                                    id="picture" 
+                                    type="file" 
+                                    className="hidden" 
+                                    ref={fileInputRef} 
+                                    onChange={handleImageChange}
+                                    accept="image/*"
+                                    disabled={isLoading}
+                                    />
+                                    <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isLoading}>
+                                    <Upload className="mr-2 h-4 w-4" />
+                                    {selectedFile ? 'Change Image' : 'Upload Image'}
+                                    </Button>
+                                </div>
+                                <FormDescription>
+                                    {selectedFile ? `Selected: ${selectedFile.name}` : "Select an image (max 2MB)."} It will be processed on submission.
+                                </FormDescription>
+                                <FormField control={form.control} name="profileImageURL" render={({ field }) => <Input type="hidden" {...field} />} />
+                                {form.formState.errors.profileImageURL && (<FormMessage>{(form.formState.errors.profileImageURL as any).message}</FormMessage>)}
+                                </FormItem>
+                        </CardContent>
+                    </Card>
+
+                    {initialData && (
+                        <Card className="shadow-md border-border">
+                            <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><KeyRound /> Reset Password</CardTitle>
+                            <CardDescription>
+                                Optionally enter a new password for this user. They will be required to change it on their next login.
+                            </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                            <FormField control={form.control} name="password" render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>New Password</FormLabel>
+                                <FormControl>
+                                    <Input type="password" placeholder="Leave blank to keep current password" {...(field as any)} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )} />
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
-              ))}
-            </CardContent>
-        </Card>
 
-        <div className="flex justify-end pt-4">
-            <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
-                {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
-            </Button>
-        </div>
-      </form>
+                {/* Right Column */}
+                {!isProfileEditMode && (
+                    <div className="space-y-6">
+                        <Card className="shadow-md border-border">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2"><ShieldCheck /> User Permissions</CardTitle>
+                                <CardDescription>
+                                {watchedRole === 'User' ? 'Assign permissions for this user.' : `The '${watchedRole}' role has all permissions by default.`}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                            {Object.entries(permissionGroups).map(([section, perms]) => (
+                                <div key={section} className="mb-6 last:mb-0">
+                                <h3 className="font-semibold text-lg text-primary mb-2">{section}</h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
+                                    {perms.map(p => renderPermissionSwitch(p.id, p.label))}
+                                    </div>
+                                    {section !== 'Administration' && <Separator className="mt-6"/>}
+                                </div>
+                            ))}
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+            </div>
+
+            <div className="flex justify-end pt-4">
+                <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
+                    {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
+                </Button>
+            </div>
+        </form>
     </Form>
-    )}
-
-    {isProfileEditMode && (
-        <div className="mt-6 flex justify-end">
-             <Button onClick={form.handleSubmit(onFormSubmit)} className="w-full sm:w-auto" disabled={isLoading}>
-                {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
-            </Button>
-        </div>
-    )}
-    </>
   );
 }
+
+    
