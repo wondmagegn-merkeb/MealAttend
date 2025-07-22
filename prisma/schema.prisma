@@ -94,10 +94,6 @@ model AttendanceRecord {
   // Relations
   studentId          String
   student            Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  mealType           String
-  status             String // "PRESENT" or "ABSENT"
-  recordDate         DateTime @db.Date
-  scannedAtTimestamp DateTime?
   scannedById        String?
   scannedBy          User?    @relation("ScannedBy", fields: [scannedById], references: [id])
 
