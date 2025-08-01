@@ -32,8 +32,8 @@ export async function GET(request: Request) {
       return NextResponse.json(defaultSettings);
     }
     // Don't send password hashes to the client
-    const { defaultUserPassword, defaultAdminPassword, defaultSuperAdminPassword, ...clientSettings } = settings;
-    return NextResponse.json(clientSettings);
+    // const { defaultUserPassword, defaultAdminPassword, defaultSuperAdminPassword, ...clientSettings } = settings;
+    return NextResponse.json(settings);
   } catch (error: any) {
     console.error('Error fetching app settings:', error);
     return NextResponse.json(
@@ -82,28 +82,31 @@ export async function PUT(request: Request) {
       homepageSubtitle,
       companyLogoUrl,
       idCardLogoUrl,
+      defaultUserPassword,
+      defaultAdminPassword,
+      defaultSuperAdminPassword,
     };
     
-    if (defaultUserPassword) {
-      dataToUpdate.defaultUserPassword = await hash(defaultUserPassword, saltRounds);
-    }
+    // if (defaultUserPassword) {
+    //   dataToUpdate.defaultUserPassword = await hash(defaultUserPassword, saltRounds);
+    // }
 
-    if (defaultAdminPassword) {
-      dataToUpdate.defaultAdminPassword = await hash(defaultAdminPassword, saltRounds);
-    }
+    // if (defaultAdminPassword) {
+    //   dataToUpdate.defaultAdminPassword = await hash(defaultAdminPassword, saltRounds);
+    // }
     
-    if (defaultSuperAdminPassword) {
-        dataToUpdate.defaultSuperAdminPassword = await hash(defaultSuperAdminPassword, saltRounds);
-    }
+    // if (defaultSuperAdminPassword) {
+    //     dataToUpdate.defaultSuperAdminPassword = await hash(defaultSuperAdminPassword, saltRounds);
+    // }
 
     const updatedSettings = await prisma.appSettings.update({
       where: { id: 1 },
       data: dataToUpdate,
     });
     
-    const { defaultUserPassword: _, defaultAdminPassword: __, defaultSuperAdminPassword: ___, ...clientSettings } = updatedSettings;
+    // const { defaultUserPassword: _, defaultAdminPassword: __, defaultSuperAdminPassword: ___, ...clientSettings } = updatedSettings;
 
-    return NextResponse.json(clientSettings);
+    return NextResponse.json(updatedSettings);
   } catch (error: any) {
     if ((error as any).code === 'P2025') {
       return NextResponse.json({ message: 'App settings not found.' }, { status: 404 });

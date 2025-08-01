@@ -101,6 +101,9 @@ export default function SuperAdminSettingsPage() {
   const [showSuperAdminPassword, setShowSuperAdminPassword] = useState(false);
   const [showAdminPassword, setShowAdminPassword] = useState(false);
   const [showUserPassword, setShowUserPassword] = useState(false);
+  const [userPassword, setUserPassword] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [superAdminPassword, setSuperAdminPassword] = useState('');
 
   const { data: fetchedSettings, isLoading: isLoadingSettings, error } = useQuery<AppSettings>({
     queryKey: ['appSettings'],
@@ -173,6 +176,9 @@ export default function SuperAdminSettingsPage() {
       themeForm.reset({ colorTheme: fetchedSettings.colorTheme });
       setCompanyLogoPreview(fetchedSettings.companyLogoUrl);
       setIdCardLogoPreview(fetchedSettings.idCardLogoUrl);
+      setUserPassword(fetchedSettings.defaultUserPassword)
+      setAdminPassword(fetchedSettings.defaultAdminPassword)
+      setSuperAdminPassword(fetchedSettings.defaultSuperAdminPassword)
     }
   }, [fetchedSettings, brandingForm, idCardForm, homepageForm, passwordForm, themeForm]);
 
@@ -314,6 +320,10 @@ export default function SuperAdminSettingsPage() {
                                             </Button>
                                         </div>
                                     </FormControl>
+                                    <FormDescription>
+                                      This is the password that has been set for the Super Admin: {superAdminPassword}
+                                    </FormDescription>
+
                                     <FormMessage />
                                 </FormItem>
                             )} />
@@ -328,6 +338,9 @@ export default function SuperAdminSettingsPage() {
                                             </Button>
                                         </div>
                                     </FormControl>
+                                    <FormDescription>
+                                      This is the password that has been set for the Admin User: {adminPassword}
+                                    </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )} />
@@ -342,6 +355,9 @@ export default function SuperAdminSettingsPage() {
                                             </Button>
                                         </div>
                                     </FormControl>
+                                    <FormDescription>
+                                      This is the password that has been set for the Standard User: {userPassword}
+                                    </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )} />
