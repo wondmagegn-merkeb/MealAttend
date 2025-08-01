@@ -35,6 +35,7 @@ export interface User {
   canWriteUsers: boolean;
   canReadDepartments: boolean;
   canWriteDepartments: boolean;
+  canManageSiteSettings: boolean;
 }
 
 export interface UserWithCreator extends User {
@@ -112,7 +113,8 @@ export type PermissionKey =
   | 'canReadUsers'
   | 'canWriteUsers'
   | 'canReadDepartments'
-  | 'canWriteDepartments';
+  | 'canWriteDepartments'
+  | 'canManageSiteSettings';
 
 export type TeamMember = PrismaTeamMember;
 export type HomepageFeature = PrismaHomepageFeature;

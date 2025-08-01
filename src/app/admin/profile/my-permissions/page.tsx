@@ -71,6 +71,7 @@ export default function MyPermissionsPage() {
         { label: 'Manage Users', granted: currentUser.canWriteUsers },
         { label: 'View Departments', granted: currentUser.canReadDepartments },
         { label: 'Manage Departments', granted: currentUser.canWriteDepartments },
+        { label: 'Manage Site Settings', granted: currentUser.canManageSiteSettings },
       ],
     },
   ];

@@ -59,7 +59,8 @@ export async function PUT(request: Request, { params }: RouteParams) {
         canReadAttendance, canExportAttendance,
         canReadActivityLog,
         canReadUsers, canWriteUsers,
-        canReadDepartments, canWriteDepartments
+        canReadDepartments, canWriteDepartments,
+        canManageSiteSettings
     } = data;
     
     // Authorization check
@@ -89,7 +90,8 @@ export async function PUT(request: Request, { params }: RouteParams) {
         canReadAttendance, canExportAttendance,
         canReadActivityLog,
         canReadUsers, canWriteUsers,
-        canReadDepartments, canWriteDepartments
+        canReadDepartments, canWriteDepartments,
+        canManageSiteSettings
     };
 
     if (password) {

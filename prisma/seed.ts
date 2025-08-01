@@ -27,6 +27,7 @@ const users = [
     canReadActivityLog: true,
     canReadUsers: true, canWriteUsers: true,
     canSeeAllRecords: true,
+    canManageSiteSettings: true,
   },
   {
     id: 'user_admin',
@@ -49,6 +50,7 @@ const users = [
     canReadActivityLog: true,
     canReadUsers: true, canWriteUsers: true,
     canSeeAllRecords: true,
+    canManageSiteSettings: false,
   },
   {
     id: 'user_normal',
@@ -71,6 +73,7 @@ const users = [
     canReadActivityLog: false,
     canReadUsers: false, canWriteUsers: false,
     canSeeAllRecords: false,
+    canManageSiteSettings: false,
   },
   {
     id: 'user_password_change',
@@ -93,6 +96,7 @@ const users = [
     canReadActivityLog: false,
     canReadUsers: false, canWriteUsers: false,
     canSeeAllRecords: false,
+    canManageSiteSettings: false,
   },
 ];
 

@@ -12,7 +12,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Palette, Save, Settings, Home, Users, Upload, KeyRound, CreditCard, UserPlus, ListOrdered, CaseSensitive, LayoutGrid } from "lucide-react";
+import { Loader2, Palette, Save, Settings, Home, Users, Upload, KeyRound, CreditCard, UserPlus, ListOrdered, CaseSensitive, LayoutGrid, Eye, EyeOff } from "lucide-react";
 import type { AppSettings, Student } from "@/types";
 import { cn } from "@/lib/utils";
 import { useAppSettings } from "@/hooks/useAppSettings";
@@ -98,11 +98,18 @@ export default function SuperAdminSettingsPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { settings, setSettings: setGlobalSettings } = useAppSettings();
+  const [showSuperAdminPassword, setShowSuperAdminPassword] = useState(false);
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
+  const [showUserPassword, setShowUserPassword] = useState(false);
+  const [userPassword, setUserPassword] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [superAdminPassword, setSuperAdminPassword] = useState('');
 
   const { data: fetchedSettings, isLoading: isLoadingSettings, error } = useQuery<AppSettings>({
     queryKey: ['appSettings'],
     queryFn: fetchSettings,
   });
+  
 
   const mutation = useMutation({
     mutationFn: updateSettings,
@@ -160,6 +167,7 @@ export default function SuperAdminSettingsPage() {
   }, [watchedIdCardValues.idPrefix]);
 
   useEffect(() => {
+    console.log(fetchedSettings)
     if (fetchedSettings) {
       brandingForm.reset({ siteName: fetchedSettings.siteName, companyLogoUrl: fetchedSettings.companyLogoUrl });
       idCardForm.reset({ idPrefix: fetchedSettings.idPrefix, schoolName: fetchedSettings.schoolName, idCardTitle: fetchedSettings.idCardTitle, idCardLogoUrl: fetchedSettings.idCardLogoUrl });
@@ -168,6 +176,9 @@ export default function SuperAdminSettingsPage() {
       themeForm.reset({ colorTheme: fetchedSettings.colorTheme });
       setCompanyLogoPreview(fetchedSettings.companyLogoUrl);
       setIdCardLogoPreview(fetchedSettings.idCardLogoUrl);
+      setUserPassword(fetchedSettings.defaultUserPassword)
+      setAdminPassword(fetchedSettings.defaultAdminPassword)
+      setSuperAdminPassword(fetchedSettings.defaultSuperAdminPassword)
     }
   }, [fetchedSettings, brandingForm, idCardForm, homepageForm, passwordForm, themeForm]);
 
@@ -299,13 +310,56 @@ export default function SuperAdminSettingsPage() {
                         <CardHeader><CardTitle>Default Passwords</CardTitle><CardDescription>Set initial password for new users.</CardDescription></CardHeader>
                         <CardContent className="space-y-6">
                             <FormField control={passwordForm.control} name="defaultSuperAdminPassword" render={({ field }) => (
-                                <FormItem><FormLabel>New Super Admin Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
+                                <FormItem>
+                                    <FormLabel>New Super Admin Users</FormLabel>
+                                    <FormControl>
+                                        <div className="relative">
+                                            <Input type={showSuperAdminPassword ? "text" : "password"} {...field} placeholder="Enter new default" className="pr-10" />
+                                            <Button type="button" variant="ghost" size="sm" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-2 text-muted-foreground hover:bg-transparent" onClick={() => setShowSuperAdminPassword(!showSuperAdminPassword)}>
+                                                {showSuperAdminPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                            </Button>
+                                        </div>
+                                    </FormControl>
+                                    <FormDescription>
+                                      This is the password that has been set for the Super Admin: {superAdminPassword}
+                                    </FormDescription>
+
+                                    <FormMessage />
+                                </FormItem>
                             )} />
                             <FormField control={passwordForm.control} name="defaultAdminPassword" render={({ field }) => (
-                                <FormItem><FormLabel>New Admin Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
+                                <FormItem>
+                                    <FormLabel>New Admin Users</FormLabel>
+                                    <FormControl>
+                                        <div className="relative">
+                                            <Input type={showAdminPassword ? "text" : "password"} {...field} placeholder="Enter new default" className="pr-10" />
+                                            <Button type="button" variant="ghost" size="sm" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-2 text-muted-foreground hover:bg-transparent" onClick={() => setShowAdminPassword(!showAdminPassword)}>
+                                                {showAdminPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                            </Button>
+                                        </div>
+                                    </FormControl>
+                                    <FormDescription>
+                                      This is the password that has been set for the Admin User: {adminPassword}
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
                             )} />
                             <FormField control={passwordForm.control} name="defaultUserPassword" render={({ field }) => (
-                                <FormItem><FormLabel>New Standard Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
+                                <FormItem>
+                                    <FormLabel>New Standard Users</FormLabel>
+                                    <FormControl>
+                                        <div className="relative">
+                                            <Input type={showUserPassword ? "text" : "password"} {...field} placeholder="Enter new default" className="pr-10" />
+                                            <Button type="button" variant="ghost" size="sm" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-2 text-muted-foreground hover:bg-transparent" onClick={() => setShowUserPassword(!showUserPassword)}>
+                                                {showUserPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                            </Button>
+                                        </div>
+                                    </FormControl>
+                                    <FormDescription>
+                                      This is the password that has been set for the Standard User: {userPassword}
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
                             )} />
                         </CardContent>
                         <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && passwordForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Passwords</Button></CardFooter>
@@ -330,43 +384,40 @@ export default function SuperAdminSettingsPage() {
                     <FormField control={idCardForm.control} name="idCardTitle" render={({ field }) => (
                     <FormItem><FormLabel>ID Card Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
-                    <div className="space-y-0">
-                        <Label>ID Card Logo &amp; Live Preview</Label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-0 items-center">
-                            <FormField control={idCardForm.control} name="idCardLogoUrl" render={({ field }) => (
-                            <FormItem>
-                                <div className="flex items-center gap-4 mt-2">
-                                <Avatar className="h-24 w-24 rounded-md">
-                                    <AvatarImage src={idCardLogoPreview || `https://placehold.co/96x96.png?text=Logo`} alt="ID Card Logo" className="object-contain" data-ai-hint="school crest" />
-                                    <AvatarFallback>LOGO</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <Input id="id-card-logo-upload" type="file" className="hidden" onChange={(e) => { 
-                                        if (e.target.files?.[0]) {
-                                            const newUrl = URL.createObjectURL(e.target.files[0]);
-                                            setIdCardLogoPreview(newUrl);
-                                            idCardForm.setValue('idCardLogoUrl', newUrl);
-                                        }
-                                    }} accept="image/*" />
-                                    <Button type="button" variant="outline" onClick={() => document.getElementById('id-card-logo-upload')?.click()}><Upload className="mr-2 h-4 w-4" /> Change</Button>
-                                    <p className="text-xs text-muted-foreground mt-2">Upload a new logo.</p>
+                    
+                    <Label className="mb-2 block font-medium">ID Card Logo &amp; Live Preview</Label>
+                    <FormField control={idCardForm.control} name="idCardLogoUrl" render={({ field }) => (
+                        <FormItem>
+                            <div className="flex flex-wrap items-center gap-4">
+                                <div className="flex items-center gap-4">
+                                    <Avatar className="h-24 w-24 rounded-md">
+                                        <AvatarImage src={idCardLogoPreview || `https://placehold.co/96x96.png?text=Logo`} alt="ID Card Logo" className="object-contain" data-ai-hint="school crest" />
+                                        <AvatarFallback>LOGO</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <Input id="id-card-logo-upload" type="file" className="hidden" onChange={(e) => { 
+                                            if (e.target.files?.[0]) {
+                                                const newUrl = URL.createObjectURL(e.target.files[0]);
+                                                setIdCardLogoPreview(newUrl);
+                                                idCardForm.setValue('idCardLogoUrl', newUrl);
+                                            }
+                                        }} accept="image/*" />
+                                        <Button type="button" variant="outline" onClick={() => document.getElementById('id-card-logo-upload')?.click()}><Upload className="mr-2 h-4 w-4" /> Change</Button>
+                                        <p className="text-xs text-muted-foreground mt-2">Upload a new logo.</p>
+                                    </div>
                                 </div>
+                                <div className="flex justify-center items-center p-0 bg-muted/50 rounded-lg border">
+                                    <StudentIdCard 
+                                        student={sampleStudent} 
+                                        previewSettings={{
+                                            ...watchedIdCardValues,
+                                            idCardLogoUrl: idCardLogoPreview || watchedIdCardValues.idCardLogoUrl
+                                        }}
+                                    />
                                 </div>
-                            </FormItem>
-                            )} />
-                            
-                            <div className="flex justify-center items-center p-2 bg-muted/50 rounded-lg border scale-90 md:scale-100">
-                                <StudentIdCard 
-                                    student={sampleStudent} 
-                                    previewSettings={{
-                                        ...watchedIdCardValues,
-                                        idCardLogoUrl: idCardLogoPreview || watchedIdCardValues.idCardLogoUrl
-                                    }}
-                                />
                             </div>
-                        </div>
-                    </div>
-
+                        </FormItem>
+                    )} />
                 </CardContent>
                 <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && idCardForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update ID Cards</Button></CardFooter>
                 </Card>

@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState, useRef } from "react";
-import { Loader2, Upload, ShieldCheck, KeyRound } from "lucide-react";
+import { Loader2, Upload, ShieldCheck, KeyRound, Eye, EyeOff } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { User, PermissionKey } from '@/types';
 import { useToast } from "@/hooks/use-toast";
@@ -48,8 +48,7 @@ const permissionsSchema = {
   canReadActivityLog: z.boolean().default(false),
   canReadUsers: z.boolean().default(false),
   canWriteUsers: z.boolean().default(false),
-  canReadDepartments: z.boolean().default(false),
-  canWriteDepartments: z.boolean().default(false),
+  canManageSiteSettings: z.boolean().default(false),
 };
 
 const userFormSchema = z.object({
@@ -105,6 +104,7 @@ const permissionFields: { id: PermissionKey, label: string, section: string }[] 
     { id: 'canReadActivityLog', label: 'Read Activity Log', section: 'Administration' },
     { id: 'canReadUsers', label: 'Read Users', section: 'Administration' },
     { id: 'canWriteUsers', label: 'Manage Users', section: 'Administration' },
+    { id: 'canManageSiteSettings', label: 'Manage Site Settings', section: 'Administration' },
 ];
 
 export function UserForm({ onSubmit, initialData, isLoading = false, submitButtonText = "Submit", isProfileEditMode = false }: UserFormProps) {
@@ -114,6 +114,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const currentSchema = isProfileEditMode ? profileEditFormSchema : userFormSchema;
   const isEditMode = !!initialData;
@@ -418,13 +419,27 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                 <FormItem>
                                 <FormLabel>Password</FormLabel>
                                 <FormControl>
-                                    <Input 
-                                        type="password" 
-                                        placeholder={getPasswordPlaceholder()}
-                                        {...field}
-                                        readOnly={!isEditMode}
-                                        className={!isEditMode ? "bg-muted/50" : ""}
-                                    />
+                                    <div className="relative">
+                                        <Input 
+                                            type={showPassword ? "text" : "password"}
+                                            placeholder={getPasswordPlaceholder()}
+                                            {...field}
+                                            className={!isEditMode ? "bg-muted/50 pr-10" : "pr-10"}
+                                            readOnly={!isEditMode}
+                                        />
+                                        {isEditMode && (
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-2 text-muted-foreground hover:bg-transparent"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                aria-label={showPassword ? "Hide password" : "Show password"}
+                                            >
+                                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                            </Button>
+                                        )}
+                                    </div>
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -466,15 +481,22 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                             ))}
                             </CardContent>
                         </Card>
+                         <div className="flex justify-end pt-1">
+                            <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
+                                {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
+                            </Button>
+                        </div>
                     </div>
                 )}
             </div>
 
-            <div className="flex justify-end pt-1">
-                <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
-                    {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
-                </Button>
-            </div>
+             {isProfileEditMode && (
+                <div className="flex justify-end pt-1">
+                    <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
+                        {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
+                    </Button>
+                </div>
+             )}
         </form>
     </Form>
   );

@@ -1,10 +1,22 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/admin/super-settings/team/page": "app/admin/super-settings/team/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/admin/profile/my-permissions/page": "app/admin/profile/my-permissions/page.js",
+  "/admin/students/new/page": "app/admin/students/new/page.js",
+  "/admin/students/page": "app/admin/students/page.js",
+  "/admin/super-settings/page": "app/admin/super-settings/page.js",
+  "/admin/users/new/page": "app/admin/users/new/page.js",
   "/admin/users/page": "app/admin/users/page.js",
+  "/api/activity-log/route": "app/api/activity-log/route.js",
+  "/api/attendance/route": "app/api/attendance/route.js",
   "/api/features/route": "app/api/features/route.js",
   "/api/settings/route": "app/api/settings/route.js",
+  "/api/students/route": "app/api/students/route.js",
   "/api/team/route": "app/api/team/route.js",
+<<<<<<< HEAD
+=======
+  "/api/users/route": "app/api/users/route.js",
+>>>>>>> stable-part
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/page": "app/page.js"
 }
