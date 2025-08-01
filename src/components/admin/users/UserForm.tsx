@@ -48,8 +48,6 @@ const permissionsSchema = {
   canReadActivityLog: z.boolean().default(false),
   canReadUsers: z.boolean().default(false),
   canWriteUsers: z.boolean().default(false),
-  canReadDepartments: z.boolean().default(false),
-  canWriteDepartments: z.boolean().default(false),
   canManageSiteSettings: z.boolean().default(false),
 };
 

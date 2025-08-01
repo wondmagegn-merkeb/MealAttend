@@ -64,18 +64,18 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json();
+    console.log(data)
     const { 
-        fullName, email, position, role, status, profileImageURL, passwordChangeRequired,
+        fullName, email, position, role, status, profileImageURL, passwordChangeRequired, createdById,
         canReadDashboard, canScanId,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
         canReadAttendance, canExportAttendance,
         canReadActivityLog,
         canReadUsers, canWriteUsers,
-        canReadDepartments, canWriteDepartments,
         canManageSiteSettings
     } = data;
 
-    if (!fullName || !email || !role || !status) {
+    if (!fullName || !email || !role || !status || !createdById) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
     }
     
@@ -117,14 +117,13 @@ export async function POST(request: Request) {
         status,
         profileImageURL,
         passwordChangeRequired: passwordChangeRequired,
-        createdById: creator.id,
+        createdById: createdById, // Use the ID passed from the frontend
         // Permissions
         canReadDashboard, canScanId,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
         canReadAttendance, canExportAttendance,
         canReadActivityLog,
         canReadUsers, canWriteUsers,
-        canReadDepartments, canWriteDepartments,
         canManageSiteSettings,
       },
     });
@@ -148,6 +147,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(userWithoutPassword, { status: 201 });
   } catch (error: any) {
+
+    console.log(error)
     if ((error as any).code === 'P2002') {
       return NextResponse.json(
         { message: 'A user with this email or ID already exists.', error: (error as any).message },
