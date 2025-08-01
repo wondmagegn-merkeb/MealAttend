@@ -6,7 +6,14 @@ import { hashSync } from 'bcryptjs';
 const prisma = new PrismaClient();
 const saltRounds = 10;
 
-const users = [
+const departments = [
+  { id: 'dept_1', departmentId: 'ADERA/DEP/2024/00001', name: 'Kitchen Staff' },
+  { id: 'dept_2', departmentId: 'ADERA/DEP/2024/00002', name: 'Administration' },
+  { id: 'dept_3', departmentId: 'ADERA/DEP/2024/00003', name: 'Teaching Faculty' },
+  { id: 'dept_4', departmentId: 'ADERA/DEP/2024/00004', name: 'Security' },
+];
+
+const usersData = [
   {
     id: 'user_super_admin',
     userId: 'ADERA/USR/2024/00001',
@@ -15,18 +22,17 @@ const users = [
     password: hashSync('password123', saltRounds),
     role: 'Super Admin',
     status: 'Active',
-    position: 'System Administrator',
+    departmentId: 'dept_2',
     passwordChangeRequired: false,
     profileImageURL: 'https://placehold.co/100x100.png',
     createdAt: subDays(new Date(), 30),
     updatedAt: subDays(new Date(), 1),
-    // Super Admin has all permissions implicitly
-    canReadDashboard: true, canScanId: true,
+    createdById: null,
     canReadStudents: true, canWriteStudents: true, canCreateStudents: true, canDeleteStudents: true, canExportStudents: true,
     canReadAttendance: true, canExportAttendance: true,
     canReadActivityLog: true,
     canReadUsers: true, canWriteUsers: true,
-    canSeeAllRecords: true,
+    canReadDepartments: true, canWriteDepartments: true,
   },
   {
     id: 'user_admin',
@@ -36,19 +42,17 @@ const users = [
     password: hashSync('password123', saltRounds),
     role: 'Admin',
     status: 'Active',
-    position: 'Head of Staff',
+    departmentId: 'dept_2',
     passwordChangeRequired: false,
     profileImageURL: 'https://placehold.co/100x100.png',
     createdAt: subDays(new Date(), 10),
     updatedAt: subDays(new Date(), 1),
-    createdBy: { connect: { id: 'user_super_admin' } },
-    // Admin has all permissions for this demo
-    canReadDashboard: true, canScanId: true,
+    createdById: 'user_super_admin',
     canReadStudents: true, canWriteStudents: true, canCreateStudents: true, canDeleteStudents: true, canExportStudents: true,
     canReadAttendance: true, canExportAttendance: true,
     canReadActivityLog: true,
     canReadUsers: true, canWriteUsers: true,
-    canSeeAllRecords: true,
+    canReadDepartments: true, canWriteDepartments: true,
   },
   {
     id: 'user_normal',
@@ -58,19 +62,17 @@ const users = [
     password: hashSync('password123', saltRounds),
     role: 'User',
     status: 'Inactive',
-    position: 'Kitchen Staff',
+    departmentId: 'dept_1',
     passwordChangeRequired: false,
     profileImageURL: 'https://placehold.co/100x100.png',
     createdAt: subDays(new Date(), 20),
     updatedAt: subDays(new Date(), 5),
-    createdBy: { connect: { id: 'user_admin' } },
-    // Standard user has student permissions but no others
-    canReadDashboard: false, canScanId: false,
-    canReadStudents: true, canWriteStudents: true, canCreateStudents: true, canDeleteStudents: true, canExportStudents: true,
+    createdById: 'user_admin',
+    canReadStudents: true, canWriteStudents: true, canCreateStudents: true, canDeleteStudents: false, canExportStudents: true,
     canReadAttendance: false, canExportAttendance: false,
     canReadActivityLog: false,
     canReadUsers: false, canWriteUsers: false,
-    canSeeAllRecords: false,
+    canReadDepartments: false, canWriteDepartments: false,
   },
   {
     id: 'user_password_change',
@@ -80,19 +82,17 @@ const users = [
     password: hashSync('password', saltRounds),
     role: 'User',
     status: 'Active',
-    position: 'Faculty Member',
+    departmentId: 'dept_3',
     passwordChangeRequired: true,
     profileImageURL: 'https://placehold.co/100x100.png',
     createdAt: subDays(new Date(), 5),
     updatedAt: subDays(new Date(), 2),
-    createdBy: { connect: { id: 'user_admin' } },
-    // This user only has create/read access to students
-    canReadDashboard: false, canScanId: false,
+    createdById: 'user_admin',
     canReadStudents: true, canWriteStudents: false, canCreateStudents: true, canDeleteStudents: false, canExportStudents: false,
     canReadAttendance: false, canExportAttendance: false,
     canReadActivityLog: false,
     canReadUsers: false, canWriteUsers: false,
-    canSeeAllRecords: false,
+    canReadDepartments: false, canWriteDepartments: false,
   },
 ];
 
@@ -198,115 +198,19 @@ const activityLogsData = [
   },
 ];
 
-const teamMembers = [
-  {
-    name: 'Leo Maxwell',
-    role: 'CEO & Full-Stack Developer',
-    avatarUrl: '/leo.png',
-    bio: 'Wachemo University Computer Science graduate, leading the vision and technology.',
-    displayOrder: 0,
-    isCeo: true,
-    isVisible: true,
-  },
-  {
-    name: 'Owen Grant',
-    role: 'CTO & Full-Stack Developer',
-    avatarUrl: '/owen.png',
-    bio: 'Wachemo University Computer Science graduate, building robust back-end systems.',
-    displayOrder: 1,
-    isCeo: false,
-    isVisible: true,
-  },
-   {
-    name: 'Eleanor Vance',
-    role: 'Project Manager & Marketing Lead',
-    avatarUrl: '/eleanor.png',
-    bio: 'Marketing graduate from Wachemo University, driving our brand and project timelines forward.',
-    displayOrder: 2,
-    isCeo: false,
-    isVisible: true,
-  },
-  {
-    name: 'Sofia Reyes',
-    role: 'Marketing Specialist',
-    avatarUrl: '/sofia.png',
-    bio: 'Wachemo University marketing graduate with a passion for digital outreach.',
-    displayOrder: 3,
-    isCeo: false,
-    isVisible: true,
-  },
-  {
-    name: 'Caleb Finn',
-    role: 'Lead Full-Stack Developer',
-    avatarUrl: '/caleb.png',
-    bio: 'Software Engineering graduate from Wachemo University, focusing on seamless user experiences.',
-    displayOrder: 4,
-    isCeo: false,
-    isVisible: true,
-  },
-];
-
-const features = [
-    {
-        icon: "QrCode",
-        title: "QR Code Scanning",
-        description: "Fast and touchless attendance tracking using individual QR codes.",
-        displayOrder: 0,
-        isVisible: true,
-    },
-    {
-        icon: "UserCog",
-        title: "Student & User Management",
-        description: "Easily add, edit, and manage student and system user profiles.",
-        displayOrder: 1,
-        isVisible: true,
-    },
-    {
-        icon: "ClipboardList",
-        title: "Comprehensive Dashboard",
-        description: "Get a real-time overview of attendance statistics and system activity.",
-        displayOrder: 2,
-        isVisible: true,
-    },
-    {
-        icon: "FileDown",
-        title: "Reporting & Exports",
-        description: "Generate and export detailed attendance reports in PDF and Excel formats.",
-        displayOrder: 3,
-        isVisible: true,
-    }
-];
-
 
 async function main() {
   console.log('Start seeding...');
 
-  // Seed App Settings
-  await prisma.appSettings.upsert({
-    where: { id: 1 },
-    update: {
-      showHomepage: true,
-      showTeamSection: true,
-      showFeaturesSection: true,
-      companyLogoUrl: null,
-      idCardLogoUrl: null,
-    },
-    create: {
-      id: 1,
-      siteName: "MealAttend",
-      idPrefix: "ADERA",
-      schoolName: "Tech University",
-      idCardTitle: "STUDENT ID",
-      colorTheme: "default",
-      showHomepage: true,
-      showTeamSection: true,
-      showFeaturesSection: true,
-      homepageSubtitle: "Learn more about our system and the team behind it.",
-      companyLogoUrl: null,
-      idCardLogoUrl: null,
-    },
-  });
-  console.log('Seeded app settings.');
+  // Seed Departments
+  for (const dept of departments) {
+    await prisma.department.upsert({
+      where: { id: dept.id },
+      update: {},
+      create: dept,
+    });
+  }
+  console.log('Seeded departments.');
 
   // Seed Users
   for (const userData of usersData) {
@@ -375,21 +279,36 @@ async function main() {
   }
   console.log('Seeded activity logs.');
   
-  // Seed Team Members
-  await prisma.teamMember.deleteMany(); // Clear existing members first
-  for (const member of teamMembers) {
-    await prisma.teamMember.create({ data: member });
-  }
-  console.log('Seeded team members.');
-  
-  // Seed Homepage Features
-  await prisma.homepageFeature.deleteMany();
-  for (const feature of features) {
-    await prisma.homepageFeature.create({ data: feature });
-  }
-  console.log('Seeded homepage features.');
-  
+  // Seed Site Settings
+  await prisma.siteSettings.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      siteName: "MealAttend",
+      headerContent: "MealAttend Information Center",
+      idPrefix: "ADERA",
+      theme: "default",
+      showFeaturesSection: true,
+      showTeamSection: true,
+      addisSparkLogoUrl: "",
+      leoMaxwellPhotoUrl: "",
+      owenGrantPhotoUrl: "",
+      eleanorVancePhotoUrl: "",
+      sofiaReyesPhotoUrl: "",
+      calebFinnPhotoUrl: "",
+      defaultSuperAdminPassword: "",
+      defaultAdminPassword: "",
+      defaultUserPassword: "",
+      idCardLogoUrl: "",
+      idCardSchoolName: "Tech University",
+      idCardTitle: "STUDENT ID"
+    }
+  });
+  console.log('Seeded site settings.');
+
   // Seed ID Counters to prevent ID conflicts with generator
+  await prisma.idCounter.upsert({ where: { type: 'DEPARTMENT' }, update: { count: 4 }, create: { type: 'DEPARTMENT', count: 4 } });
   await prisma.idCounter.upsert({ where: { type: 'USER' }, update: { count: 4 }, create: { type: 'USER', count: 4 } });
   await prisma.idCounter.upsert({ where: { type: 'STUDENT' }, update: { count: 205 }, create: { type: 'STUDENT', count: 205 } });
   await prisma.idCounter.upsert({ where: { type: 'ATTENDANCE' }, update: { count: 3 }, create: { type: 'ATTENDANCE', count: 3 } });
@@ -407,3 +326,5 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+
+    

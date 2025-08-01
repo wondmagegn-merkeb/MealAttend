@@ -10,18 +10,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
-  DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, UserCircle, Settings as SettingsIcon, Edit3, PanelLeft, LayoutDashboard, BookCopy, UsersRound, Users, History, UserPlus, FileDown, CreditCard, UserCog, ScanLine, ShieldCheck, ShieldAlert } from "lucide-react";
+import { LogOut, UserCircle, Settings as SettingsIcon, Edit3, LayoutDashboard, BookCopy, UsersRound, Users, Building2, History, UserPlus, FileDown, CreditCard, UserCog, ScanLine, ShieldCheck, MonitorCog, Languages } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar"; 
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth"; 
 import { usePathname } from "next/navigation";
-import { useSidebar } from "../ui/sidebar";
-import { useAppSettings } from "@/hooks/useAppSettings";
+import { Logo } from '../shared/Logo';
 
 const getPageConfig = (pathname: string): { title: string, icon: React.ReactNode | null } => {
   // Main Navigation
@@ -29,8 +24,6 @@ const getPageConfig = (pathname: string): { title: string, icon: React.ReactNode
   if (pathname.startsWith('/admin/attendance')) return { title: 'Attendance', icon: <BookCopy className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/settings/site-management')) return { title: 'Site Management', icon: <MonitorCog className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/settings')) return { title: 'Settings', icon: <SettingsIcon className="h-6 w-6" /> };
-  if (pathname.startsWith('/admin/super-settings/team')) return { title: 'Manage Team', icon: <Users className="h-6 w-6" /> };
-  if (pathname.startsWith('/admin/super-settings')) return { title: 'Super Admin Settings', icon: <ShieldAlert className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/students')) {
     if (pathname.startsWith('/admin/students/new')) return { title: 'Add New Student', icon: <UserPlus className="h-6 w-6" /> };
     if (pathname.startsWith('/admin/students/export')) return { title: 'Export Students', icon: <FileDown className="h-6 w-6" /> };
@@ -44,6 +37,11 @@ const getPageConfig = (pathname: string): { title: string, icon: React.ReactNode
     if (pathname.includes('/edit')) return { title: 'Edit User', icon: <Edit3 className="h-6 w-6" /> };
     return { title: 'Users', icon: <Users className="h-6 w-6" /> };
   }
+  if (pathname.startsWith('/admin/departments')) {
+    if (pathname.startsWith('/admin/departments/new')) return { title: 'Add New Department', icon: <Building2 className="h-6 w-6" /> };
+    if (pathname.includes('/edit')) return { title: 'Edit Department', icon: <Edit3 className="h-6 w-6" /> };
+    return { title: 'Departments', icon: <Building2 className="h-6 w-6" /> };
+  }
   if (pathname.startsWith('/admin/activity-log')) return { title: 'Activity Log', icon: <History className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/profile/edit')) return { title: 'Edit Profile', icon: <UserCog className="h-6 w-6" /> };
   if (pathname.startsWith('/admin/profile/my-permissions')) return { title: 'My Permissions', icon: <ShieldCheck className="h-6 w-6" /> };
@@ -55,7 +53,6 @@ const getPageConfig = (pathname: string): { title: string, icon: React.ReactNode
 
 export function AdminHeader() {
   const { logout, currentUser } = useAuth(); 
-  const { settings } = useAppSettings();
   const pathname = usePathname();
   const { title, icon } = getPageConfig(pathname);
 
@@ -64,9 +61,10 @@ export function AdminHeader() {
   const userAvatar = currentUser?.profileImageURL;
 
   const PageTitle = () => (
-    <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
-      {icon} {title || siteName}
-    </h1>
+    <div className="flex items-center gap-2">
+      {icon}
+      <h1 className="text-xl font-semibold text-foreground">{title}</h1>
+    </div>
   );
 
   return (
@@ -81,7 +79,7 @@ export function AdminHeader() {
       </div>
       
        <div className="flex-1 flex justify-center md:hidden">
-          <PageTitle />
+          <Logo iconOnly={true} />
        </div>
 
       <div className="flex items-center gap-2">

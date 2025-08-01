@@ -12,6 +12,7 @@ import { StudentIdCard } from '@/components/admin/students/StudentIdCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import type { Student } from '@/types';
+import type { SiteSettings } from '@prisma/client';
 
 const fetchStudents = async (): Promise<Student[]> => {
     const token = localStorage.getItem('mealAttendAuthToken_v1');
@@ -21,6 +22,13 @@ const fetchStudents = async (): Promise<Student[]> => {
     if (!response.ok) throw new Error('Failed to fetch students');
     return response.json();
 };
+
+const fetchSiteSettings = async (): Promise<SiteSettings> => {
+    const response = await fetch('/api/settings/site-management');
+    if (!response.ok) throw new Error('Failed to fetch site settings');
+    return response.json();
+};
+
 
 const getYearFromStudentId = (studentId: string): string | null => {
   const parts = studentId.split('/'); 
@@ -54,6 +62,15 @@ export default function ViewAllIdCardsPage() {
     queryKey: ['students'],
     queryFn: fetchStudents,
   });
+
+  const { data: settings, isLoading: isLoadingSettings, error: settingsError } = useQuery<SiteSettings>({
+    queryKey: ['siteSettings'],
+    queryFn: fetchSiteSettings,
+  });
+  
+  const isLoading = isLoadingStudents || isLoadingSettings;
+  const error = studentsError || settingsError;
+
 
   useEffect(() => {
     setIsMounted(true);
@@ -124,7 +141,7 @@ export default function ViewAllIdCardsPage() {
     return tempStudents;
   }, [allStudents, selectedClass, selectedYear]);
 
-  if (!isMounted || isLoadingStudents) {
+  if (!isMounted || isLoading) {
     return (
       <div className="flex flex-col justify-center items-center h-screen space-y-4 p-4">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -133,17 +150,17 @@ export default function ViewAllIdCardsPage() {
     );
   }
 
-  if (studentsError) {
+  if (error) {
     return (
         <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] p-4">
             <Card className="w-full max-w-md text-center shadow-lg">
                 <CardHeader>
                     <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-2" />
-                    <CardTitle className="text-2xl text-destructive">Error Loading Students</CardTitle>
+                    <CardTitle className="text-2xl text-destructive">Error Loading Data</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <CardDescription className="mb-6">
-                        Failed to load student data: {(studentsError as Error).message}. Please try again later.
+                        Failed to load page data: {(error as Error).message}. Please try again later.
                     </CardDescription>
                     <Button variant="outline" asChild>
                         <Link href="/admin/students">
@@ -234,7 +251,12 @@ export default function ViewAllIdCardsPage() {
           <div className="id-card-grid-container p-4 md:p-6 bg-muted/50 rounded-lg border">
             {filteredAndSortedStudents.map(student => (
               <div key={student.id} className="id-card-wrapper">
-                <StudentIdCard student={student} />
+                <StudentIdCard 
+                    student={student} 
+                    logoUrl={settings?.idCardLogoUrl}
+                    schoolName={settings?.idCardSchoolName}
+                    cardTitle={settings?.idCardTitle}
+                />
               </div>
             ))}
           </div>
