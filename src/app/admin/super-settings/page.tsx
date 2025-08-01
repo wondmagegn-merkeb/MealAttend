@@ -332,7 +332,7 @@ export default function SuperAdminSettingsPage() {
                     )} />
                     <div>
                         <Label className="mb-2 block">ID Card Logo &amp; Live Preview</Label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-center">
                             <FormField control={idCardForm.control} name="idCardLogoUrl" render={({ field }) => (
                             <FormItem>
                                 <div className="flex items-center gap-4 mt-2">
@@ -414,5 +414,3 @@ export default function SuperAdminSettingsPage() {
     </div>
   );
 }
-
-    
