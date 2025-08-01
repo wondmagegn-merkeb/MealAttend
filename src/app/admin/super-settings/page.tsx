@@ -12,7 +12,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Palette, Save, Settings, Home, Users, Upload, KeyRound, CreditCard, UserPlus, ListOrdered, CaseSensitive, LayoutGrid } from "lucide-react";
+import { Loader2, Palette, Save, Settings, Home, Users, Upload, KeyRound, CreditCard, UserPlus, ListOrdered, CaseSensitive, LayoutGrid, Eye, EyeOff } from "lucide-react";
 import type { AppSettings, Student } from "@/types";
 import { cn } from "@/lib/utils";
 import { useAppSettings } from "@/hooks/useAppSettings";
@@ -98,6 +98,9 @@ export default function SuperAdminSettingsPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { settings, setSettings: setGlobalSettings } = useAppSettings();
+  const [showSuperAdminPassword, setShowSuperAdminPassword] = useState(false);
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
+  const [showUserPassword, setShowUserPassword] = useState(false);
 
   const { data: fetchedSettings, isLoading: isLoadingSettings, error } = useQuery<AppSettings>({
     queryKey: ['appSettings'],
@@ -301,13 +304,46 @@ export default function SuperAdminSettingsPage() {
                         <CardHeader><CardTitle>Default Passwords</CardTitle><CardDescription>Set initial password for new users.</CardDescription></CardHeader>
                         <CardContent className="space-y-6">
                             <FormField control={passwordForm.control} name="defaultSuperAdminPassword" render={({ field }) => (
-                                <FormItem><FormLabel>New Super Admin Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
+                                <FormItem>
+                                    <FormLabel>New Super Admin Users</FormLabel>
+                                    <FormControl>
+                                        <div className="relative">
+                                            <Input type={showSuperAdminPassword ? "text" : "password"} {...field} placeholder="Enter new default" className="pr-10" />
+                                            <Button type="button" variant="ghost" size="sm" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-2 text-muted-foreground hover:bg-transparent" onClick={() => setShowSuperAdminPassword(!showSuperAdminPassword)}>
+                                                {showSuperAdminPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                            </Button>
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
                             )} />
                             <FormField control={passwordForm.control} name="defaultAdminPassword" render={({ field }) => (
-                                <FormItem><FormLabel>New Admin Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
+                                <FormItem>
+                                    <FormLabel>New Admin Users</FormLabel>
+                                    <FormControl>
+                                        <div className="relative">
+                                            <Input type={showAdminPassword ? "text" : "password"} {...field} placeholder="Enter new default" className="pr-10" />
+                                            <Button type="button" variant="ghost" size="sm" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-2 text-muted-foreground hover:bg-transparent" onClick={() => setShowAdminPassword(!showAdminPassword)}>
+                                                {showAdminPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                            </Button>
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
                             )} />
                             <FormField control={passwordForm.control} name="defaultUserPassword" render={({ field }) => (
-                                <FormItem><FormLabel>New Standard Users</FormLabel><FormControl><Input type="password" {...field} placeholder="Enter new default" /></FormControl><FormMessage /></FormItem>
+                                <FormItem>
+                                    <FormLabel>New Standard Users</FormLabel>
+                                    <FormControl>
+                                        <div className="relative">
+                                            <Input type={showUserPassword ? "text" : "password"} {...field} placeholder="Enter new default" className="pr-10" />
+                                            <Button type="button" variant="ghost" size="sm" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-2 text-muted-foreground hover:bg-transparent" onClick={() => setShowUserPassword(!showUserPassword)}>
+                                                {showUserPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                            </Button>
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
                             )} />
                         </CardContent>
                         <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && passwordForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Passwords</Button></CardFooter>
