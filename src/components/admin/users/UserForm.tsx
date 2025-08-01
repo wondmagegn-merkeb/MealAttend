@@ -50,6 +50,7 @@ const permissionsSchema = {
   canWriteUsers: z.boolean().default(false),
   canReadDepartments: z.boolean().default(false),
   canWriteDepartments: z.boolean().default(false),
+  canManageSiteSettings: z.boolean().default(false),
 };
 
 const userFormSchema = z.object({
@@ -105,6 +106,7 @@ const permissionFields: { id: PermissionKey, label: string, section: string }[] 
     { id: 'canReadActivityLog', label: 'Read Activity Log', section: 'Administration' },
     { id: 'canReadUsers', label: 'Read Users', section: 'Administration' },
     { id: 'canWriteUsers', label: 'Manage Users', section: 'Administration' },
+    { id: 'canManageSiteSettings', label: 'Manage Site Settings', section: 'Administration' },
 ];
 
 export function UserForm({ onSubmit, initialData, isLoading = false, submitButtonText = "Submit", isProfileEditMode = false }: UserFormProps) {
@@ -481,15 +483,22 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                             ))}
                             </CardContent>
                         </Card>
+                         <div className="flex justify-end pt-1">
+                            <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
+                                {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
+                            </Button>
+                        </div>
                     </div>
                 )}
             </div>
 
-            <div className="flex justify-end pt-1">
-                <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
-                    {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
-                </Button>
-            </div>
+             {isProfileEditMode && (
+                <div className="flex justify-end pt-1">
+                    <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
+                        {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
+                    </Button>
+                </div>
+             )}
         </form>
     </Form>
   );

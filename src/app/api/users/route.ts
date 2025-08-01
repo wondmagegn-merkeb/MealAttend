@@ -71,7 +71,8 @@ export async function POST(request: Request) {
         canReadAttendance, canExportAttendance,
         canReadActivityLog,
         canReadUsers, canWriteUsers,
-        canReadDepartments, canWriteDepartments
+        canReadDepartments, canWriteDepartments,
+        canManageSiteSettings
     } = data;
 
     if (!fullName || !email || !role || !status) {
@@ -124,6 +125,7 @@ export async function POST(request: Request) {
         canReadActivityLog,
         canReadUsers, canWriteUsers,
         canReadDepartments, canWriteDepartments,
+        canManageSiteSettings,
       },
     });
     
