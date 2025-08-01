@@ -103,6 +103,7 @@ export default function SuperAdminSettingsPage() {
     queryKey: ['appSettings'],
     queryFn: fetchSettings,
   });
+  
 
   const mutation = useMutation({
     mutationFn: updateSettings,
@@ -160,6 +161,7 @@ export default function SuperAdminSettingsPage() {
   }, [watchedIdCardValues.idPrefix]);
 
   useEffect(() => {
+    console.log(fetchedSettings)
     if (fetchedSettings) {
       brandingForm.reset({ siteName: fetchedSettings.siteName, companyLogoUrl: fetchedSettings.companyLogoUrl });
       idCardForm.reset({ idPrefix: fetchedSettings.idPrefix, schoolName: fetchedSettings.schoolName, idCardTitle: fetchedSettings.idCardTitle, idCardLogoUrl: fetchedSettings.idCardLogoUrl });

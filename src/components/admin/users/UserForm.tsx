@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState, useRef } from "react";
-import { Loader2, Upload, ShieldCheck, KeyRound } from "lucide-react";
+import { Loader2, Upload, ShieldCheck, KeyRound, Eye, EyeOff } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { User, PermissionKey } from '@/types';
 import { useToast } from "@/hooks/use-toast";
@@ -114,6 +114,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const currentSchema = isProfileEditMode ? profileEditFormSchema : userFormSchema;
   const isEditMode = !!initialData;
@@ -418,13 +419,27 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                 <FormItem>
                                 <FormLabel>Password</FormLabel>
                                 <FormControl>
-                                    <Input 
-                                        type="password" 
-                                        placeholder={getPasswordPlaceholder()}
-                                        {...field}
-                                        readOnly={!isEditMode}
-                                        className={!isEditMode ? "bg-muted/50" : ""}
-                                    />
+                                    <div className="relative">
+                                        <Input 
+                                            type={showPassword ? "text" : "password"}
+                                            placeholder={getPasswordPlaceholder()}
+                                            {...field}
+                                            className={!isEditMode ? "bg-muted/50 pr-10" : "pr-10"}
+                                            readOnly={!isEditMode}
+                                        />
+                                        {isEditMode && (
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-2 text-muted-foreground hover:bg-transparent"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                aria-label={showPassword ? "Hide password" : "Show password"}
+                                            >
+                                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                            </Button>
+                                        )}
+                                    </div>
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>

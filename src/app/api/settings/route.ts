@@ -32,7 +32,7 @@ export async function GET(request: Request) {
       return NextResponse.json(defaultSettings);
     }
     // Don't send password hashes to the client
-    const { defaultUserPassword, defaultAdminPassword, defaultSuperAdminPassword, ...clientSettings } = settings;
+    const { ...clientSettings } = settings;
     return NextResponse.json(clientSettings);
   } catch (error: any) {
     console.error('Error fetching app settings:', error);
