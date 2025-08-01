@@ -330,9 +330,9 @@ export default function SuperAdminSettingsPage() {
                     <FormField control={idCardForm.control} name="idCardTitle" render={({ field }) => (
                     <FormItem><FormLabel>ID Card Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
-                    <div className="space-y-0">
-                        <Label>ID Card Logo &amp; Live Preview</Label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-0 items-center">
+                    <div>
+                        <Label className="mb-2 block">ID Card Logo &amp; Live Preview</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                             <FormField control={idCardForm.control} name="idCardLogoUrl" render={({ field }) => (
                             <FormItem>
                                 <div className="flex items-center gap-4 mt-2">
@@ -355,7 +355,7 @@ export default function SuperAdminSettingsPage() {
                             </FormItem>
                             )} />
                             
-                            <div className="flex justify-center items-center p-2 bg-muted/50 rounded-lg border scale-90 md:scale-100">
+                            <div className="flex justify-center items-center p-0 bg-muted/50 rounded-lg border scale-100 md:scale-100">
                                 <StudentIdCard 
                                     student={sampleStudent} 
                                     previewSettings={{
@@ -414,3 +414,5 @@ export default function SuperAdminSettingsPage() {
     </div>
   );
 }
+
+    
