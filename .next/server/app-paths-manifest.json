@@ -2,6 +2,8 @@
   "/_not-found/page": "app/_not-found/page.js",
   "/admin/page": "app/admin/page.js",
   "/admin/profile/my-permissions/page": "app/admin/profile/my-permissions/page.js",
+  "/admin/students/new/page": "app/admin/students/new/page.js",
+  "/admin/students/page": "app/admin/students/page.js",
   "/admin/super-settings/page": "app/admin/super-settings/page.js",
   "/admin/users/new/page": "app/admin/users/new/page.js",
   "/admin/users/page": "app/admin/users/page.js",
