@@ -330,43 +330,40 @@ export default function SuperAdminSettingsPage() {
                     <FormField control={idCardForm.control} name="idCardTitle" render={({ field }) => (
                     <FormItem><FormLabel>ID Card Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
-                    <div>
-                        <Label className="mb-2 block">ID Card Logo &amp; Live Preview</Label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-center">
-                            <FormField control={idCardForm.control} name="idCardLogoUrl" render={({ field }) => (
-                            <FormItem>
-                                <div className="flex items-center gap-4 mt-2">
-                                <Avatar className="h-24 w-24 rounded-md">
-                                    <AvatarImage src={idCardLogoPreview || `https://placehold.co/96x96.png?text=Logo`} alt="ID Card Logo" className="object-contain" data-ai-hint="school crest" />
-                                    <AvatarFallback>LOGO</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <Input id="id-card-logo-upload" type="file" className="hidden" onChange={(e) => { 
-                                        if (e.target.files?.[0]) {
-                                            const newUrl = URL.createObjectURL(e.target.files[0]);
-                                            setIdCardLogoPreview(newUrl);
-                                            idCardForm.setValue('idCardLogoUrl', newUrl);
-                                        }
-                                    }} accept="image/*" />
-                                    <Button type="button" variant="outline" onClick={() => document.getElementById('id-card-logo-upload')?.click()}><Upload className="mr-2 h-4 w-4" /> Change</Button>
-                                    <p className="text-xs text-muted-foreground mt-2">Upload a new logo.</p>
+                    
+                    <Label className="mb-2 block font-medium">ID Card Logo &amp; Live Preview</Label>
+                    <FormField control={idCardForm.control} name="idCardLogoUrl" render={({ field }) => (
+                        <FormItem>
+                            <div className="flex flex-wrap items-center gap-4">
+                                <div className="flex items-center gap-4">
+                                    <Avatar className="h-24 w-24 rounded-md">
+                                        <AvatarImage src={idCardLogoPreview || `https://placehold.co/96x96.png?text=Logo`} alt="ID Card Logo" className="object-contain" data-ai-hint="school crest" />
+                                        <AvatarFallback>LOGO</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <Input id="id-card-logo-upload" type="file" className="hidden" onChange={(e) => { 
+                                            if (e.target.files?.[0]) {
+                                                const newUrl = URL.createObjectURL(e.target.files[0]);
+                                                setIdCardLogoPreview(newUrl);
+                                                idCardForm.setValue('idCardLogoUrl', newUrl);
+                                            }
+                                        }} accept="image/*" />
+                                        <Button type="button" variant="outline" onClick={() => document.getElementById('id-card-logo-upload')?.click()}><Upload className="mr-2 h-4 w-4" /> Change</Button>
+                                        <p className="text-xs text-muted-foreground mt-2">Upload a new logo.</p>
+                                    </div>
                                 </div>
+                                <div className="flex justify-center items-center p-0 bg-muted/50 rounded-lg border">
+                                    <StudentIdCard 
+                                        student={sampleStudent} 
+                                        previewSettings={{
+                                            ...watchedIdCardValues,
+                                            idCardLogoUrl: idCardLogoPreview || watchedIdCardValues.idCardLogoUrl
+                                        }}
+                                    />
                                 </div>
-                            </FormItem>
-                            )} />
-                            
-                            <div className="flex justify-center items-center p-0 bg-muted/50 rounded-lg border scale-100 md:scale-100">
-                                <StudentIdCard 
-                                    student={sampleStudent} 
-                                    previewSettings={{
-                                        ...watchedIdCardValues,
-                                        idCardLogoUrl: idCardLogoPreview || watchedIdCardValues.idCardLogoUrl
-                                    }}
-                                />
                             </div>
-                        </div>
-                    </div>
-
+                        </FormItem>
+                    )} />
                 </CardContent>
                 <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && idCardForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update ID Cards</Button></CardFooter>
                 </Card>
