@@ -66,14 +66,13 @@ export async function POST(request: Request) {
 
     const data = await request.json();
     const { 
-        fullName, email, position, role, status, profileImageURL, passwordChangeRequired,
+        fullName, email, position, role, status, profileImageURL, password, passwordChangeRequired,
         canReadDashboard, canScanId,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
         canReadAttendance, canExportAttendance,
         canReadActivityLog,
         canReadUsers, canWriteUsers,
         canManageSiteSettings,
-        canSeeAllRecords,
     } = data;
 
     if (!fullName || !email || !role || !status) {
@@ -91,28 +90,26 @@ export async function POST(request: Request) {
     const newUserId = await generateNextId('USER');
 
     const settings = await prisma.appSettings.findUnique({ where: { id: 1 }});
-    const passwordToHash = 'password123'; // Fallback password
-    let passwordForDb = '';
+    let passwordToUse = password;
 
-    if (role === 'User' && settings?.defaultUserPassword) {
-      passwordForDb = settings.defaultUserPassword;
-    } else if (role === 'Admin' && settings?.defaultAdminPassword) {
-      passwordForDb = settings.defaultAdminPassword;
-    } else if (role === 'Super Admin' && settings?.defaultSuperAdminPassword) {
-      passwordForDb = settings.defaultSuperAdminPassword;
+    if (!passwordToUse) {
+        if (role === 'User') passwordToUse = settings?.defaultUserPassword;
+        else if (role === 'Admin') passwordToUse = settings?.defaultAdminPassword;
+        else if (role === 'Super Admin') passwordToUse = settings?.defaultSuperAdminPassword;
     }
     
-    // If no default password is set in DB for the role, use and hash the fallback
-    if (!passwordForDb) {
-        passwordForDb = await hash(passwordToHash, saltRounds);
+    if (!passwordToUse) {
+        passwordToUse = 'password123'; // Ultimate fallback
     }
+
+    const hashedPassword = await hash(passwordToUse, saltRounds);
 
     const newUser = await prisma.user.create({
       data: {
         userId: newUserId,
         fullName,
         email,
-        password: passwordForDb,
+        password: hashedPassword,
         position,
         role,
         status,
@@ -128,7 +125,6 @@ export async function POST(request: Request) {
         canReadActivityLog,
         canReadUsers, canWriteUsers,
         canManageSiteSettings,
-        canSeeAllRecords,
       },
     });
     
@@ -147,7 +143,7 @@ export async function POST(request: Request) {
 
     // Don't return the password in the response
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = newUser;
+    const { password: _, ...userWithoutPassword } = newUser;
 
     return NextResponse.json(userWithoutPassword, { status: 201 });
   } catch (error: any) {

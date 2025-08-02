@@ -58,6 +58,7 @@ const userFormSchema = z.object({
   role: z.enum(['Super Admin', 'Admin', 'User'], { errorMap: () => ({ message: "Please select a role." }) }),
   status: z.enum(['Active', 'Inactive'], { errorMap: () => ({ message: "Please select a status." }) }),
   profileImageURL: z.string().optional().or(z.literal("")),
+  password: z.string().optional(),
   passwordChangeRequired: z.boolean().default(true),
   ...permissionsSchema,
 });
@@ -156,21 +157,35 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   
   // Effect to automatically set permissions when role changes
   useEffect(() => {
-    if (isProfileEditMode || !form.formState.isDirty) return;
+    if (isProfileEditMode) return;
   
     const setAllPermissions = (value: boolean) => {
       permissionFields.forEach(p => form.setValue(p.id as any, value, { shouldValidate: true }));
     };
   
-    if (watchedRole === 'Admin' || watchedRole === 'Super Admin') {
+    if (watchedRole === 'Super Admin') {
       setAllPermissions(true);
+    } else if (watchedRole === 'Admin') {
+      setAllPermissions(true);
+      form.setValue('canManageSiteSettings' as any, false, {shouldValidate: true});
     } else if (watchedRole === 'User') {
       setAllPermissions(false); // Reset to false, let admin choose
       // Set specific defaults for 'User' role
-      const userDefaultPerms: PermissionKey[] = ['canScanId', 'canReadStudents', 'canWriteStudents', 'canCreateStudents', 'canDeleteStudents', 'canExportStudents', 'canReadAttendance', 'canExportAttendance'];
+      const userDefaultPerms: PermissionKey[] = ['canReadStudents'];
       userDefaultPerms.forEach(p => form.setValue(p as any, true, { shouldValidate: true }));
     }
   }, [watchedRole, form, isProfileEditMode]);
+  
+   // Effect to set default password when role changes on a new user form
+  useEffect(() => {
+    if (!isEditMode && appSettings) {
+      let defaultPassword = '';
+      if (watchedRole === 'User') defaultPassword = appSettings.defaultUserPassword || '';
+      else if (watchedRole === 'Admin') defaultPassword = appSettings.defaultAdminPassword || '';
+      else if (watchedRole === 'Super Admin') defaultPassword = appSettings.defaultSuperAdminPassword || '';
+      form.setValue('password' as any, defaultPassword);
+    }
+  }, [watchedRole, isEditMode, appSettings, form]);
 
 
   useEffect(() => {
@@ -307,6 +322,39 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                 <FormMessage />
                             </FormItem>
                             )} />
+                            
+                            {!isEditMode && !isProfileEditMode && (
+                                <FormField
+                                control={form.control as any}
+                                name="password"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Password</FormLabel>
+                                    <FormControl>
+                                        <div className="relative">
+                                        <Input
+                                            type={showPassword ? "text" : "password"}
+                                            {...field}
+                                            placeholder="Default password"
+                                            autoComplete="new-password"
+                                        />
+                                        <Button
+                                            type="button" variant="ghost" size="sm"
+                                            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-2 text-muted-foreground hover:bg-transparent"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                        >
+                                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                        </Button>
+                                        </div>
+                                    </FormControl>
+                                    <FormDescription>
+                                        This is the initial password for the user. It can be changed here.
+                                    </FormDescription>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                                />
+                            )}
 
                              <FormItem>
                                 <FormLabel>Profile Image</FormLabel>
@@ -386,15 +434,20 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                            {Object.entries(permissionGroups).map(([section, perms]) => (
+                            {Object.entries(permissionGroups).map(([section, perms]) => {
+                                const visiblePerms = perms.filter(p => currentUser?.role === 'Super Admin' || currentUser?.[p.id]);
+                                if (visiblePerms.length === 0) return null;
+
+                                return (
                                 <div key={section} className="mb-6 last:mb-0">
                                 <h3 className="font-semibold text-lg text-primary mb-2">{section}</h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
-                                    {perms.map(p => renderPermissionSwitch(p.id, p.label))}
+                                    {visiblePerms.map(p => renderPermissionSwitch(p.id, p.label))}
                                     </div>
                                     {section !== 'Administration' && <Separator className="mt-6"/>}
                                 </div>
-                            ))}
+                                )
+                            })}
                             </CardContent>
                         </Card>
                          <div className="flex justify-end pt-1">
