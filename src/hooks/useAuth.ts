@@ -156,7 +156,7 @@ export function useAuth(): AuthContextType {
             body: JSON.stringify({
                 userId: currentUser.userId,
                 fullName: profileData.fullName,
-                profileImageURL: profileData.profileImageURL || null,
+                profileImageURL: profileData.profileImageURL, // Pass the full profileData object
             }),
         });
 

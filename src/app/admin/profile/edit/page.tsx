@@ -20,6 +20,7 @@ export default function EditProfilePage() {
   const handleFormSubmit = async (data: ProfileEditFormData) => {
     setIsSubmitting(true);
     try {
+        // The `data` from UserForm already includes the potential new profileImageURL
         await updateProfile(data);
         toast({
             title: "Profile Updated",
