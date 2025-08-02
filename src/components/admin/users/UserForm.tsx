@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { Loader2, ShieldCheck, KeyRound, Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { User, PermissionKey } from '@/types';
@@ -139,6 +139,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   });
   
   const watchedRole = form.watch('role');
+  const { setValue } = form;
 
   useEffect(() => {
     if (initialData) {
@@ -158,7 +159,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   
     const setAllPermissions = (value: boolean) => {
       permissionFields.forEach(p => {
-          form.setValue(p.id, value, { shouldValidate: true })
+          setValue(p.id, value, { shouldValidate: true })
       });
     };
   
@@ -166,14 +167,14 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       setAllPermissions(true);
     } else if (watchedRole === 'Admin') {
       setAllPermissions(true);
-      form.setValue('canManageSiteSettings', false, {shouldValidate: true});
+      setValue('canManageSiteSettings', false, {shouldValidate: true});
     } else if (watchedRole === 'User') {
       setAllPermissions(false); // Reset to false, let admin choose
       // Set specific defaults for 'User' role
       const userDefaultPerms: PermissionKey[] = ['canReadStudents'];
-      userDefaultPerms.forEach(p => form.setValue(p, true, { shouldValidate: true }));
+      userDefaultPerms.forEach(p => setValue(p, true, { shouldValidate: true }));
     }
-  }, [watchedRole, form, isEditMode, isProfileEditMode]);
+  }, [watchedRole, setValue, isEditMode, isProfileEditMode]);
   
   const defaultPasswordForRole = useMemo(() => {
     if (appSettings) {
@@ -326,12 +327,12 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                     </FormItem>
                                 )}
                                 <FormField control={form.control} name="fullName" render={({ field }) => (
-                                    <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="e.g., Jane Smith" {...field} readOnly={isEditMode} className={isEditMode ? 'bg-muted/50' : ''} /></FormControl><FormMessage /></FormItem>
+                                    <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="e.g., Jane Smith" {...field} /></FormControl><FormMessage /></FormItem>
                                 )} />
                                 <FormField control={form.control} name="email" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Email Address</FormLabel>
-                                    <FormControl><Input type="email" placeholder="e.g., jane.smith@example.com" {...field} readOnly={isEditMode} className={isEditMode ? 'bg-muted/50' : ''}/></FormControl>
+                                    <FormControl><Input type="email" placeholder="e.g., jane.smith@example.com" {...field} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                                 )} />
@@ -360,7 +361,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                     <FormField control={form.control} name="status" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Status</FormLabel>
-                                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} >
                                         <FormControl><SelectTrigger><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl>
                                         <SelectContent><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem></SelectContent>
                                         </Select>
@@ -377,7 +378,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                 <CardHeader>
                                 <CardTitle className="flex items-center gap-2"><KeyRound />Set Initial Password</CardTitle>
                                 <CardDescription>
-                                    The system default password for the selected role will be used. The user must change it on first login.
+                                    You can set a custom password or use the system default.
                                 </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
@@ -387,14 +388,32 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                     <FormControl>
                                         <Input 
                                             type="text"
-                                            value={defaultPasswordForRole}
-                                            className="bg-muted/50"
-                                            readOnly
+                                            {...field}
+                                            placeholder="Leave blank to use default"
+                                            defaultValue={defaultPasswordForRole}
                                         />
                                     </FormControl>
+                                    <FormDescription>Leave this blank to use the default password for this role ({defaultPasswordForRole}).</FormDescription>
                                     <FormMessage />
                                     </FormItem>
                                 )} />
+                                <FormField
+                                    control={form.control}
+                                    name="passwordChangeRequired"
+                                    render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                                        <div className="space-y-0.5">
+                                            <FormLabel>Force password change on next login</FormLabel>
+                                        </div>
+                                        <FormControl>
+                                            <Switch
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                    </FormItem>
+                                    )}
+                                />
                                 </CardContent>
                             </Card>
                         )}
