@@ -50,6 +50,12 @@ const permissionsSchema = {
   canSeeAllRecords: z.boolean().default(false),
 };
 
+const profileEditSchema = z.object({
+  fullName: z.string().min(1, { message: "Full Name is required." }),
+});
+
+export type ProfileEditFormData = z.infer<typeof profileEditSchema>;
+
 const userFormSchema = z.object({
   fullName: z.string().min(1, { message: "Full Name is required." }),
   position: z.string().optional(),
@@ -68,6 +74,7 @@ interface UserFormProps {
   initialData?: User | null;
   isLoading?: boolean;
   submitButtonText?: string;
+  isProfileEditMode?: boolean;
 }
 
 const permissionFields: { id: PermissionKey, label: string, section: string }[] = [
@@ -87,7 +94,7 @@ const permissionFields: { id: PermissionKey, label: string, section: string }[] 
     { id: 'canManageSiteSettings', label: 'Manage Site Settings', section: 'Administration' },
 ];
 
-export function UserForm({ onSubmit, initialData, isLoading = false, submitButtonText = "Submit" }: UserFormProps) {
+export function UserForm({ onSubmit, initialData, isLoading = false, submitButtonText = "Submit", isProfileEditMode = false }: UserFormProps) {
   const { currentUser } = useAuth();
   const { settings: appSettings } = useAppSettings();
 
@@ -237,36 +244,40 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                             <FormField control={form.control} name="position" render={({ field }) => (
                             <FormItem><FormLabel>Position</FormLabel><FormControl><Input placeholder="e.g., Kitchen Manager" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
-                            <FormField control={form.control} name="email" render={({ field }) => (
-                            <FormItem><FormLabel>Email Address</FormLabel><FormControl><Input type="email" placeholder="e.g., jane.smith@example.com" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <FormField control={form.control} name="role" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Role</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={isEditingSelf}>
-                                    <FormControl><SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger></FormControl>
-                                    <SelectContent>
-                                        {currentUser?.role === 'Super Admin' && <SelectItem value="Super Admin">Super Admin</SelectItem>}
-                                        {currentUser?.role === 'Super Admin' && <SelectItem value="Admin">Admin</SelectItem>}
-                                        {(currentUser?.role === 'Super Admin' || currentUser?.role === 'Admin') && <SelectItem value="User">User</SelectItem>}
-                                    </SelectContent>
-                                    </Select>
-                                    <FormDescription>{isEditingSelf ? "You cannot change your own role." : "The user's role."}</FormDescription><FormMessage />
-                                </FormItem>
+                             {!isProfileEditMode && (
+                              <>
+                                <FormField control={form.control} name="email" render={({ field }) => (
+                                <FormItem><FormLabel>Email Address</FormLabel><FormControl><Input type="email" placeholder="e.g., jane.smith@example.com" {...field} readOnly={isEditMode} className={isEditMode ? 'bg-muted/50' : ''}/></FormControl><FormMessage /></FormItem>
                                 )} />
-                                <FormField control={form.control} name="status" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Status</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                                    <FormControl><SelectTrigger><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl>
-                                    <SelectContent><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem></SelectContent>
-                                    </Select>
-                                    <FormDescription>The user's status.</FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                                )} />
-                            </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    <FormField control={form.control} name="role" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Role</FormLabel>
+                                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={isEditingSelf}>
+                                        <FormControl><SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger></FormControl>
+                                        <SelectContent>
+                                            {currentUser?.role === 'Super Admin' && <SelectItem value="Super Admin">Super Admin</SelectItem>}
+                                            {currentUser?.role === 'Super Admin' && <SelectItem value="Admin">Admin</SelectItem>}
+                                            {(currentUser?.role === 'Super Admin' || currentUser?.role === 'Admin') && <SelectItem value="User">User</SelectItem>}
+                                        </SelectContent>
+                                        </Select>
+                                        <FormDescription>{isEditingSelf ? "You cannot change your own role." : "The user's role."}</FormDescription><FormMessage />
+                                    </FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="status" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Status</FormLabel>
+                                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                                        <FormControl><SelectTrigger><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl>
+                                        <SelectContent><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem></SelectContent>
+                                        </Select>
+                                        <FormDescription>The user's status.</FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )} />
+                                </div>
+                              </>
+                            )}
                         </CardContent>
                     </Card>
 
@@ -307,37 +318,46 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                 </div>
 
                 {/* Right Column: Permissions */}
-                <div className="space-y-6">
-                    <Card className="shadow-md border-border">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><ShieldCheck /> User Permissions</CardTitle>
-                            <CardDescription>
-                                Assign permissions for this user.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                        {Object.entries(permissionGroups).map(([section, perms]) => {
-                            if (perms.length === 0) return null;
+                {!isProfileEditMode && (
+                  <div className="space-y-6">
+                      <Card className="shadow-md border-border">
+                          <CardHeader>
+                              <CardTitle className="flex items-center gap-2"><ShieldCheck /> User Permissions</CardTitle>
+                              <CardDescription>
+                                  Assign permissions for this user.
+                              </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                          {Object.entries(permissionGroups).map(([section, perms]) => {
+                              if (perms.length === 0) return null;
 
-                            return (
-                            <div key={section} className="mb-6 last:mb-0">
-                            <h3 className="font-semibold text-lg text-primary mb-2">{section}</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
-                                {perms.map(p => renderPermissionSwitch(p.id, p.label))}
-                                </div>
-                                {section !== 'Administration' && <Separator className="mt-6"/>}
-                            </div>
-                            )
-                        })}
-                        </CardContent>
-                    </Card>
-                     <div className="flex justify-end pt-4">
-                        <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
-                            {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
-                        </Button>
-                    </div>
-                </div>
+                              return (
+                              <div key={section} className="mb-6 last:mb-0">
+                              <h3 className="font-semibold text-lg text-primary mb-2">{section}</h3>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
+                                  {perms.map(p => renderPermissionSwitch(p.id, p.label))}
+                                  </div>
+                                  {section !== 'Administration' && <Separator className="mt-6"/>}
+                              </div>
+                              )
+                          })}
+                          </CardContent>
+                      </Card>
+                      <div className="flex justify-end pt-4">
+                          <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
+                              {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
+                          </Button>
+                      </div>
+                  </div>
+                )}
             </div>
+             {isProfileEditMode && (
+                 <div className="flex justify-end pt-4">
+                    <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
+                        {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
+                    </Button>
+                </div>
+             )}
         </form>
     </Form>
   );
