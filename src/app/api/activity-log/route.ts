@@ -3,8 +3,6 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getAuthFromRequest } from '@/lib/auth';
 
-export const dynamic = 'force-dynamic';
-
 // GET all activity logs
 export async function GET(request: Request) {
   try {
@@ -14,10 +12,10 @@ export async function GET(request: Request) {
     }
 
     const where: any = {};
-    if (user.role === 'User') {
+    if (user.role === 'User' || (user.role === 'Admin' && !user.canSeeAllRecords)) {
       where.userIdentifier = user.userId;
     }
-    // Admins and Super Admins have no where clause, so they see all logs
+    // Super Admins and Admins with canSeeAllRecords have no where clause, so they see all logs
 
     const activityLogs = await prisma.activityLog.findMany({
       where,

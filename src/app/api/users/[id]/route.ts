@@ -5,7 +5,6 @@ import { getAuthFromRequest } from '@/lib/auth';
 import { hash } from 'bcryptjs';
 
 const saltRounds = 10;
-export const dynamic = 'force-dynamic';
 
 interface RouteParams {
   params: {
@@ -60,7 +59,8 @@ export async function PUT(request: Request, { params }: RouteParams) {
         canReadActivityLog,
         canReadUsers, canWriteUsers,
         canReadDepartments, canWriteDepartments,
-        canManageSiteSettings
+        canManageSiteSettings,
+        canSeeAllRecords
     } = data;
     
     // Authorization check
@@ -90,8 +90,8 @@ export async function PUT(request: Request, { params }: RouteParams) {
         canReadAttendance, canExportAttendance,
         canReadActivityLog,
         canReadUsers, canWriteUsers,
-        canReadDepartments, canWriteDepartments,
-        canManageSiteSettings
+        canManageSiteSettings,
+        canSeeAllRecords
     };
 
     if (password) {

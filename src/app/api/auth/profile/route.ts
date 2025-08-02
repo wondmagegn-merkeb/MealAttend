@@ -2,8 +2,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-export const dynamic = 'force-dynamic';
-
 export async function PUT(request: Request) {
   try {
     // In a real app, you'd get the user ID from a validated JWT token.

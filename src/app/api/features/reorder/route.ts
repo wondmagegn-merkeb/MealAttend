@@ -3,8 +3,6 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getAuthFromRequest } from '@/lib/auth';
 
-export const dynamic = 'force-dynamic';
-
 export async function POST(request: Request) {
     const user = await getAuthFromRequest(request);
     if (!user || user.role !== 'Super Admin') {

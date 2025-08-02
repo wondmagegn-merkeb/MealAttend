@@ -5,8 +5,6 @@ import { generateNextId } from '@/lib/idGenerator';
 import { startOfDay } from 'date-fns';
 import type { MealType } from '@/types';
 
-export const dynamic = 'force-dynamic';
-
 // Handle a QR code scan and record attendance
 export async function POST(request: Request) {
   try {

@@ -4,8 +4,6 @@ import prisma from '@/lib/prisma';
 import { generateNextId } from '@/lib/idGenerator';
 import { getAuthFromRequest } from '@/lib/auth';
 
-export const dynamic = 'force-dynamic';
-
 // GET all students
 export async function GET(request: Request) {
   try {
@@ -16,8 +14,8 @@ export async function GET(request: Request) {
     }
 
     const whereClause: any = {};
-    // Only Super Admins see all students. Admins and Users see only their own.
-    if (user.role === 'Admin' || user.role === 'User') {
+    // Super Admins and Admins with canSeeAllRecords see all students.
+    if (user.role === 'User' || (user.role === 'Admin' && !user.canSeeAllRecords)) {
       whereClause.createdById = user.id;
     }
 

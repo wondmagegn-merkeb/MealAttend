@@ -1,6 +1,4 @@
 
-'use server';
-
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { generateNextId } from '@/lib/idGenerator';
@@ -9,7 +7,6 @@ import { getAuthFromRequest } from '@/lib/auth';
 import { sendWelcomeEmail } from '@/lib/email';
 
 const saltRounds = 10;
-export const dynamic = 'force-dynamic';
 
 // GET all users
 export async function GET(request: Request) {
@@ -21,8 +18,8 @@ export async function GET(request: Request) {
     }
 
     const whereClause: any = {};
-    // Admins see users they created. Super Admins see all.
-    if (user.role === 'Admin') {
+    // Admins see users they created unless they have the canSeeAllRecords permission. Super Admins see all.
+    if (user.role === 'User' || (user.role === 'Admin' && !user.canSeeAllRecords)) {
       whereClause.createdById = user.id;
     } else if (user.role === 'User') {
       // Users should not be able to see other users at all, return empty
@@ -75,7 +72,6 @@ export async function POST(request: Request) {
         canReadAttendance, canExportAttendance,
         canReadActivityLog,
         canReadUsers, canWriteUsers,
-        canReadDepartments, canWriteDepartments,
         canManageSiteSettings,
         canSeeAllRecords,
     } = data;

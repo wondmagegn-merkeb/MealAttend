@@ -4,8 +4,6 @@ import prisma from '@/lib/prisma';
 import { startOfDay, endOfDay } from 'date-fns';
 import { getAuthFromRequest } from '@/lib/auth';
 
-export const dynamic = 'force-dynamic';
-
 // GET all attendance records, with optional filters and role-based access control
 export async function GET(request: Request) {
   try {
@@ -23,7 +21,7 @@ export async function GET(request: Request) {
     const where: any = {};
 
     // Role-based filtering for students
-    if (user.role === 'Admin' || user.role === 'User') {
+    if (user.role === 'User' || (user.role === 'Admin' && !user.canSeeAllRecords)) {
       const allowedStudents = await prisma.student.findMany({
         where: { createdById: user.id },
         select: { id: true },

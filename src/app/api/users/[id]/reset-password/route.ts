@@ -5,7 +5,6 @@ import { getAuthFromRequest } from '@/lib/auth';
 import { hash } from 'bcryptjs';
 
 const saltRounds = 10;
-export const dynamic = 'force-dynamic';
 
 interface RouteParams {
   params: {
@@ -30,7 +29,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     }
     
     // Authorization: Ensure Admins can only reset users they created, Super Admins can reset anyone
-    if (editor.role === 'Admin' && userToReset.createdById !== editor.id) {
+    if (editor.role === 'Admin' && !editor.canSeeAllRecords && userToReset.createdById !== editor.id) {
         return NextResponse.json({ message: 'You do not have permission to reset this user\'s password.' }, { status: 403 });
     }
 

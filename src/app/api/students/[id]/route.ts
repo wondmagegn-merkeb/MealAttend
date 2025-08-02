@@ -2,8 +2,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-export const dynamic = 'force-dynamic';
-
 interface RouteParams {
   params: {
     id: string; // This is the internal ID (e.g., ADERA/STU/...)
