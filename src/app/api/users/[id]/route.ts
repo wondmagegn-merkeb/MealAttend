@@ -52,13 +52,12 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     const data = await request.json();
     const { 
-        fullName, email, position, role, status, profileImageURL, password,
+        fullName, email, position, role, status, profileImageURL, password, passwordChangeRequired,
         canReadDashboard, canScanId,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
         canReadAttendance, canExportAttendance,
         canReadActivityLog,
         canReadUsers, canWriteUsers,
-        canReadDepartments, canWriteDepartments,
         canManageSiteSettings,
         canSeeAllRecords
     } = data;
@@ -79,11 +78,11 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     const dataToUpdate: any = {
         fullName,
-        email,
         position,
         role,
         status,
         profileImageURL,
+        passwordChangeRequired,
         // Permissions
         canReadDashboard, canScanId,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
@@ -93,10 +92,15 @@ export async function PUT(request: Request, { params }: RouteParams) {
         canManageSiteSettings,
         canSeeAllRecords
     };
+    
+    // Only update email if it's different (and not for profile edit mode, though that's a different form)
+    if (email && email !== userToEdit.email) {
+      dataToUpdate.email = email;
+    }
 
     if (password) {
         dataToUpdate.password = await hash(password, saltRounds);
-        dataToUpdate.passwordChangeRequired = true; // Force user to change password on next login
+        // passwordChangeRequired is already in the main dataToUpdate object from the form
     }
 
     const updatedUser = await prisma.user.update({
@@ -107,6 +111,9 @@ export async function PUT(request: Request, { params }: RouteParams) {
   } catch (error: any) {
     if ((error as any).code === 'P2025') { // Record to update not found
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
+    }
+     if ((error as any).code === 'P2002' && (error as any).meta?.target?.includes('email')) {
+      return NextResponse.json({ message: 'A user with this email already exists.'}, { status: 409 });
     }
     return NextResponse.json(
       { message: 'Failed to update user', error: (error as any).message },

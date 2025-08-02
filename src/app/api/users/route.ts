@@ -73,6 +73,7 @@ export async function POST(request: Request) {
         canReadActivityLog,
         canReadUsers, canWriteUsers,
         canManageSiteSettings,
+        canSeeAllRecords,
     } = data;
 
     if (!fullName || !email || !role || !status) {
@@ -125,6 +126,7 @@ export async function POST(request: Request) {
         canReadActivityLog,
         canReadUsers, canWriteUsers,
         canManageSiteSettings,
+        canSeeAllRecords,
       },
     });
     

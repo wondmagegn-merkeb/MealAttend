@@ -49,6 +49,7 @@ const permissionsSchema = {
   canReadUsers: z.boolean().default(false),
   canWriteUsers: z.boolean().default(false),
   canManageSiteSettings: z.boolean().default(false),
+  canSeeAllRecords: z.boolean().default(false),
 };
 
 const userFormSchema = z.object({
@@ -92,6 +93,7 @@ const fileToDataUri = (file: File): Promise<string | null> => {
 const permissionFields: { id: PermissionKey, label: string, section: string }[] = [
     { id: 'canReadDashboard', label: 'View Dashboard', section: 'General Access' },
     { id: 'canScanId', label: 'Scan ID Cards', section: 'General Access' },
+    { id: 'canSeeAllRecords', label: 'View All Records', section: 'General Access' },
     { id: 'canCreateStudents', label: 'Create Students', section: 'Student Management' },
     { id: 'canReadStudents', label: 'Read Students', section: 'Student Management' },
     { id: 'canWriteStudents', label: 'Update Students', section: 'Student Management' },
@@ -124,6 +126,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       position: initialData.position || "",
       status: initialData.status || "Active",
       profileImageURL: initialData.profileImageURL || "",
+      password: "", // Always clear password on edit form load
     } : {
       fullName: "",
       position: "",
@@ -132,6 +135,12 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       status: "Active",
       profileImageURL: "",
       passwordChangeRequired: true,
+      // Initialize all perms to false
+      canReadDashboard: false, canScanId: false, canSeeAllRecords: false, canCreateStudents: false,
+      canReadStudents: false, canWriteStudents: false, canDeleteStudents: false,
+      canExportStudents: false, canReadAttendance: false, canExportAttendance: false,
+      canReadActivityLog: false, canReadUsers: false, canWriteUsers: false,
+      canManageSiteSettings: false,
     },
   });
   
@@ -144,6 +153,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
         position: initialData.position || "",
         status: initialData.status || "Active",
         profileImageURL: initialData.profileImageURL || "",
+        password: "", // Always clear password on edit form load
       });
       setImagePreview(initialData.profileImageURL || null);
     } else {
@@ -157,10 +167,15 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   
   // Effect to automatically set permissions when role changes
   useEffect(() => {
-    if (isProfileEditMode) return;
+    if (isProfileEditMode || isEditMode) return;
   
     const setAllPermissions = (value: boolean) => {
-      permissionFields.forEach(p => form.setValue(p.id as any, value, { shouldValidate: true }));
+      permissionFields.forEach(p => {
+        // Only allow setting permissions the current user has
+        if(currentUser?.role === 'Super Admin' || currentUser?.[p.id]) {
+            form.setValue(p.id as any, value, { shouldValidate: true })
+        }
+      });
     };
   
     if (watchedRole === 'Super Admin') {
@@ -174,7 +189,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       const userDefaultPerms: PermissionKey[] = ['canReadStudents'];
       userDefaultPerms.forEach(p => form.setValue(p as any, true, { shouldValidate: true }));
     }
-  }, [watchedRole, form, isProfileEditMode]);
+  }, [watchedRole, form, isProfileEditMode, isEditMode, currentUser]);
   
    // Effect to set default password when role changes on a new user form
   useEffect(() => {
@@ -237,11 +252,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   const isEditingSelf = currentUser?.id === initialData?.id;
 
   const renderPermissionSwitch = (id: PermissionKey, label: string) => {
-    // Super Admins can see and grant all permissions.
-    if (currentUser?.role === 'Super Admin') {
-      // No change, render everything.
-    } else if (!currentUser?.[id]) {
-      // If the current admin does not have this permission, do not render the switch.
+     if (currentUser?.role !== 'Super Admin' && !currentUser?.[id]) {
       return null;
     }
 
@@ -278,7 +289,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
 
   return (
     <Form {...form}>
-        <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-2">
+        <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6">
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                 {/* Left Column */}
@@ -323,39 +334,6 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                             </FormItem>
                             )} />
                             
-                            {!isEditMode && !isProfileEditMode && (
-                                <FormField
-                                control={form.control as any}
-                                name="password"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Password</FormLabel>
-                                    <FormControl>
-                                        <div className="relative">
-                                        <Input
-                                            type={showPassword ? "text" : "password"}
-                                            {...field}
-                                            placeholder="Default password"
-                                            autoComplete="new-password"
-                                        />
-                                        <Button
-                                            type="button" variant="ghost" size="sm"
-                                            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-2 text-muted-foreground hover:bg-transparent"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                        >
-                                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                        </Button>
-                                        </div>
-                                    </FormControl>
-                                    <FormDescription>
-                                        This is the initial password for the user. It can be changed here.
-                                    </FormDescription>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                                />
-                            )}
-
                              <FormItem>
                                 <FormLabel>Profile Image</FormLabel>
                                 <div className="flex items-center gap-4">
@@ -421,9 +399,71 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
 
                         </CardContent>
                     </Card>
+
+                    {/* Password Card */}
+                    {!isProfileEditMode && (
+                         <Card className="shadow-md border-border">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2"><KeyRound/> {isEditMode ? "Password Management" : "Set Initial Password"}</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                <FormField
+                                    control={form.control as any}
+                                    name="password"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                        <FormLabel>{isEditMode ? "Reset Password" : "Password"}</FormLabel>
+                                        <FormControl>
+                                            <div className="relative">
+                                            <Input
+                                                type={showPassword ? "text" : "password"}
+                                                {...field}
+                                                placeholder={isEditMode ? "Leave blank to keep current password" : "Enter initial password"}
+                                                autoComplete="new-password"
+                                            />
+                                            <Button
+                                                type="button" variant="ghost" size="sm"
+                                                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-2 text-muted-foreground hover:bg-transparent"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                            >
+                                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                            </Button>
+                                            </div>
+                                        </FormControl>
+                                        <FormDescription>
+                                            {isEditMode 
+                                            ? "Optionally set a new password for the user." 
+                                            : "This is the initial password for the user. It can be changed here."}
+                                        </FormDescription>
+                                        <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control as any}
+                                    name="passwordChangeRequired"
+                                    render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                        <div className="space-y-0.5">
+                                        <FormLabel>Force Password Change</FormLabel>
+                                        <FormDescription>If enabled, user must change this password on next login.</FormDescription>
+                                        </div>
+                                        <FormControl>
+                                        <Switch
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                        />
+                                        </FormControl>
+                                    </FormItem>
+                                    )}
+                                />
+                            </CardContent>
+                         </Card>
+                    )}
+
                 </div>
 
-                {/* Right Column */}
+                {/* Right Column: Permissions */}
                 {!isProfileEditMode && (
                     <div className="space-y-6">
                         <Card className="shadow-md border-border">
@@ -450,22 +490,15 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                             })}
                             </CardContent>
                         </Card>
-                         <div className="flex justify-end pt-1">
-                            <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
-                                {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
-                            </Button>
-                        </div>
                     </div>
                 )}
             </div>
 
-             {isProfileEditMode && (
-                <div className="flex justify-end pt-1">
-                    <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
-                        {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
-                    </Button>
-                </div>
-             )}
+            <div className="flex justify-end pt-4">
+                <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
+                    {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
+                </Button>
+            </div>
         </form>
     </Form>
   );
