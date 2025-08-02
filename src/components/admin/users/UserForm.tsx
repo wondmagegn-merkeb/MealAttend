@@ -64,7 +64,6 @@ const userFormSchema = z.object({
 const profileEditFormSchema = z.object({
   fullName: z.string().min(1, { message: "Full Name is required." }),
   email: z.string().email({ message: "Invalid email address." }).min(1, { message: "Email is required." }),
-  profileImageURL: z.string().optional().or(z.literal("")),
 });
 
 export type UserFormData = z.infer<typeof userFormSchema>;
@@ -389,15 +388,22 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                             })}
                             </CardContent>
                         </Card>
+                         <div className="flex justify-end pt-4">
+                            <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
+                                {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
+                            </Button>
+                        </div>
                     </div>
                 )}
             </div>
 
-            <div className="flex justify-end pt-4">
-                <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
-                    {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
-                </Button>
-            </div>
+             {isProfileEditMode && (
+                <div className="flex justify-end pt-4">
+                    <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
+                        {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
+                    </Button>
+                </div>
+            )}
         </form>
     </Form>
   );
