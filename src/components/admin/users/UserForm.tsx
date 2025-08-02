@@ -58,7 +58,6 @@ const userFormSchema = z.object({
   role: z.enum(['Super Admin', 'Admin', 'User'], { errorMap: () => ({ message: "Please select a role." }) }),
   status: z.enum(['Active', 'Inactive'], { errorMap: () => ({ message: "Please select a status." }) }),
   profileImageURL: z.string().optional().or(z.literal("")),
-  password: z.string().optional(),
   passwordChangeRequired: z.boolean().default(true),
   ...permissionsSchema,
 });
@@ -124,7 +123,6 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       position: initialData.position || "",
       status: initialData.status || "Active",
       profileImageURL: initialData.profileImageURL || "",
-      password: "", // Always start with empty password field
     } : {
       fullName: "",
       position: "",
@@ -132,7 +130,6 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       role: "User",
       status: "Active",
       profileImageURL: "",
-      password: "",
       passwordChangeRequired: true,
     },
   });
@@ -146,7 +143,6 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
         position: initialData.position || "",
         status: initialData.status || "Active",
         profileImageURL: initialData.profileImageURL || "",
-        password: "",
       });
       setImagePreview(initialData.profileImageURL || null);
     } else {
@@ -220,25 +216,29 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
         profileImageURL: finalProfileUrl,
     };
     
-    // Don't submit an empty password string
-    if ('password' in dataToSubmit && !dataToSubmit.password) {
-        delete (dataToSubmit as any).password;
-    }
-
     onSubmit(dataToSubmit);
   };
   
   const isEditingSelf = currentUser?.id === initialData?.id;
 
   const renderPermissionSwitch = (id: PermissionKey, label: string) => {
-    let isDisabled = false; // By default, permissions are editable
+    let isDisabled = false;
     let toolTipContent = "";
 
-    // An Admin can't grant a permission they don't have themselves.
-    if (currentUser?.role === 'Admin' && !currentUser[id]) {
-      isDisabled = true;
-      toolTipContent = "You do not have this permission to grant it.";
+    // Super Admin can do anything
+    if (currentUser?.role !== 'Super Admin') {
+        // An Admin can't grant a permission they don't have themselves.
+        if (!currentUser?.[id]) {
+          isDisabled = true;
+          toolTipContent = "You do not have this permission to grant it.";
+        }
     }
+    
+    // Prevent user from changing critical admin settings unless they are Super Admin
+    if (id === 'canManageSiteSettings' && currentUser?.role !== 'Super Admin') {
+        isDisabled = true;
+    }
+
 
     return (
       <FormField
@@ -272,22 +272,6 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     return acc;
   }, {} as Record<string, typeof permissionFields>);
   
-  const getPasswordPlaceholder = () => {
-    if (isEditMode) {
-        return "Leave blank to keep current password";
-    }
-    switch (watchedRole) {
-        case 'User':
-            return appSettings.defaultUserPassword ? "Default password for User is set" : "Default will be: 'password123'";
-        case 'Admin':
-            return appSettings.defaultAdminPassword ? "Default password for Admin is set" : "Default will be: 'password123'";
-        case 'Super Admin':
-             return appSettings.defaultSuperAdminPassword ? "Default password for Super Admin is set" : "Default will be: 'password123'";
-        default:
-            return "Default will be: 'password123'";
-    }
-  };
-
 
   return (
     <Form {...form}>
@@ -336,6 +320,35 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                             </FormItem>
                             )} />
 
+                             <FormItem>
+                                <FormLabel>Profile Image</FormLabel>
+                                <div className="flex items-center gap-4">
+                                    <Avatar className="h-20 w-20 rounded-md">
+                                        <AvatarImage src={imagePreview || `https://placehold.co/80x80.png?text=No+Img`} alt="Profile preview" className="object-cover" data-ai-hint="user avatar" />
+                                        <AvatarFallback>IMG</AvatarFallback>
+                                    </Avatar>
+                                    <Input 
+                                    id="picture" 
+                                    type="file" 
+                                    className="hidden" 
+                                    ref={fileInputRef} 
+                                    onChange={handleImageChange}
+                                    accept="image/*"
+                                    disabled={isLoading}
+                                    />
+                                    <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isLoading}>
+                                    <Upload className="mr-2 h-4 w-4" />
+                                    {selectedFile ? 'Change Image' : 'Upload Image'}
+                                    </Button>
+                                </div>
+                                <FormDescription>
+                                    {selectedFile ? `Selected: ${selectedFile.name}` : "Select an image (max 2MB)."} It will be processed on submission.
+                                </FormDescription>
+                                <FormField control={form.control} name="profileImageURL" render={({ field }) => <Input type="hidden" {...field} />} />
+                                {form.formState.errors.profileImageURL && (<FormMessage>{(form.formState.errors.profileImageURL as any).message}</FormMessage>)}
+                            </FormItem>
+
+
                             {!isProfileEditMode && (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <FormField control={form.control as any} name="role" render={({ field }) => (
@@ -370,35 +383,6 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                 </div>
                             )}
 
-                             {isProfileEditMode && (
-                                <FormItem>
-                                    <FormLabel>Profile Image</FormLabel>
-                                    <div className="flex items-center gap-4">
-                                        <Avatar className="h-20 w-20 rounded-md">
-                                            <AvatarImage src={imagePreview || `https://placehold.co/80x80.png?text=No+Img`} alt="Profile preview" className="object-cover" data-ai-hint="user avatar" />
-                                            <AvatarFallback>IMG</AvatarFallback>
-                                        </Avatar>
-                                        <Input 
-                                        id="picture" 
-                                        type="file" 
-                                        className="hidden" 
-                                        ref={fileInputRef} 
-                                        onChange={handleImageChange}
-                                        accept="image/*"
-                                        disabled={isLoading}
-                                        />
-                                        <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isLoading}>
-                                        <Upload className="mr-2 h-4 w-4" />
-                                        {selectedFile ? 'Change Image' : 'Upload Image'}
-                                        </Button>
-                                    </div>
-                                    <FormDescription>
-                                        {selectedFile ? `Selected: ${selectedFile.name}` : "Select an image (max 2MB)."} It will be processed on submission.
-                                    </FormDescription>
-                                    <FormField control={form.control} name="profileImageURL" render={({ field }) => <Input type="hidden" {...field} />} />
-                                    {form.formState.errors.profileImageURL && (<FormMessage>{(form.formState.errors.profileImageURL as any).message}</FormMessage>)}
-                                </FormItem>
-                            )}
                         </CardContent>
                     </Card>
                 </div>
