@@ -68,7 +68,8 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
       }
 
       // If the page requires a specific permission and the user doesn't have it, deny access.
-      if (permission && currentUser.role !== 'Super Admin' && !currentUser[permission]) {
+      // This now applies to ALL users, including Super Admins.
+      if (permission && !currentUser[permission]) {
         toast({
           title: "Access Denied",
           description: "You do not have permission to view this page.",
@@ -92,7 +93,7 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
           }
           
           let hasRequiredPermission = true;
-          if (permission && currentUser.role !== 'Super Admin') {
+          if (permission) {
             hasRequiredPermission = !!currentUser[permission];
           }
 
