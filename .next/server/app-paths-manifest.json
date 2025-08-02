@@ -1,7 +1,11 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
+  "/admin/attendance/page": "app/admin/attendance/page.js",
   "/admin/page": "app/admin/page.js",
   "/admin/profile/edit/page": "app/admin/profile/edit/page.js",
+  "/admin/profile/my-permissions/page": "app/admin/profile/my-permissions/page.js",
+  "/admin/settings/page": "app/admin/settings/page.js",
+  "/admin/students/page": "app/admin/students/page.js",
   "/admin/super-settings/page": "app/admin/super-settings/page.js",
   "/admin/users/[id]/edit/page": "app/admin/users/[id]/edit/page.js",
   "/admin/users/page": "app/admin/users/page.js",
