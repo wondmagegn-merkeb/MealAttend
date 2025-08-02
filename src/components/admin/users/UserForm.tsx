@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { Loader2, ShieldCheck, KeyRound, Eye, EyeOff } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { User, PermissionKey } from '@/types';
@@ -169,16 +169,14 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     }
   }, [watchedRole, form, isProfileEditMode, isEditMode, currentUser]);
   
-   // Effect to set default password when role changes on a new user form
-  useEffect(() => {
+  const defaultPasswordForRole = useMemo(() => {
     if (!isEditMode && appSettings) {
-      let defaultPassword = '';
-      if (watchedRole === 'User') defaultPassword = appSettings.defaultUserPassword || '';
-      else if (watchedRole === 'Admin') defaultPassword = appSettings.defaultAdminPassword || '';
-      else if (watchedRole === 'Super Admin') defaultPassword = appSettings.defaultSuperAdminPassword || '';
-      form.setValue('password' as any, defaultPassword);
+        if (watchedRole === 'User') return appSettings.defaultUserPassword || '';
+        if (watchedRole === 'Admin') return appSettings.defaultAdminPassword || '';
+        if (watchedRole === 'Super Admin') return appSettings.defaultSuperAdminPassword || '';
     }
-  }, [watchedRole, isEditMode, appSettings, form]);
+    return '';
+  }, [watchedRole, isEditMode, appSettings]);
 
   const onFormSubmit = async (data: UserFormData | ProfileEditFormData) => {
     onSubmit(data);
@@ -214,6 +212,9 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   };
 
   const permissionGroups = permissionFields.reduce((acc, perm) => {
+    if (currentUser?.role !== 'Super Admin' && !currentUser?.[perm.id]) {
+        return acc;
+    }
     if (!acc[perm.section]) {
       acc[perm.section] = [];
     }
@@ -336,6 +337,8 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                             <Input
                                                 type={showPassword ? "text" : "password"}
                                                 {...field}
+                                                defaultValue={defaultPasswordForRole}
+                                                key={defaultPasswordForRole} // Re-mount when default changes
                                                 placeholder={"Enter initial password"}
                                                 autoComplete="new-password"
                                             />
@@ -373,14 +376,13 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                             </CardHeader>
                             <CardContent>
                             {Object.entries(permissionGroups).map(([section, perms]) => {
-                                const visiblePerms = perms.filter(p => currentUser?.role === 'Super Admin' || currentUser?.[p.id]);
-                                if (visiblePerms.length === 0) return null;
+                                if (perms.length === 0) return null;
 
                                 return (
                                 <div key={section} className="mb-6 last:mb-0">
                                 <h3 className="font-semibold text-lg text-primary mb-2">{section}</h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
-                                    {visiblePerms.map(p => renderPermissionSwitch(p.id, p.label))}
+                                    {perms.map(p => renderPermissionSwitch(p.id, p.label))}
                                     </div>
                                     {section !== 'Administration' && <Separator className="mt-6"/>}
                                 </div>
@@ -396,14 +398,6 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                     </div>
                 )}
             </div>
-
-             {isProfileEditMode && (
-                <div className="flex justify-end pt-4">
-                    <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
-                        {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
-                    </Button>
-                </div>
-            )}
         </form>
     </Form>
   );
