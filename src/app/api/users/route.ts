@@ -1,4 +1,6 @@
 
+'use server';
+
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { generateNextId } from '@/lib/idGenerator';
@@ -19,11 +21,13 @@ export async function GET(request: Request) {
     }
 
     const whereClause: any = {};
-    if (user.role === 'Admin' || user.role === 'User') {
-      // Admins and Users can only see the users they created
+    // Admins see users they created. Super Admins see all.
+    if (user.role === 'Admin') {
       whereClause.createdById = user.id;
+    } else if (user.role === 'User') {
+      // Users should not be able to see other users at all, return empty
+      return NextResponse.json([]);
     }
-    // Super Admins have no whereClause, so they see everyone.
 
     const users = await prisma.user.findMany({
       where: whereClause,
@@ -72,7 +76,8 @@ export async function POST(request: Request) {
         canReadActivityLog,
         canReadUsers, canWriteUsers,
         canReadDepartments, canWriteDepartments,
-        canManageSiteSettings
+        canManageSiteSettings,
+        canSeeAllRecords,
     } = data;
 
     if (!fullName || !email || !role || !status) {
@@ -117,15 +122,17 @@ export async function POST(request: Request) {
         status,
         profileImageURL,
         passwordChangeRequired: passwordChangeRequired,
-        createdById: creator.id,
+        createdBy: {
+            connect: { id: creator.id }
+        },
         // Permissions
         canReadDashboard, canScanId,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
         canReadAttendance, canExportAttendance,
         canReadActivityLog,
         canReadUsers, canWriteUsers,
-        canReadDepartments, canWriteDepartments,
         canManageSiteSettings,
+        canSeeAllRecords,
       },
     });
     
@@ -148,6 +155,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(userWithoutPassword, { status: 201 });
   } catch (error: any) {
+    console.error('Error creating user:', error);
     if ((error as any).code === 'P2002') {
       return NextResponse.json(
         { message: 'A user with this email or ID already exists.', error: (error as any).message },
