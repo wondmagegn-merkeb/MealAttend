@@ -65,6 +65,7 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json();
+    console.log(data)
     const { 
         fullName, email, position, role, status, password,
         canReadDashboard, canScanId,
@@ -76,7 +77,7 @@ export async function POST(request: Request) {
         canSeeAllRecords,
     } = data;
 
-    if (!fullName || !email || !role || !status) {
+    if (!fullName || !email || !role || !status || !createdById) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
     }
     

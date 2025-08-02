@@ -11,7 +11,11 @@ import Link from 'next/link';
 import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
 
-const createUser = async (data: UserFormData) => {
+type CreateUserPayload = UserFormData & { 
+  createdById: string; 
+};
+
+const createUser = async (data: CreateUserPayload) => {
   const token = localStorage.getItem('mealAttendAuthToken_v1');
   const response = await fetch('/api/users', {
     method: 'POST',
@@ -58,7 +62,16 @@ export default function NewUserPage() {
 
 
   const handleFormSubmit = async (data: UserFormData) => {
-    mutation.mutate(data);
+     if (!currentUser?.id) {
+        toast({ title: "Authentication Error", description: "Could not identify the current user.", variant: "destructive" });
+        return;
+    }
+
+    const payload: CreateUserPayload = {
+      ...data,
+      createdById: currentUser.id, // Add the creator's internal ID
+    };
+    mutation.mutate(payload);
   };
 
   return (
