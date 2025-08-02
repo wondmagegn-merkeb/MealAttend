@@ -23,11 +23,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useEffect, useState, useRef, useMemo } from "react";
-import { Loader2, ShieldCheck, KeyRound, Eye, EyeOff } from "lucide-react";
+import { useEffect, useState, useMemo } from "react";
+import { Loader2, ShieldCheck, KeyRound } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { User, PermissionKey } from '@/types';
-import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
@@ -58,23 +57,17 @@ const userFormSchema = z.object({
   role: z.enum(['Super Admin', 'Admin', 'User'], { errorMap: () => ({ message: "Please select a role." }) }),
   status: z.enum(['Active', 'Inactive'], { errorMap: () => ({ message: "Please select a status." }) }),
   password: z.string().optional(),
+  passwordChangeRequired: z.boolean().default(true),
   ...permissionsSchema,
 });
 
-const profileEditFormSchema = z.object({
-  fullName: z.string().min(1, { message: "Full Name is required." }),
-  email: z.string().email({ message: "Invalid email address." }).min(1, { message: "Email is required." }),
-});
-
 export type UserFormData = z.infer<typeof userFormSchema>;
-export type ProfileEditFormData = z.infer<typeof profileEditFormSchema>;
 
 interface UserFormProps {
   onSubmit: (data: any) => void; 
   initialData?: User | null;
   isLoading?: boolean;
   submitButtonText?: string;
-  isProfileEditMode?: boolean;
 }
 
 const permissionFields: { id: PermissionKey, label: string, section: string }[] = [
@@ -94,17 +87,14 @@ const permissionFields: { id: PermissionKey, label: string, section: string }[] 
     { id: 'canManageSiteSettings', label: 'Manage Site Settings', section: 'Administration' },
 ];
 
-export function UserForm({ onSubmit, initialData, isLoading = false, submitButtonText = "Submit", isProfileEditMode = false }: UserFormProps) {
-  const { toast } = useToast();
+export function UserForm({ onSubmit, initialData, isLoading = false, submitButtonText = "Submit" }: UserFormProps) {
   const { currentUser } = useAuth();
   const { settings: appSettings } = useAppSettings();
-  const [showPassword, setShowPassword] = useState(false);
 
-  const currentSchema = isProfileEditMode ? profileEditFormSchema : userFormSchema;
   const isEditMode = !!initialData;
 
-  const form = useForm<z.infer<typeof currentSchema>>({
-    resolver: zodResolver(currentSchema),
+  const form = useForm<z.infer<typeof userFormSchema>>({
+    resolver: zodResolver(userFormSchema),
     defaultValues: initialData ? {
       ...initialData,
       position: initialData.position || "",
@@ -116,6 +106,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       email: "",
       role: "User",
       status: "Active",
+      passwordChangeRequired: true,
       // Initialize all perms to false
       canReadDashboard: false, canScanId: false, canSeeAllRecords: false, canCreateStudents: false,
       canReadStudents: false, canWriteStudents: false, canDeleteStudents: false,
@@ -125,7 +116,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     },
   });
   
-  const watchedRole = form.watch('role' as any); // Use 'as any' to satisfy TS on profile edit mode
+  const watchedRole = form.watch('role');
 
   useEffect(() => {
     if (initialData) {
@@ -133,26 +124,18 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
         ...initialData,
         position: initialData.position || "",
         status: initialData.status || "Active",
-        password: "", // Always clear password on edit form load
+        password: "",
       });
-    } else {
-       // Set initial permissions for a new user form
-       permissionFields.forEach(p => {
-            form.setValue(p.id as any, false);
-       });
     }
   }, [initialData, form]);
   
-  // Effect to automatically set permissions when role changes
+  // Effect to automatically set permissions when role changes on a NEW user form.
   useEffect(() => {
-    if (isProfileEditMode || isEditMode) return;
+    if (isEditMode) return;
   
     const setAllPermissions = (value: boolean) => {
       permissionFields.forEach(p => {
-        // Only allow setting permissions the current user has
-        if(currentUser?.role === 'Super Admin' || currentUser?.[p.id]) {
-            form.setValue(p.id as any, value, { shouldValidate: true })
-        }
+          form.setValue(p.id, value, { shouldValidate: true })
       });
     };
   
@@ -160,25 +143,31 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       setAllPermissions(true);
     } else if (watchedRole === 'Admin') {
       setAllPermissions(true);
-      form.setValue('canManageSiteSettings' as any, false, {shouldValidate: true});
+      form.setValue('canManageSiteSettings', false, {shouldValidate: true});
     } else if (watchedRole === 'User') {
       setAllPermissions(false); // Reset to false, let admin choose
       // Set specific defaults for 'User' role
       const userDefaultPerms: PermissionKey[] = ['canReadStudents'];
-      userDefaultPerms.forEach(p => form.setValue(p as any, true, { shouldValidate: true }));
+      userDefaultPerms.forEach(p => form.setValue(p, true, { shouldValidate: true }));
     }
-  }, [watchedRole, form, isProfileEditMode, isEditMode, currentUser]);
+  }, [watchedRole, form, isEditMode]);
   
   const defaultPasswordForRole = useMemo(() => {
-    if (!isEditMode && appSettings) {
-        if (watchedRole === 'User') return appSettings.defaultUserPassword || '';
-        if (watchedRole === 'Admin') return appSettings.defaultAdminPassword || '';
-        if (watchedRole === 'Super Admin') return appSettings.defaultSuperAdminPassword || '';
+    if (appSettings) {
+        if (watchedRole === 'User') return appSettings.defaultUserPassword || 'password123';
+        if (watchedRole === 'Admin') return appSettings.defaultAdminPassword || 'password123';
+        if (watchedRole === 'Super Admin') return appSettings.defaultSuperAdminPassword || 'password123';
     }
-    return '';
-  }, [watchedRole, isEditMode, appSettings]);
+    return 'password123';
+  }, [watchedRole, appSettings]);
 
-  const onFormSubmit = async (data: UserFormData | ProfileEditFormData) => {
+  useEffect(() => {
+      if (!isEditMode) {
+          form.setValue('password', defaultPasswordForRole);
+      }
+  }, [defaultPasswordForRole, form, isEditMode]);
+
+  const onFormSubmit = async (data: UserFormData) => {
     onSubmit(data);
   };
   
@@ -192,7 +181,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     return (
       <FormField
         key={id}
-        control={form.control as any}
+        control={form.control}
         name={id}
         render={({ field }) => (
           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
@@ -235,168 +224,119 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                             <CardTitle>User Details</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            {initialData?.userId && !isProfileEditMode && (
+                            {initialData?.userId && (
                                 <FormItem>
                                 <FormLabel>User ID</FormLabel>
                                 <FormControl><Input value={initialData.userId} readOnly className="bg-muted/50" /></FormControl>
                                 <FormDescription>This ID is system-generated and cannot be changed.</FormDescription>
                                 </FormItem>
                             )}
-
                             <FormField control={form.control} name="fullName" render={({ field }) => (
+                                <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="e.g., Jane Smith" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="position" render={({ field }) => (
+                            <FormItem><FormLabel>Position</FormLabel><FormControl><Input placeholder="e.g., Kitchen Manager" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="email" render={({ field }) => (
+                            <FormItem><FormLabel>Email Address</FormLabel><FormControl><Input type="email" placeholder="e.g., jane.smith@example.com" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <FormField control={form.control} name="role" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Full Name</FormLabel>
-                                    <FormControl>
-                                        <Input 
-                                            placeholder="e.g., Jane Smith" 
-                                            {...field} 
-                                            readOnly={isEditMode}
-                                            className={isEditMode ? "bg-muted/50" : ""}
-                                        />
-                                    </FormControl>
-                                    {isEditMode && <FormDescription>User full name cannot be changed after creation.</FormDescription>}
+                                    <FormLabel>Role</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={isEditingSelf}>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                        {currentUser?.role === 'Super Admin' && <SelectItem value="Super Admin">Super Admin</SelectItem>}
+                                        {currentUser?.role === 'Super Admin' && <SelectItem value="Admin">Admin</SelectItem>}
+                                        {(currentUser?.role === 'Super Admin' || currentUser?.role === 'Admin') && <SelectItem value="User">User</SelectItem>}
+                                    </SelectContent>
+                                    </Select>
+                                    <FormDescription>{isEditingSelf ? "You cannot change your own role." : "The user's role."}</FormDescription><FormMessage />
+                                </FormItem>
+                                )} />
+                                <FormField control={form.control} name="status" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Status</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl>
+                                    <SelectContent><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem></SelectContent>
+                                    </Select>
+                                    <FormDescription>The user's status.</FormDescription>
                                     <FormMessage />
                                 </FormItem>
-                            )} />
-                            
-                            {!isProfileEditMode && (
-                                <FormField control={form.control as any} name="position" render={({ field }) => (
-                                <FormItem><FormLabel>Position</FormLabel><FormControl><Input placeholder="e.g., Kitchen Manager" {...field} /></FormControl><FormMessage /></FormItem>
                                 )} />
-                            )}
-                            
-                            <FormField control={form.control} name="email" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Email Address</FormLabel>
-                                <FormControl>
-                                <Input 
-                                    type="email" 
-                                    placeholder="e.g., jane.smith@example.com" 
-                                    {...field}
-                                    readOnly={isEditMode}
-                                    className={isEditMode ? "bg-muted/50" : ""}
-                                />
-                                </FormControl>
-                                {isEditMode && <FormDescription>User email cannot be changed after creation.</FormDescription>}
-                                <FormMessage />
-                            </FormItem>
-                            )} />
-
-                            {!isProfileEditMode && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    <FormField control={form.control as any} name="role" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Role</FormLabel>
-                                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={isEditingSelf}>
-                                        <FormControl><SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger></FormControl>
-                                        <SelectContent>
-                                            {currentUser?.role === 'Super Admin' && <SelectItem value="Super Admin">Super Admin</SelectItem>}
-                                            {currentUser?.role === 'Super Admin' && <SelectItem value="Admin">Admin</SelectItem>}
-                                            {(currentUser?.role === 'Super Admin' || currentUser?.role === 'Admin') && <SelectItem value="User">User</SelectItem>}
-                                        </SelectContent>
-                                        </Select>
-                                        <FormDescription>{isEditingSelf ? "You cannot change your own role." : "The user's role."}</FormDescription><FormMessage />
-                                    </FormItem>
-                                    )} />
-
-                                    <FormField control={form.control as any} name="status" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Status</FormLabel>
-                                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                                        <FormControl><SelectTrigger><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="Active">Active</SelectItem>
-                                            <SelectItem value="Inactive">Inactive</SelectItem>
-                                        </SelectContent>
-                                        </Select>
-                                        <FormDescription>The user's status.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )} />
-                                </div>
-                            )}
-
+                            </div>
                         </CardContent>
                     </Card>
 
-                    {/* Password Card - ONLY for NEW users */}
                     {!isEditMode && (
-                         <Card className="shadow-md border-border">
+                        <Card className="shadow-md border-border">
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2"><KeyRound/> Set Initial Password</CardTitle>
+                            <CardTitle className="flex items-center gap-2"><KeyRound />Set Initial Password</CardTitle>
+                            <CardDescription>
+                                The system default password for the selected role will be used. The user must change it on first login.
+                            </CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-6">
-                                <FormField
-                                    control={form.control as any}
-                                    name="password"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                        <FormLabel>Password</FormLabel>
-                                        <FormControl>
-                                            <div className="relative">
-                                            <Input
-                                                type={showPassword ? "text" : "password"}
-                                                {...field}
-                                                defaultValue={defaultPasswordForRole}
-                                                key={defaultPasswordForRole} // Re-mount when default changes
-                                                placeholder={"Enter initial password"}
-                                                autoComplete="new-password"
-                                            />
-                                            <Button
-                                                type="button" variant="ghost" size="sm"
-                                                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-2 text-muted-foreground hover:bg-transparent"
-                                                onClick={() => setShowPassword(!showPassword)}
-                                            >
-                                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                            </Button>
-                                            </div>
-                                        </FormControl>
-                                        <FormDescription>
-                                            This is the initial password for the user. A default is provided based on role, but you can override it.
-                                        </FormDescription>
-                                        <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                            <CardContent className="space-y-4">
+                            <FormField control={form.control} name="password" render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Password</FormLabel>
+                                <FormControl>
+                                    <Input 
+                                        type="text"
+                                        {...field}
+                                        className="bg-muted/50"
+                                        readOnly
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )} />
+                            <FormField control={form.control} name="passwordChangeRequired" render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                                    <div className="space-y-0.5">
+                                        <FormLabel>Force password change on next login</FormLabel>
+                                    </div>
+                                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                                </FormItem>
+                            )} />
                             </CardContent>
-                         </Card>
+                        </Card>
                     )}
-
                 </div>
 
                 {/* Right Column: Permissions */}
-                {!isProfileEditMode && (
-                    <div className="space-y-6">
-                        <Card className="shadow-md border-border">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2"><ShieldCheck /> User Permissions</CardTitle>
-                                <CardDescription>
-                                    Assign permissions for this user.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                            {Object.entries(permissionGroups).map(([section, perms]) => {
-                                if (perms.length === 0) return null;
+                <div className="space-y-6">
+                    <Card className="shadow-md border-border">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><ShieldCheck /> User Permissions</CardTitle>
+                            <CardDescription>
+                                Assign permissions for this user.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                        {Object.entries(permissionGroups).map(([section, perms]) => {
+                            if (perms.length === 0) return null;
 
-                                return (
-                                <div key={section} className="mb-6 last:mb-0">
-                                <h3 className="font-semibold text-lg text-primary mb-2">{section}</h3>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
-                                    {perms.map(p => renderPermissionSwitch(p.id, p.label))}
-                                    </div>
-                                    {section !== 'Administration' && <Separator className="mt-6"/>}
+                            return (
+                            <div key={section} className="mb-6 last:mb-0">
+                            <h3 className="font-semibold text-lg text-primary mb-2">{section}</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
+                                {perms.map(p => renderPermissionSwitch(p.id, p.label))}
                                 </div>
-                                )
-                            })}
-                            </CardContent>
-                        </Card>
-                         <div className="flex justify-end pt-4">
-                            <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
-                                {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
-                            </Button>
-                        </div>
+                                {section !== 'Administration' && <Separator className="mt-6"/>}
+                            </div>
+                            )
+                        })}
+                        </CardContent>
+                    </Card>
+                     <div className="flex justify-end pt-4">
+                        <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
+                            {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
+                        </Button>
                     </div>
-                )}
+                </div>
             </div>
         </form>
     </Form>
