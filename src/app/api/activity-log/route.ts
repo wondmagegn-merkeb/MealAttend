@@ -12,10 +12,12 @@ export async function GET(request: Request) {
     }
 
     const where: any = {};
+    // Standard users only see their own activity log.
+    // Admins only see their own unless they have the canSeeAllRecords permission.
     if (user.role === 'User' || (user.role === 'Admin' && !user.canSeeAllRecords)) {
       where.userIdentifier = user.userId;
     }
-    // Super Admins and Admins with canSeeAllRecords have no where clause, so they see all logs
+    // Super Admins and Admins with canSeeAllRecords have no 'where' clause, so they see all logs.
 
     const activityLogs = await prisma.activityLog.findMany({
       where,

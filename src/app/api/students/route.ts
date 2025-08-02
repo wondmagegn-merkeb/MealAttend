@@ -15,6 +15,7 @@ export async function GET(request: Request) {
 
     const whereClause: any = {};
     // Super Admins and Admins with canSeeAllRecords see all students.
+    // Standard users or Admins without the permission only see students they created.
     if (user.role === 'User' || (user.role === 'Admin' && !user.canSeeAllRecords)) {
       whereClause.createdById = user.id;
     }
