@@ -222,23 +222,13 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   const isEditingSelf = currentUser?.id === initialData?.id;
 
   const renderPermissionSwitch = (id: PermissionKey, label: string) => {
-    let isDisabled = false;
-    let toolTipContent = "";
-
-    // Super Admin can do anything
-    if (currentUser?.role !== 'Super Admin') {
-        // An Admin can't grant a permission they don't have themselves.
-        if (!currentUser?.[id]) {
-          isDisabled = true;
-          toolTipContent = "You do not have this permission to grant it.";
-        }
+    // Super Admins can see and grant all permissions.
+    if (currentUser?.role === 'Super Admin') {
+      // No change, render everything.
+    } else if (!currentUser?.[id]) {
+      // If the current admin does not have this permission, do not render the switch.
+      return null;
     }
-    
-    // Prevent user from changing critical admin settings unless they are Super Admin
-    if (id === 'canManageSiteSettings' && currentUser?.role !== 'Super Admin') {
-        isDisabled = true;
-    }
-
 
     return (
       <FormField
@@ -254,8 +244,6 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                 <Switch
                   checked={field.value}
                   onCheckedChange={field.onChange}
-                  disabled={isDisabled}
-                  aria-readonly={isDisabled}
                 />
             </FormControl>
           </FormItem>
