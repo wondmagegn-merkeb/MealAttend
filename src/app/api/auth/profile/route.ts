@@ -8,6 +8,8 @@ export async function PUT(request: Request) {
     // Here we'll expect it in the body for simplicity.
     const { userId, fullName, profileImageURL } = await request.json();
 
+    console.log("data: ", userId, fullName, profileImageURL)
+
     if (!userId) {
       return NextResponse.json({ message: 'User not authenticated' }, { status: 401 });
     }

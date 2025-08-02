@@ -192,6 +192,9 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     if (fileInput?.files?.[0]) {
       const dataUrl = await fileToDataUri(fileInput.files[0]);
       finalData.profileImageURL = dataUrl;
+    } else if (isProfileEditMode || isEditMode) {
+      // If no new file is selected in edit modes, retain the existing URL.
+      finalData.profileImageURL = initialData?.profileImageURL || null;
     }
     
     onSubmit(finalData);
@@ -252,7 +255,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                         render={() => (
                           <FormItem className="flex flex-col items-center">
                             <Avatar className="h-32 w-32">
-                              <AvatarImage src={imagePreview || `https://placehold.co/128x128.png?text=Avatar`} alt="Avatar Preview" data-ai-hint="user avatar" />
+                              <AvatarImage src={imagePreview || undefined} alt="Avatar Preview" data-ai-hint="user avatar" />
                               <AvatarFallback>{initialData?.fullName?.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
                             </Avatar>
                             <FormControl>
