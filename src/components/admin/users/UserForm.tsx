@@ -218,6 +218,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                 <Switch
                   checked={field.value}
                   onCheckedChange={field.onChange}
+                  disabled={isEditingSelf}
                 />
             </FormControl>
           </FormItem>
@@ -296,7 +297,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                     <FormField control={form.control} name="position" render={({ field }) => (
                         <FormItem>
                             <FormLabel>Position</FormLabel>
-                            <FormControl><Input placeholder="e.g., Kitchen Manager" {...field} /></FormControl>
+                            <FormControl><Input placeholder="e.g., Math Teacher" readOnly {...field} className={'bg-muted/50'}/></FormControl>
                         </FormItem>
                     )} />
                 </div>
@@ -307,7 +308,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
 
   return (
     <Form {...form}>
-        <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-1">
             {isProfileEditMode ? (
                 <ProfileEditFormContent />
             ) : (
@@ -327,19 +328,19 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                     </FormItem>
                                 )}
                                 <FormField control={form.control} name="fullName" render={({ field }) => (
-                                    <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="e.g., Jane Smith" {...field} /></FormControl><FormMessage /></FormItem>
+                                    <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="e.g., Jane Smith" {...field} readOnly={isEditMode} className={isEditMode ? "bg-muted/50" : ""}/></FormControl><FormMessage /></FormItem>
                                 )} />
                                 <FormField control={form.control} name="email" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Email Address</FormLabel>
-                                    <FormControl><Input type="email" placeholder="e.g., jane.smith@example.com" {...field} /></FormControl>
+                                    <FormControl><Input type="email" placeholder="e.g., jane.smith@example.com" {...field} disabled={isEditMode} className={isEditMode ? "bg-muted/50" : ""} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                                 )} />
                                 <FormField control={form.control} name="position" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Position</FormLabel>
-                                    <FormControl><Input placeholder="e.g., Kitchen Manager" {...field} /></FormControl>
+                                    <FormControl><Input placeholder="e.g., Kitchen Manager" {...field} readOnly={isEditingSelf} className={isEditingSelf ? "bg-muted/50" : ""}/></FormControl>
                                     <FormMessage />
                                 </FormItem>
                                 )} />
@@ -361,11 +362,11 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                     <FormField control={form.control} name="status" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Status</FormLabel>
-                                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} >
+                                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={isEditingSelf}>
                                         <FormControl><SelectTrigger><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl>
                                         <SelectContent><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem></SelectContent>
                                         </Select>
-                                        <FormDescription>The user's status.</FormDescription>
+                                        <FormDescription>{isEditingSelf ? "You cannot change your own status." : "The user's status."}</FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                     )} />
@@ -425,7 +426,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2"><ShieldCheck /> User Permissions</CardTitle>
                                 <CardDescription>
-                                    Assign permissions for this user.
+                                  {isEditingSelf ? "Your permissions." : "Assign permissions for this user."} 
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -447,11 +448,11 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                     </div>
                 </div>
             )}
-            
+
             <div className="flex justify-end pt-4">
-                <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
-                    {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
-                </Button>
+              <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
+                  {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
+              </Button>
             </div>
         </form>
     </Form>
