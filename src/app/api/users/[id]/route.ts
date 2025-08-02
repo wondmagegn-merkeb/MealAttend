@@ -52,7 +52,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     const data = await request.json();
     const { 
-        fullName, email, position, role, status, profileImageURL, password, passwordChangeRequired,
+        position, role, status,
         canReadDashboard, canScanId,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
         canReadAttendance, canExportAttendance,
@@ -77,12 +77,9 @@ export async function PUT(request: Request, { params }: RouteParams) {
     }
 
     const dataToUpdate: any = {
-        fullName,
         position,
         role,
         status,
-        profileImageURL,
-        passwordChangeRequired,
         // Permissions
         canReadDashboard, canScanId,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
@@ -93,16 +90,6 @@ export async function PUT(request: Request, { params }: RouteParams) {
         canSeeAllRecords
     };
     
-    // Only update email if it's different (and not for profile edit mode, though that's a different form)
-    if (email && email !== userToEdit.email) {
-      dataToUpdate.email = email;
-    }
-
-    if (password) {
-        dataToUpdate.password = await hash(password, saltRounds);
-        // passwordChangeRequired is already in the main dataToUpdate object from the form
-    }
-
     const updatedUser = await prisma.user.update({
       where: { id: params.id },
       data: dataToUpdate,

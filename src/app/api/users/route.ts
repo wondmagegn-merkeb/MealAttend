@@ -66,7 +66,7 @@ export async function POST(request: Request) {
 
     const data = await request.json();
     const { 
-        fullName, email, position, role, status, profileImageURL, password, passwordChangeRequired,
+        fullName, email, position, role, status, password,
         canReadDashboard, canScanId,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
         canReadAttendance, canExportAttendance,
@@ -114,8 +114,8 @@ export async function POST(request: Request) {
         position,
         role,
         status,
-        profileImageURL,
-        passwordChangeRequired: passwordChangeRequired,
+        profileImageURL: null, // Profile images are no longer set at creation
+        passwordChangeRequired: true, // Always force password change on creation
         createdBy: {
             connect: { id: creator.id }
         },

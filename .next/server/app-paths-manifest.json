@@ -3,6 +3,7 @@
   "/admin/page": "app/admin/page.js",
   "/admin/profile/edit/page": "app/admin/profile/edit/page.js",
   "/admin/profile/my-permissions/page": "app/admin/profile/my-permissions/page.js",
+  "/admin/settings/page": "app/admin/settings/page.js",
   "/admin/students/new/page": "app/admin/students/new/page.js",
   "/admin/students/page": "app/admin/students/page.js",
   "/admin/super-settings/page": "app/admin/super-settings/page.js",

@@ -23,9 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState, useRef } from "react";
-import { Loader2, Upload, ShieldCheck, KeyRound, Eye, EyeOff } from "lucide-react";
+import { Loader2, ShieldCheck, KeyRound, Eye, EyeOff } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { User, PermissionKey } from '@/types';
 import { useToast } from "@/hooks/use-toast";
@@ -58,9 +57,7 @@ const userFormSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }).min(1, { message: "Email is required." }),
   role: z.enum(['Super Admin', 'Admin', 'User'], { errorMap: () => ({ message: "Please select a role." }) }),
   status: z.enum(['Active', 'Inactive'], { errorMap: () => ({ message: "Please select a status." }) }),
-  profileImageURL: z.string().optional().or(z.literal("")),
   password: z.string().optional(),
-  passwordChangeRequired: z.boolean().default(true),
   ...permissionsSchema,
 });
 
@@ -80,15 +77,6 @@ interface UserFormProps {
   submitButtonText?: string;
   isProfileEditMode?: boolean;
 }
-
-const fileToDataUri = (file: File): Promise<string | null> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-    reader.readAsDataURL(file);
-  });
-};
 
 const permissionFields: { id: PermissionKey, label: string, section: string }[] = [
     { id: 'canReadDashboard', label: 'View Dashboard', section: 'General Access' },
@@ -111,9 +99,6 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   const { toast } = useToast();
   const { currentUser } = useAuth();
   const { settings: appSettings } = useAppSettings();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
   const currentSchema = isProfileEditMode ? profileEditFormSchema : userFormSchema;
@@ -125,7 +110,6 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       ...initialData,
       position: initialData.position || "",
       status: initialData.status || "Active",
-      profileImageURL: initialData.profileImageURL || "",
       password: "", // Always clear password on edit form load
     } : {
       fullName: "",
@@ -133,8 +117,6 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       email: "",
       role: "User",
       status: "Active",
-      profileImageURL: "",
-      passwordChangeRequired: true,
       // Initialize all perms to false
       canReadDashboard: false, canScanId: false, canSeeAllRecords: false, canCreateStudents: false,
       canReadStudents: false, canWriteStudents: false, canDeleteStudents: false,
@@ -152,17 +134,14 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
         ...initialData,
         position: initialData.position || "",
         status: initialData.status || "Active",
-        profileImageURL: initialData.profileImageURL || "",
         password: "", // Always clear password on edit form load
       });
-      setImagePreview(initialData.profileImageURL || null);
     } else {
        // Set initial permissions for a new user form
        permissionFields.forEach(p => {
             form.setValue(p.id as any, false);
        });
     }
-    setSelectedFile(null);
   }, [initialData, form]);
   
   // Effect to automatically set permissions when role changes
@@ -202,51 +181,8 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     }
   }, [watchedRole, isEditMode, appSettings, form]);
 
-
-  useEffect(() => {
-    if (imagePreview && imagePreview.startsWith("blob:")) {
-      return () => {
-        URL.revokeObjectURL(imagePreview);
-      };
-    }
-  }, [imagePreview]);
-
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) { // 2MB limit
-        toast({
-          title: "Image Too Large",
-          description: "Please select an image smaller than 2MB.",
-          variant: "destructive",
-        });
-        return;
-      }
-      setSelectedFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
-  };
-  
   const onFormSubmit = async (data: UserFormData | ProfileEditFormData) => {
-    let finalProfileUrl = initialData?.profileImageURL || null;
-
-    if (selectedFile) {
-      try {
-        toast({ title: "Processing image...", description: "Please wait." });
-        finalProfileUrl = await fileToDataUri(selectedFile);
-      } catch (error) {
-        console.error("Image processing error:", error);
-        toast({ title: "Image Error", description: "Could not process the selected image.", variant: "destructive" });
-        return; // Stop submission
-      }
-    }
-
-    const dataToSubmit = {
-        ...data,
-        profileImageURL: finalProfileUrl,
-    };
-    
-    onSubmit(dataToSubmit);
+    onSubmit(data);
   };
   
   const isEditingSelf = currentUser?.id === initialData?.id;
@@ -308,7 +244,19 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                             )}
 
                             <FormField control={form.control} name="fullName" render={({ field }) => (
-                                <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="e.g., Jane Smith" {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem>
+                                    <FormLabel>Full Name</FormLabel>
+                                    <FormControl>
+                                        <Input 
+                                            placeholder="e.g., Jane Smith" 
+                                            {...field} 
+                                            readOnly={isEditMode}
+                                            className={isEditMode ? "bg-muted/50" : ""}
+                                        />
+                                    </FormControl>
+                                    {isEditMode && <FormDescription>User full name cannot be changed after creation.</FormDescription>}
+                                    <FormMessage />
+                                </FormItem>
                             )} />
                             
                             {!isProfileEditMode && (
@@ -325,43 +273,14 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                     type="email" 
                                     placeholder="e.g., jane.smith@example.com" 
                                     {...field}
-                                    readOnly={isEditMode && !isProfileEditMode}
-                                    className={(isEditMode && !isProfileEditMode) ? "bg-muted/50" : ""}
+                                    readOnly={isEditMode}
+                                    className={isEditMode ? "bg-muted/50" : ""}
                                 />
                                 </FormControl>
-                                {isEditMode && !isProfileEditMode && <FormDescription>User email cannot be changed after creation.</FormDescription>}
+                                {isEditMode && <FormDescription>User email cannot be changed after creation.</FormDescription>}
                                 <FormMessage />
                             </FormItem>
                             )} />
-                            
-                             <FormItem>
-                                <FormLabel>Profile Image</FormLabel>
-                                <div className="flex items-center gap-4">
-                                    <Avatar className="h-20 w-20 rounded-md">
-                                        <AvatarImage src={imagePreview || `https://placehold.co/80x80.png?text=No+Img`} alt="Profile preview" className="object-cover" data-ai-hint="user avatar" />
-                                        <AvatarFallback>IMG</AvatarFallback>
-                                    </Avatar>
-                                    <Input 
-                                    id="picture" 
-                                    type="file" 
-                                    className="hidden" 
-                                    ref={fileInputRef} 
-                                    onChange={handleImageChange}
-                                    accept="image/*"
-                                    disabled={isLoading}
-                                    />
-                                    <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isLoading}>
-                                    <Upload className="mr-2 h-4 w-4" />
-                                    {selectedFile ? 'Change Image' : 'Upload Image'}
-                                    </Button>
-                                </div>
-                                <FormDescription>
-                                    {selectedFile ? `Selected: ${selectedFile.name}` : "Select an image (max 2MB)."} It will be processed on submission.
-                                </FormDescription>
-                                <FormField control={form.control} name="profileImageURL" render={({ field }) => <Input type="hidden" {...field} />} />
-                                {form.formState.errors.profileImageURL && (<FormMessage>{(form.formState.errors.profileImageURL as any).message}</FormMessage>)}
-                            </FormItem>
-
 
                             {!isProfileEditMode && (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -400,11 +319,11 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                         </CardContent>
                     </Card>
 
-                    {/* Password Card */}
-                    {!isProfileEditMode && (
+                    {/* Password Card - ONLY for NEW users */}
+                    {!isEditMode && (
                          <Card className="shadow-md border-border">
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2"><KeyRound/> {isEditMode ? "Password Management" : "Set Initial Password"}</CardTitle>
+                                <CardTitle className="flex items-center gap-2"><KeyRound/> Set Initial Password</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-6">
                                 <FormField
@@ -412,13 +331,13 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                     name="password"
                                     render={({ field }) => (
                                         <FormItem>
-                                        <FormLabel>{isEditMode ? "Reset Password" : "Password"}</FormLabel>
+                                        <FormLabel>Password</FormLabel>
                                         <FormControl>
                                             <div className="relative">
                                             <Input
                                                 type={showPassword ? "text" : "password"}
                                                 {...field}
-                                                placeholder={isEditMode ? "Leave blank to keep current password" : "Enter initial password"}
+                                                placeholder={"Enter initial password"}
                                                 autoComplete="new-password"
                                             />
                                             <Button
@@ -431,30 +350,10 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                             </div>
                                         </FormControl>
                                         <FormDescription>
-                                            {isEditMode 
-                                            ? "Optionally set a new password for the user." 
-                                            : "This is the initial password for the user. It can be changed here."}
+                                            This is the initial password for the user. A default is provided based on role, but you can override it.
                                         </FormDescription>
                                         <FormMessage />
                                         </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control as any}
-                                    name="passwordChangeRequired"
-                                    render={({ field }) => (
-                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                                        <div className="space-y-0.5">
-                                        <FormLabel>Force Password Change</FormLabel>
-                                        <FormDescription>If enabled, user must change this password on next login.</FormDescription>
-                                        </div>
-                                        <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                        />
-                                        </FormControl>
-                                    </FormItem>
                                     )}
                                 />
                             </CardContent>
