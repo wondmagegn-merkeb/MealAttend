@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, UserCog } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { logUserActivity } from '@/lib/activityLogger';
 
 export default function EditProfilePage() {
   const router = useRouter();

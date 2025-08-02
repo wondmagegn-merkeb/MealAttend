@@ -23,15 +23,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useEffect, useState, useMemo } from "react";
-import { Loader2, ShieldCheck, KeyRound } from "lucide-react";
+import { useEffect, useState, useMemo, useRef } from "react";
+import { Loader2, ShieldCheck, KeyRound, Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { User, PermissionKey } from '@/types';
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppSettings } from "@/hooks/useAppSettings";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+const fileToDataUri = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(file);
+  });
+};
 
 const permissionsSchema = {
   canReadDashboard: z.boolean().default(false),
@@ -52,6 +61,7 @@ const permissionsSchema = {
 
 const profileEditSchema = z.object({
   fullName: z.string().min(1, { message: "Full Name is required." }),
+  profileImageURL: z.string().optional().nullable(),
 });
 
 export type ProfileEditFormData = z.infer<typeof profileEditSchema>;
@@ -64,6 +74,7 @@ const userFormSchema = z.object({
   status: z.enum(['Active', 'Inactive'], { errorMap: () => ({ message: "Please select a status." }) }),
   password: z.string().optional(),
   passwordChangeRequired: z.boolean().default(true),
+  profileImageURL: z.string().optional().nullable(),
   ...permissionsSchema,
 });
 
@@ -99,6 +110,8 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   const { settings: appSettings } = useAppSettings();
 
   const isEditMode = !!initialData;
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof userFormSchema>>({
     resolver: zodResolver(userFormSchema),
@@ -133,6 +146,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
         status: initialData.status || "Active",
         password: "",
       });
+      setImagePreview(initialData.profileImageURL);
     }
   }, [initialData, form]);
   
@@ -175,7 +189,15 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   }, [defaultPasswordForRole, form, isEditMode]);
 
   const onFormSubmit = async (data: UserFormData) => {
-    onSubmit(data);
+    let finalData = { ...data };
+    const fileInput = fileInputRef.current;
+
+    if (fileInput?.files?.[0]) {
+      const dataUrl = await fileToDataUri(fileInput.files[0]);
+      finalData.profileImageURL = dataUrl;
+    }
+    
+    onSubmit(finalData);
   };
   
   const isEditingSelf = currentUser?.id === initialData?.id;
@@ -231,6 +253,38 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                             <CardTitle>User Details</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6">
+                             {isProfileEditMode && (
+                              <FormField
+                                control={form.control}
+                                name="profileImageURL"
+                                render={({ field }) => (
+                                  <FormItem className="flex flex-col items-center">
+                                    <Avatar className="h-24 w-24">
+                                      <AvatarImage src={imagePreview || `https://placehold.co/96x96.png?text=Avatar`} alt="Avatar Preview" data-ai-hint="user avatar" />
+                                      <AvatarFallback>{initialData?.fullName?.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
+                                    </Avatar>
+                                    <FormControl>
+                                      <Input 
+                                        type="file" 
+                                        className="hidden" 
+                                        ref={fileInputRef} 
+                                        onChange={(e) => {
+                                          if (e.target.files?.[0]) {
+                                            const file = e.target.files[0];
+                                            const previewUrl = URL.createObjectURL(file);
+                                            setImagePreview(previewUrl);
+                                          }
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => fileInputRef.current?.click()}>
+                                      <Upload className="mr-2 h-4 w-4" /> Upload Image
+                                    </Button>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            )}
                             {initialData?.userId && (
                                 <FormItem>
                                 <FormLabel>User ID</FormLabel>
@@ -241,14 +295,22 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                             <FormField control={form.control} name="fullName" render={({ field }) => (
                                 <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="e.g., Jane Smith" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
-                            <FormField control={form.control} name="position" render={({ field }) => (
-                            <FormItem><FormLabel>Position</FormLabel><FormControl><Input placeholder="e.g., Kitchen Manager" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
+                             <FormField control={form.control} name="email" render={({ field }) => (
+                               <FormItem>
+                                 <FormLabel>Email Address</FormLabel>
+                                 <FormControl><Input type="email" placeholder="e.g., jane.smith@example.com" {...field} readOnly={isEditMode || isProfileEditMode} className={ (isEditMode || isProfileEditMode) ? 'bg-muted/50' : ''}/></FormControl>
+                                 <FormMessage />
+                               </FormItem>
+                             )} />
+                             <FormField control={form.control} name="position" render={({ field }) => (
+                               <FormItem>
+                                 <FormLabel>Position</FormLabel>
+                                 <FormControl><Input placeholder="e.g., Kitchen Manager" {...field} readOnly={isProfileEditMode} className={isProfileEditMode ? 'bg-muted/50' : ''} /></FormControl>
+                                 <FormMessage />
+                               </FormItem>
+                             )} />
                              {!isProfileEditMode && (
                               <>
-                                <FormField control={form.control} name="email" render={({ field }) => (
-                                <FormItem><FormLabel>Email Address</FormLabel><FormControl><Input type="email" placeholder="e.g., jane.smith@example.com" {...field} readOnly={isEditMode} className={isEditMode ? 'bg-muted/50' : ''}/></FormControl><FormMessage /></FormItem>
-                                )} />
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <FormField control={form.control} name="role" render={({ field }) => (
                                     <FormItem>
@@ -281,7 +343,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                         </CardContent>
                     </Card>
 
-                    {!isEditMode && (
+                    {!isEditMode && !isProfileEditMode && (
                         <Card className="shadow-md border-border">
                             <CardHeader>
                             <CardTitle className="flex items-center gap-2"><KeyRound />Set Initial Password</CardTitle>
