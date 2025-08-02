@@ -27,7 +27,8 @@ import {
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { Loader2, ShieldCheck, KeyRound, Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import type { User, PermissionKey } from '@/types';
+import type { User } from '@/types';
+import type { PermissionKey } from '@/types/permissions';
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
@@ -466,5 +467,3 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     </Form>
   );
 }
-
-    

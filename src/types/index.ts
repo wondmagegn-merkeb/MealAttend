@@ -1,5 +1,7 @@
 
 import type { TeamMember as PrismaTeamMember, HomepageFeature as PrismaHomepageFeature, AppSettings as PrismaAppSettings } from '@prisma/client';
+import type { PermissionKey } from './permissions';
+export type { PermissionKey };
 
 export interface Department {
   id: string;
@@ -99,22 +101,6 @@ export interface UserActivityLog {
     details: string | null;
     activityTimestamp: string;
 }
-
-export type PermissionKey =
-  | 'canReadDashboard'
-  | 'canScanId'
-  | 'canReadStudents'
-  | 'canWriteStudents'
-  | 'canCreateStudents'
-  | 'canDeleteStudents'
-  | 'canExportStudents'
-  | 'canReadAttendance'
-  | 'canExportAttendance'
-  | 'canReadActivityLog'
-  | 'canReadUsers'
-  | 'canWriteUsers'
-  | 'canManageSiteSettings'
-  | 'canSeeAllRecords';
 
 export type TeamMember = PrismaTeamMember;
 export type HomepageFeature = PrismaHomepageFeature;
