@@ -48,8 +48,6 @@ const permissionsSchema = {
   canReadActivityLog: z.boolean().default(false),
   canReadUsers: z.boolean().default(false),
   canWriteUsers: z.boolean().default(false),
-  canReadDepartments: z.boolean().default(false),
-  canWriteDepartments: z.boolean().default(false),
   canManageSiteSettings: z.boolean().default(false),
 };
 
@@ -60,9 +58,7 @@ const userFormSchema = z.object({
   role: z.enum(['Super Admin', 'Admin', 'User'], { errorMap: () => ({ message: "Please select a role." }) }),
   status: z.enum(['Active', 'Inactive'], { errorMap: () => ({ message: "Please select a status." }) }),
   profileImageURL: z.string().optional().or(z.literal("")),
-  password: z.string().optional().refine(val => !val || val.length >= 6, {
-    message: "Password must be at least 6 characters long if provided.",
-  }),
+  password: z.string().optional(),
   passwordChangeRequired: z.boolean().default(true),
   ...permissionsSchema,
 });
@@ -404,61 +400,6 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                             )}
                         </CardContent>
                     </Card>
-
-                    {!isProfileEditMode && (
-                        <Card className="shadow-md border-border">
-                            <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><KeyRound /> {isEditMode ? 'Reset Password' : 'Initial Password'}</CardTitle>
-                            <CardDescription>
-                                {isEditMode
-                                ? "Optionally enter a new password. The user will be required to change it on their next login."
-                                : "The system default password for the selected role will be used. The user must change it on first login."
-                                }
-                            </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                            <FormField control={form.control as any} name="password" render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Password</FormLabel>
-                                <FormControl>
-                                    <div className="relative">
-                                        <Input 
-                                            type={showPassword ? "text" : "password"}
-                                            placeholder={getPasswordPlaceholder()}
-                                            {...field}
-                                            className={!isEditMode ? "bg-muted/50 pr-10" : "pr-10"}
-                                            readOnly={!isEditMode}
-                                        />
-                                        {isEditMode && (
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="sm"
-                                                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-2 text-muted-foreground hover:bg-transparent"
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                aria-label={showPassword ? "Hide password" : "Show password"}
-                                            >
-                                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                            </Button>
-                                        )}
-                                    </div>
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )} />
-                            {!isEditMode && (
-                                <FormField control={form.control as any} name="passwordChangeRequired" render={({ field }) => (
-                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                                        <div className="space-y-0.5">
-                                            <FormLabel>Force password change on next login</FormLabel>
-                                        </div>
-                                        <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                                    </FormItem>
-                                )} />
-                             )}
-                            </CardContent>
-                        </Card>
-                    )}
                 </div>
 
                 {/* Right Column */}
@@ -503,3 +444,5 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     </Form>
   );
 }
+
+    
