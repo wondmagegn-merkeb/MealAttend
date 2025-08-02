@@ -231,9 +231,10 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   const isEditingSelf = currentUser?.id === initialData?.id;
 
   const renderPermissionSwitch = (id: PermissionKey, label: string) => {
-    let isDisabled = (watchedRole === 'Admin' || watchedRole === 'Super Admin');
-    let toolTipContent = "Admins have this permission by default.";
+    let isDisabled = false; // By default, permissions are editable
+    let toolTipContent = "";
 
+    // An Admin can't grant a permission they don't have themselves.
     if (currentUser?.role === 'Admin' && !currentUser[id]) {
       isDisabled = true;
       toolTipContent = "You do not have this permission to grant it.";
@@ -369,7 +370,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                 </div>
                             )}
 
-                             {!isEditMode && (
+                             {isProfileEditMode && (
                                 <FormItem>
                                     <FormLabel>Profile Image</FormLabel>
                                     <div className="flex items-center gap-4">
@@ -409,7 +410,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2"><ShieldCheck /> User Permissions</CardTitle>
                                 <CardDescription>
-                                {watchedRole === 'User' ? 'Assign permissions for this user.' : `The '${watchedRole}' role has all permissions by default.`}
+                                    Assign permissions for this user.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -444,5 +445,3 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     </Form>
   );
 }
-
-    
