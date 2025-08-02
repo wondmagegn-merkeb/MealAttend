@@ -155,6 +155,10 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       setImagePreview(initialData.profileImageURL);
     }
   }, [initialData, form]);
+
+  useEffect(() => {
+    console.log("form values: ", imagePreview)
+  }, [imagePreview]);
   
   // Effect to automatically set permissions when role changes on a NEW user form.
   useEffect(() => {
@@ -257,7 +261,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                         render={() => (
                           <FormItem className="flex flex-col items-center">
                             <Avatar className="h-32 w-32">
-                              <AvatarImage src={imagePreview || `https://placehold.co/96x96.png?text=Avatar`} alt="Avatar Preview" data-ai-hint="user avatar" />
+                              <AvatarImage src={imagePreview || (initialData?.profileImageURL || `https://placehold.co/96x96.png?text=Avatar`)} alt="Avatar Preview" data-ai-hint="user avatar" />
                               <AvatarFallback>{initialData?.fullName?.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
                             </Avatar>
                             <FormControl>
@@ -301,7 +305,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                      <FormField control={form.control} name="position" render={({ field }) => (
                         <FormItem>
                             <FormLabel>Position</FormLabel>
-                            <FormControl><Input placeholder="e.g., Math Teacher" {...field} /></FormControl>
+                            <FormControl><Input placeholder="e.g., Math Teacher" {...field} readOnly className="bg-muted/50"/></FormControl>
                         </FormItem>
                     )} />
                 </div>
