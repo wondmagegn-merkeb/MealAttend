@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -61,6 +62,7 @@ const permissionsSchema = {
 
 const profileEditSchema = z.object({
   fullName: z.string().min(1, { message: "Full Name is required." }),
+  position: z.string().optional(),
   profileImageURL: z.string().optional().nullable(),
 });
 
@@ -152,7 +154,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   
   // Effect to automatically set permissions when role changes on a NEW user form.
   useEffect(() => {
-    if (isEditMode) return;
+    if (isEditMode || isProfileEditMode) return;
   
     const setAllPermissions = (value: boolean) => {
       permissionFields.forEach(p => {
@@ -171,7 +173,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       const userDefaultPerms: PermissionKey[] = ['canReadStudents'];
       userDefaultPerms.forEach(p => form.setValue(p, true, { shouldValidate: true }));
     }
-  }, [watchedRole, form, isEditMode]);
+  }, [watchedRole, form, isEditMode, isProfileEditMode]);
   
   const defaultPasswordForRole = useMemo(() => {
     if (appSettings) {
@@ -181,12 +183,6 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     }
     return 'password123';
   }, [watchedRole, appSettings]);
-
-  useEffect(() => {
-      if (!isEditMode) {
-          form.setValue('password', defaultPasswordForRole);
-      }
-  }, [defaultPasswordForRole, form, isEditMode]);
 
   const onFormSubmit = async (data: UserFormData) => {
     let finalData = { ...data };
@@ -240,77 +236,112 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     return acc;
   }, {} as Record<string, typeof permissionFields>);
   
+  const ProfileEditFormContent = () => (
+     <Card className="shadow-md border-border">
+        <CardHeader>
+            <CardTitle>User Details</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-1 flex flex-col items-center gap-4 pt-4">
+                     <FormField
+                        control={form.control}
+                        name="profileImageURL"
+                        render={() => (
+                          <FormItem className="flex flex-col items-center">
+                            <Avatar className="h-32 w-32">
+                              <AvatarImage src={imagePreview || `https://placehold.co/128x128.png?text=Avatar`} alt="Avatar Preview" data-ai-hint="user avatar" />
+                              <AvatarFallback>{initialData?.fullName?.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
+                            </Avatar>
+                            <FormControl>
+                              <Input 
+                                type="file" 
+                                className="hidden" 
+                                ref={fileInputRef} 
+                                onChange={(e) => {
+                                  if (e.target.files?.[0]) {
+                                    const file = e.target.files[0];
+                                    const previewUrl = URL.createObjectURL(file);
+                                    setImagePreview(previewUrl);
+                                  }
+                                }}
+                              />
+                            </FormControl>
+                            <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => fileInputRef.current?.click()}>
+                              <Upload className="mr-2 h-4 w-4" /> Upload Image
+                            </Button>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                </div>
+                 <div className="md:col-span-2 space-y-6">
+                    {initialData?.userId && (
+                        <FormItem>
+                            <FormLabel>User ID</FormLabel>
+                            <FormControl><Input value={initialData.userId} readOnly className="bg-muted/50" /></FormControl>
+                            <FormDescription>This ID is system-generated and cannot be changed.</FormDescription>
+                        </FormItem>
+                    )}
+                    <FormField control={form.control} name="fullName" render={({ field }) => (
+                        <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="e.g., Jane Smith" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="email" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Email Address</FormLabel>
+                            <FormControl><Input type="email" {...field} readOnly className={'bg-muted/50'}/></FormControl>
+                        </FormItem>
+                    )} />
+                    <FormField control={form.control} name="position" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Position</FormLabel>
+                            <FormControl><Input placeholder="e.g., Kitchen Manager" {...field} /></FormControl>
+                        </FormItem>
+                    )} />
+                </div>
+            </div>
+        </CardContent>
+    </Card>
+  );
 
   return (
     <Form {...form}>
         <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6">
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                {/* Left Column */}
-                <div className="space-y-6">
-                    <Card className="shadow-md border-border">
-                        <CardHeader>
-                            <CardTitle>User Details</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                             {isProfileEditMode && (
-                              <FormField
-                                control={form.control}
-                                name="profileImageURL"
-                                render={({ field }) => (
-                                  <FormItem className="flex flex-col items-center">
-                                    <Avatar className="h-24 w-24">
-                                      <AvatarImage src={imagePreview || `https://placehold.co/96x96.png?text=Avatar`} alt="Avatar Preview" data-ai-hint="user avatar" />
-                                      <AvatarFallback>{initialData?.fullName?.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
-                                    </Avatar>
-                                    <FormControl>
-                                      <Input 
-                                        type="file" 
-                                        className="hidden" 
-                                        ref={fileInputRef} 
-                                        onChange={(e) => {
-                                          if (e.target.files?.[0]) {
-                                            const file = e.target.files[0];
-                                            const previewUrl = URL.createObjectURL(file);
-                                            setImagePreview(previewUrl);
-                                          }
-                                        }}
-                                      />
-                                    </FormControl>
-                                    <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => fileInputRef.current?.click()}>
-                                      <Upload className="mr-2 h-4 w-4" /> Upload Image
-                                    </Button>
-                                    <FormMessage />
-                                  </FormItem>
+            {isProfileEditMode ? (
+                <ProfileEditFormContent />
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                    {/* Left Column */}
+                    <div className="space-y-6">
+                        <Card className="shadow-md border-border">
+                            <CardHeader>
+                                <CardTitle>User Details</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                {initialData?.userId && (
+                                    <FormItem>
+                                    <FormLabel>User ID</FormLabel>
+                                    <FormControl><Input value={initialData.userId} readOnly className="bg-muted/50" /></FormControl>
+                                    <FormDescription>This ID is system-generated and cannot be changed.</FormDescription>
+                                    </FormItem>
                                 )}
-                              />
-                            )}
-                            {initialData?.userId && (
+                                <FormField control={form.control} name="fullName" render={({ field }) => (
+                                    <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="e.g., Jane Smith" {...field} readOnly={isEditMode} className={isEditMode ? 'bg-muted/50' : ''} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="email" render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>User ID</FormLabel>
-                                <FormControl><Input value={initialData.userId} readOnly className="bg-muted/50" /></FormControl>
-                                <FormDescription>This ID is system-generated and cannot be changed.</FormDescription>
+                                    <FormLabel>Email Address</FormLabel>
+                                    <FormControl><Input type="email" placeholder="e.g., jane.smith@example.com" {...field} readOnly={isEditMode} className={isEditMode ? 'bg-muted/50' : ''}/></FormControl>
+                                    <FormMessage />
                                 </FormItem>
-                            )}
-                            <FormField control={form.control} name="fullName" render={({ field }) => (
-                                <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="e.g., Jane Smith" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                             <FormField control={form.control} name="email" render={({ field }) => (
-                               <FormItem>
-                                 <FormLabel>Email Address</FormLabel>
-                                 <FormControl><Input type="email" placeholder="e.g., jane.smith@example.com" {...field} readOnly={isEditMode || isProfileEditMode} className={ (isEditMode || isProfileEditMode) ? 'bg-muted/50' : ''}/></FormControl>
-                                 <FormMessage />
-                               </FormItem>
-                             )} />
-                             <FormField control={form.control} name="position" render={({ field }) => (
-                               <FormItem>
-                                 <FormLabel>Position</FormLabel>
-                                 <FormControl><Input placeholder="e.g., Kitchen Manager" {...field} readOnly={isProfileEditMode} className={isProfileEditMode ? 'bg-muted/50' : ''} /></FormControl>
-                                 <FormMessage />
-                               </FormItem>
-                             )} />
-                             {!isProfileEditMode && (
-                              <>
+                                )} />
+                                <FormField control={form.control} name="position" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Position</FormLabel>
+                                    <FormControl><Input placeholder="e.g., Kitchen Manager" {...field} /></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )} />
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <FormField control={form.control} name="role" render={({ field }) => (
                                     <FormItem>
@@ -338,88 +369,71 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                     </FormItem>
                                     )} />
                                 </div>
-                              </>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    {!isEditMode && !isProfileEditMode && (
-                        <Card className="shadow-md border-border">
-                            <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><KeyRound />Set Initial Password</CardTitle>
-                            <CardDescription>
-                                The system default password for the selected role will be used. The user must change it on first login.
-                            </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                            <FormField control={form.control} name="password" render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Password</FormLabel>
-                                <FormControl>
-                                    <Input 
-                                        type="text"
-                                        {...field}
-                                        className="bg-muted/50"
-                                        readOnly
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )} />
-                            <FormField control={form.control} name="passwordChangeRequired" render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                                    <div className="space-y-0.5">
-                                        <FormLabel>Force password change on next login</FormLabel>
-                                    </div>
-                                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                                </FormItem>
-                            )} />
                             </CardContent>
                         </Card>
-                    )}
+
+                        {!isEditMode && (
+                            <Card className="shadow-md border-border">
+                                <CardHeader>
+                                <CardTitle className="flex items-center gap-2"><KeyRound />Set Initial Password</CardTitle>
+                                <CardDescription>
+                                    The system default password for the selected role will be used. The user must change it on first login.
+                                </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                <FormField control={form.control} name="password" render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Password</FormLabel>
+                                    <FormControl>
+                                        <Input 
+                                            type="text"
+                                            value={defaultPasswordForRole}
+                                            className="bg-muted/50"
+                                            readOnly
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )} />
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
+
+                    {/* Right Column: Permissions */}
+                    <div className="space-y-6">
+                        <Card className="shadow-md border-border">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2"><ShieldCheck /> User Permissions</CardTitle>
+                                <CardDescription>
+                                    Assign permissions for this user.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                            {Object.entries(permissionGroups).map(([section, perms]) => {
+                                if (perms.length === 0) return null;
+
+                                return (
+                                <div key={section} className="mb-6 last:mb-0">
+                                <h3 className="font-semibold text-lg text-primary mb-2">{section}</h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
+                                    {perms.map(p => renderPermissionSwitch(p.id, p.label))}
+                                    </div>
+                                    {section !== 'Administration' && <Separator className="mt-6"/>}
+                                </div>
+                                )
+                            })}
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
-
-                {/* Right Column: Permissions */}
-                {!isProfileEditMode && (
-                  <div className="space-y-6">
-                      <Card className="shadow-md border-border">
-                          <CardHeader>
-                              <CardTitle className="flex items-center gap-2"><ShieldCheck /> User Permissions</CardTitle>
-                              <CardDescription>
-                                  Assign permissions for this user.
-                              </CardDescription>
-                          </CardHeader>
-                          <CardContent>
-                          {Object.entries(permissionGroups).map(([section, perms]) => {
-                              if (perms.length === 0) return null;
-
-                              return (
-                              <div key={section} className="mb-6 last:mb-0">
-                              <h3 className="font-semibold text-lg text-primary mb-2">{section}</h3>
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
-                                  {perms.map(p => renderPermissionSwitch(p.id, p.label))}
-                                  </div>
-                                  {section !== 'Administration' && <Separator className="mt-6"/>}
-                              </div>
-                              )
-                          })}
-                          </CardContent>
-                      </Card>
-                      <div className="flex justify-end pt-4">
-                          <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
-                              {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
-                          </Button>
-                      </div>
-                  </div>
-                )}
+            )}
+            
+            <div className="flex justify-end pt-4">
+                <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
+                    {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
+                </Button>
             </div>
-             {isProfileEditMode && (
-                 <div className="flex justify-end pt-4">
-                    <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
-                        {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>) : (submitButtonText)}
-                    </Button>
-                </div>
-             )}
         </form>
     </Form>
   );
