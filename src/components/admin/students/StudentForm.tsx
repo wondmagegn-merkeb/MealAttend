@@ -4,44 +4,38 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useEffect } from "react";
-import { Loader2 } from "lucide-react"; 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useEffect, useState, useRef } from "react";
+import { Loader2, Upload } from "lucide-react"; 
 import { Card, CardContent } from "@/components/ui/card";
 import type { Student } from "@prisma/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+const fileToDataUri = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(file);
+  });
+};
 
-// Zod schema for validation
 const studentFormSchema = z.object({
   name: z.string().min(1, { message: "Full Name is required." }),
   gender: z.enum(["Male", "Female", ""]).optional(),
   classNumber: z.string().optional().or(z.literal("")),
   classAlphabet: z.string().optional().or(z.literal("")),
+  profileImageURL: z.string().optional().nullable(),
 });
 
 export type StudentFormData = z.infer<typeof studentFormSchema>;
 
 interface StudentFormProps {
-  onSubmit: (data: Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string | null }) => void;
-  initialData?: Student | null; // Prisma Student type
+  onSubmit: (data: Partial<StudentFormData>) => void;
+  initialData?: Student | null;
   isLoading?: boolean;
   submitButtonText?: string;
   isEditMode?: boolean;
@@ -70,6 +64,8 @@ export function StudentForm({
   submitButtonText = "Submit",
   isEditMode = false,
 }: StudentFormProps) {
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { classNumber: initialClassNumber, classAlphabet: initialClassAlphabet } = initialData?.classGrade
     ? parseClassGrade(initialData.classGrade)
@@ -82,6 +78,7 @@ export function StudentForm({
       gender: initialData?.gender || "",
       classNumber: initialClassNumber,
       classAlphabet: initialClassAlphabet,
+      profileImageURL: initialData?.profileImageURL || null,
     },
   });
 
@@ -93,14 +90,18 @@ export function StudentForm({
         gender: initialData.gender || "",
         classNumber: classNumber,
         classAlphabet: classAlphabet,
+        profileImageURL: initialData.profileImageURL || null,
       });
+      setImagePreview(initialData.profileImageURL);
     } else {
       form.reset({
         name: "",
         gender: "",
         classNumber: "",
         classAlphabet: "",
+        profileImageURL: null,
       });
+      setImagePreview(null);
     }
   }, [initialData, form]);
 
@@ -117,21 +118,61 @@ export function StudentForm({
       classGrade = finalClassAlphabet;
     }
 
-    const dataToSubmit = { 
+    const dataToSubmit: Partial<StudentFormData> = { 
         ...restOfData,
         gender: data.gender || null,
         classGrade, 
     };
+
+    const fileInput = fileInputRef.current;
+    if (fileInput?.files?.[0]) {
+      const dataUrl = await fileToDataUri(fileInput.files[0]);
+      dataToSubmit.profileImageURL = dataUrl;
+    } else {
+      dataToSubmit.profileImageURL = initialData?.profileImageURL || null;
+    }
     
     onSubmit(dataToSubmit);
   };
-
 
   return (
     <Card className="shadow-md border-border">
       <CardContent className="pt-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6">
+            <div className="flex flex-col items-center gap-4">
+              <FormField
+                control={form.control}
+                name="profileImageURL"
+                render={() => (
+                  <FormItem className="flex flex-col items-center">
+                    <Avatar className="h-32 w-32">
+                      <AvatarImage src={imagePreview || `https://placehold.co/128x128.png?text=Avatar`} alt="Avatar Preview" data-ai-hint="student avatar" />
+                      <AvatarFallback>{form.getValues('name')?.split(' ').map(n => n[0]).join('') || 'ST'}</AvatarFallback>
+                    </Avatar>
+                    <FormControl>
+                      <Input 
+                        type="file" 
+                        className="hidden" 
+                        ref={fileInputRef} 
+                        onChange={(e) => {
+                          if (e.target.files?.[0]) {
+                            const previewUrl = URL.createObjectURL(e.target.files[0]);
+                            setImagePreview(previewUrl);
+                          }
+                        }}
+                        accept="image/png, image/jpeg, image/jpg"
+                      />
+                    </FormControl>
+                    <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => fileInputRef.current?.click()}>
+                      <Upload className="mr-2 h-4 w-4" /> Upload Image
+                    </Button>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
             {isEditMode && initialData?.studentId && (
               <FormItem>
                 <FormLabel>Student ID</FormLabel>

@@ -48,7 +48,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const { name, gender, classGrade, createdById } = data;
+    const { name, gender, classGrade, createdById, profileImageURL } = data;
 
     if (!name || !createdById) {
       return NextResponse.json({ message: 'Missing required fields: name, createdById' }, { status: 400 });
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
         name,
         gender,
         classGrade,
-        profileImageURL: null, // Profile images are no longer set at creation
+        profileImageURL: profileImageURL,
         createdById,
         // The QR code data can be the studentId itself or some other unique identifier.
         qrCodeData: newStudentId,
