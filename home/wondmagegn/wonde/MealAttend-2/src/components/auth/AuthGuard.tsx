@@ -11,13 +11,13 @@ import { toast } from '@/hooks/use-toast';
 import { Logo } from '../shared/Logo';
 
 const PUBLIC_PATHS = ['/', '/auth/login', '/auth/forgot-password', '/auth/reset-password'];
-const AUTH_FLOW_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-password', '/auth/change-password'];
+const AUTH_FLOW_PATHS = ['/auth/login', '/auth/forgot-password', '/auth/reset-password'];
 
 
 interface AuthGuardProps {
   children: ReactNode;
   permission?: PermissionKey;
-  requiredRole?: 'Super Admin' | 'Admin' | 'User';
+  requiredRole?: User['role'];
 }
 
 export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps) {
@@ -36,40 +36,53 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
     }
 
     const isPublicPage = PUBLIC_PATHS.includes(pathname);
-    const isAuthFlowPage = AUTH_FLOW_PATHS.includes(pathname);
 
-    // If not authenticated and trying to access a protected page, redirect to login.
-    if (!isAuthenticated && !isPublicPage) {
+    // If page is public, allow access immediately.
+    if (isPublicPage) {
+      // But if user is already logged in and tries to access login/forgot password, redirect them.
+      if (isAuthenticated && AUTH_FLOW_PATHS.includes(pathname)) {
+        router.replace('/admin');
+      }
+      return;
+    }
+    
+    // From here, we are on a protected page.
+
+    // If not authenticated, redirect to login.
+    if (!isAuthenticated) {
       router.replace('/auth/login');
       return;
     }
 
-    if (isAuthenticated && currentUser) {
+    // From here, user is authenticated.
+    if (currentUser) {
       // If password change is required, force user to the change password page.
       if (isPasswordChangeRequired && pathname !== '/auth/change-password') {
         router.replace('/auth/change-password');
         return;
       }
       
-      // If logged in and trying to access a regular auth page (not change password), redirect to dashboard.
-      if (!isPasswordChangeRequired && isAuthFlowPage && pathname !== '/auth/change-password') {
-        router.replace('/admin');
-        return;
+      // Don't let users who have changed their password go back to the change password page.
+      if (!isPasswordChangeRequired && pathname === '/auth/change-password') {
+          router.replace('/admin');
+          return;
       }
       
-      // If a specific role is required and the user doesn't have it, deny access.
-      if (requiredRole && currentUser.role !== requiredRole) {
-        toast({
+      const isSuperAdmin = currentUser.role === 'Super Admin';
+
+      // Role-based access check
+      if (requiredRole && currentUser.role !== requiredRole && !isSuperAdmin) {
+         toast({
           title: "Access Denied",
-          description: `You must be a ${requiredRole} to view this page.`,
+          description: "You do not have the required role to view this page.",
           variant: "destructive"
         });
         router.replace('/admin');
         return;
       }
 
-      // If the page requires a specific permission and the user doesn't have it, deny access.
-      if (permission && currentUser.role !== 'Super Admin' && !currentUser[permission]) {
+      // Permission-based access check
+      if (permission && !isSuperAdmin && !currentUser[permission]) {
         toast({
           title: "Access Denied",
           description: "You do not have permission to perform this action or view this page.",
@@ -81,19 +94,7 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
     }
   }, [isAuthenticated, isPasswordChangeRequired, currentUser, pathname, router, permission, requiredRole]);
 
-  // Determine if content is ready to be shown
-  let isReady = false;
-  if (PUBLIC_PATHS.includes(pathname) && !isAuthenticated) {
-      isReady = true;
-  } else if (isAuthenticated && currentUser) {
-      if (isPasswordChangeRequired && pathname === '/auth/change-password') {
-          isReady = true;
-      } else if (!isPasswordChange_requiredRole) {
-          isReady = true;
-      }
-  }
-  
-  // Fallback loading state for protected pages
+  // Loading state while checking authentication for protected pages
   if (isAuthenticated === null && !PUBLIC_PATHS.includes(pathname)) {
     return (
       <div className="flex flex-col justify-center items-center h-screen bg-background">
