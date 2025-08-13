@@ -115,8 +115,10 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const form = useForm<z.infer<typeof userFormSchema>>({
-    resolver: zodResolver(userFormSchema),
+  const formSchema = isProfileEditMode ? profileEditSchema : userFormSchema;
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: initialData ? {
       ...initialData,
       position: initialData.position || "",
@@ -129,6 +131,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
       role: "User",
       status: "Active",
       passwordChangeRequired: true,
+      profileImageURL: null,
       // Initialize all perms to false
       canReadDashboard: false, canScanId: false, canSeeAllRecords: false, canCreateStudents: false,
       canReadStudents: false, canWriteStudents: false, canDeleteStudents: false,
@@ -148,10 +151,14 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
         position: initialData.position || "",
         status: initialData.status || "Active",
         password: "",
-      });
+      } as any);
       setImagePreview(initialData.profileImageURL);
     }
   }, [initialData, form]);
+
+  useEffect(() => {
+    console.log("form values: ", imagePreview)
+  }, [imagePreview]);
   
   // Effect to automatically set permissions when role changes on a NEW user form.
   useEffect(() => {
@@ -185,22 +192,17 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     return 'password123';
   }, [watchedRole, appSettings]);
 
-  const onFormSubmit = async (data: UserFormData) => {
-    let finalData: Partial<UserFormData> | ProfileEditFormData = { ...data };
+  const onFormSubmit = async (data: UserFormData | ProfileEditFormData) => {
+    let finalData = { ...data };
     const fileInput = fileInputRef.current;
 
     if (fileInput?.files?.[0]) {
       const dataUrl = await fileToDataUri(fileInput.files[0]);
-      finalData.profileImageURL = dataUrl;
+      (finalData as any).profileImageURL = dataUrl;
     } else if (isProfileEditMode || isEditMode) {
-      finalData.profileImageURL = initialData?.profileImageURL || null;
+      (finalData as any).profileImageURL = initialData?.profileImageURL || null;
     }
     
-    if(isProfileEditMode) {
-        const { fullName, profileImageURL } = finalData;
-        finalData = { fullName, profileImageURL };
-    }
-
     onSubmit(finalData);
   };
   
@@ -259,7 +261,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                         render={() => (
                           <FormItem className="flex flex-col items-center">
                             <Avatar className="h-32 w-32">
-                              <AvatarImage src={imagePreview || `https://placehold.co/96x96.png?text=Avatar`} alt="Avatar Preview" data-ai-hint="user avatar" />
+                              <AvatarImage src={imagePreview || (initialData?.profileImageURL || `https://placehold.co/96x96.png?text=Avatar`)} alt="Avatar Preview" data-ai-hint="user avatar" />
                               <AvatarFallback>{initialData?.fullName?.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
                             </Avatar>
                             <FormControl>
@@ -294,16 +296,16 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                     <FormField control={form.control} name="fullName" render={({ field }) => (
                         <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="e.g., Jane Smith" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
-                    <FormField control={form.control} name="email" render={({ field }) => (
+                     {initialData?.email && (
                         <FormItem>
                             <FormLabel>Email Address</FormLabel>
-                            <FormControl><Input type="email" {...field} readOnly className={'bg-muted/50'}/></FormControl>
+                            <FormControl><Input type="email" value={initialData.email} readOnly className={'bg-muted/50'}/></FormControl>
                         </FormItem>
-                    )} />
-                    <FormField control={form.control} name="position" render={({ field }) => (
+                     )}
+                     <FormField control={form.control} name="position" render={({ field }) => (
                         <FormItem>
                             <FormLabel>Position</FormLabel>
-                            <FormControl><Input placeholder="e.g., Math Teacher" {...field} className={'bg-muted/50'}/></FormControl>
+                            <FormControl><Input placeholder="e.g., Math Teacher" {...field} readOnly className="bg-muted/50"/></FormControl>
                         </FormItem>
                     )} />
                 </div>
@@ -314,7 +316,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
 
   return (
     <Form {...form}>
-        <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-0">
             {isProfileEditMode ? (
                 <ProfileEditFormContent />
             ) : (
@@ -334,12 +336,12 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                     </FormItem>
                                 )}
                                 <FormField control={form.control} name="fullName" render={({ field }) => (
-                                    <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="e.g., Jane Smith" {...field} disabled={isEditMode} className={isEditMode ? "bg-muted/50" : ""}/></FormControl><FormMessage /></FormItem>
+                                    <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="e.g., Jane Smith" {...field} /></FormControl><FormMessage /></FormItem>
                                 )} />
                                 <FormField control={form.control} name="email" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Email Address</FormLabel>
-                                    <FormControl><Input type="email" placeholder="e.g., jane.smith@example.com" {...field} disabled={isEditMode} className={isEditMode ? "bg-muted/50" : ""} /></FormControl>
+                                    <FormControl><Input type="email" placeholder="e.g., jane.smith@example.com" {...field} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                                 )} />
@@ -464,3 +466,5 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     </Form>
   );
 }
+
+    
