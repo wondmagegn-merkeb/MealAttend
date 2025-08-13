@@ -4,8 +4,6 @@ import prisma from '@/lib/prisma';
 import { startOfDay } from 'date-fns';
 import type { MealType } from '@/types';
 
-export const dynamic = 'force-dynamic';
-
 // Handle a manual student ID check
 export async function POST(request: Request) {
   try {

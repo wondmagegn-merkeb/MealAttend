@@ -9,6 +9,7 @@ import { useToast } from './use-toast';
 import { logUserActivity } from '@/lib/activityLogger';
 import type { ProfileEditFormData } from '@/components/admin/users/UserForm';
 import type { UserWithCreator, User } from '@/types';
+import { getRedirectPathForUser } from '@/lib/redirects';
 
 interface AuthContextType {
   isAuthenticated: boolean | null;
@@ -100,7 +101,9 @@ export function useAuth(): AuthContextType {
       if (user.passwordChangeRequired) {
         router.push('/auth/change-password');
       } else {
-        router.push('/admin');
+        // Intelligent redirect based on permissions
+        const redirectPath = getRedirectPathForUser(user);
+        router.push(redirectPath);
       }
       return true;
     } catch (error: any) {
@@ -164,7 +167,7 @@ export function useAuth(): AuthContextType {
             body: JSON.stringify({
                 userId: currentUser.userId,
                 fullName: profileData.fullName,
-                profileImageURL: profileData.profileImageURL || null,
+                profileImageURL: profileData.profileImageURL,
             }),
         });
 

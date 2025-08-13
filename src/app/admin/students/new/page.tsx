@@ -12,7 +12,6 @@ import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
 
 type CreateStudentPayload = Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { 
-  classGrade?: string | null;
   createdById: string; 
 };
 
@@ -56,7 +55,7 @@ export default function NewStudentPage() {
     }
   });
 
-  const handleFormSubmit = async (data: Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string | null }) => {
+  const handleFormSubmit = async (data: Partial<StudentFormData>) => {
     if (!currentUser?.id) {
         toast({ title: "Authentication Error", description: "Could not identify the current user.", variant: "destructive" });
         return;
@@ -65,7 +64,7 @@ export default function NewStudentPage() {
     const payload: CreateStudentPayload = {
       ...data,
       createdById: currentUser.id, // Add the creator's internal ID
-    };
+    } as CreateStudentPayload;
 
     mutation.mutate(payload);
   };
@@ -93,5 +92,3 @@ export default function NewStudentPage() {
     </div>
   );
 }
-
-    

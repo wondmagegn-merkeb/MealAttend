@@ -4,7 +4,6 @@ import prisma from '@/lib/prisma';
 import { hash } from 'bcryptjs';
 
 const saltRounds = 10;
-export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {

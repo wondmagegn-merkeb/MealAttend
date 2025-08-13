@@ -5,7 +5,6 @@ import { getAuthFromRequest } from '@/lib/auth';
 import { hash } from 'bcryptjs';
 
 const saltRounds = 10;
-export const dynamic = 'force-dynamic';
 
 // GET app settings
 export async function GET(request: Request) {

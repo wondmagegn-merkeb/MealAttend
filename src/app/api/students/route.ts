@@ -4,8 +4,6 @@ import prisma from '@/lib/prisma';
 import { generateNextId } from '@/lib/idGenerator';
 import { getAuthFromRequest } from '@/lib/auth';
 
-export const dynamic = 'force-dynamic';
-
 // GET all students
 export async function GET(request: Request) {
   try {
@@ -16,8 +14,9 @@ export async function GET(request: Request) {
     }
 
     const whereClause: any = {};
-    // Only Super Admins see all students. Admins and Users see only their own.
-    if (user.role === 'Admin' || user.role === 'User') {
+    // Super Admins and Admins with canSeeAllRecords see all students.
+    // Standard users or Admins without the permission only see students they created.
+    if (user.role === 'User' || (user.role === 'Admin' && !user.canSeeAllRecords)) {
       whereClause.createdById = user.id;
     }
 
@@ -49,7 +48,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const { name, gender, classGrade, profileImageURL, createdById } = data;
+    const { name, gender, classGrade, createdById, profileImageURL } = data;
 
     if (!name || !createdById) {
       return NextResponse.json({ message: 'Missing required fields: name, createdById' }, { status: 400 });
@@ -63,7 +62,7 @@ export async function POST(request: Request) {
         name,
         gender,
         classGrade,
-        profileImageURL,
+        profileImageURL: profileImageURL,
         createdById,
         // The QR code data can be the studentId itself or some other unique identifier.
         qrCodeData: newStudentId,

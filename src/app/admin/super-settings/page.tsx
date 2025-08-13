@@ -221,6 +221,7 @@ export default function SuperAdminSettingsPage() {
   };
   const onThemeSubmit = (data: z.infer<typeof themeSchema>) => mutation.mutate(data);
   
+  const isSubmitting = mutation.isPending;
 
   if (isLoadingSettings) return <div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin" /> <span className="ml-2">Loading Settings...</span></div>;
   if (error) return <div className="text-destructive">Error loading settings: {(error as Error).message}</div>;
@@ -265,7 +266,11 @@ export default function SuperAdminSettingsPage() {
                     </FormItem>
                     )} />
                 </CardContent>
-                <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && brandingForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Branding</Button></CardFooter>
+                <CardFooter className="justify-end">
+                    <Button type="submit" disabled={isSubmitting && brandingForm.formState.isSubmitting}>
+                        {isSubmitting && brandingForm.formState.isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : <><Save className="mr-2 h-4 w-4" /> Update Branding</>}
+                    </Button>
+                </CardFooter>
                 </Card>
             </form>
             </Form>
@@ -298,7 +303,11 @@ export default function SuperAdminSettingsPage() {
                     </FormItem>
                     )} />
                 </CardContent>
-                <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && themeForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Theme</Button></CardFooter>
+                <CardFooter className="justify-end">
+                    <Button type="submit" disabled={isSubmitting && themeForm.formState.isSubmitting}>
+                        {isSubmitting && themeForm.formState.isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : <><Save className="mr-2 h-4 w-4" /> Update Theme</>}
+                    </Button>
+                </CardFooter>
                 </Card>
             </form>
             </Form>
@@ -362,7 +371,11 @@ export default function SuperAdminSettingsPage() {
                                 </FormItem>
                             )} />
                         </CardContent>
-                        <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && passwordForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Passwords</Button></CardFooter>
+                        <CardFooter className="justify-end">
+                            <Button type="submit" disabled={isSubmitting && passwordForm.formState.isSubmitting}>
+                                {isSubmitting && passwordForm.formState.isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : <><Save className="mr-2 h-4 w-4" /> Update Passwords</>}
+                            </Button>
+                        </CardFooter>
                     </Card>
                 </form>
             </Form>
@@ -388,7 +401,7 @@ export default function SuperAdminSettingsPage() {
                     <Label className="mb-2 block font-medium">ID Card Logo &amp; Live Preview</Label>
                     <FormField control={idCardForm.control} name="idCardLogoUrl" render={({ field }) => (
                         <FormItem>
-                            <div className="flex flex-wrap items-center gap-4">
+                            <div className="flex flex-wrap items-center justify-between gap-1">
                                 <div className="flex items-center gap-4">
                                     <Avatar className="h-24 w-24 rounded-md">
                                         <AvatarImage src={idCardLogoPreview || `https://placehold.co/96x96.png?text=Logo`} alt="ID Card Logo" className="object-contain" data-ai-hint="school crest" />
@@ -406,7 +419,7 @@ export default function SuperAdminSettingsPage() {
                                         <p className="text-xs text-muted-foreground mt-2">Upload a new logo.</p>
                                     </div>
                                 </div>
-                                <div className="flex justify-center items-center p-0 bg-muted/50 rounded-lg border">
+                                <div className="flex justify-center items-center p-2 bg-muted/50 rounded-lg border mt-4">
                                     <StudentIdCard 
                                         student={sampleStudent} 
                                         previewSettings={{
@@ -419,7 +432,11 @@ export default function SuperAdminSettingsPage() {
                         </FormItem>
                     )} />
                 </CardContent>
-                <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && idCardForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update ID Cards</Button></CardFooter>
+                <CardFooter className="justify-end">
+                    <Button type="submit" disabled={isSubmitting && idCardForm.formState.isSubmitting}>
+                         {isSubmitting && idCardForm.formState.isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : <><Save className="mr-2 h-4 w-4" /> Update ID Cards</>}
+                    </Button>
+                </CardFooter>
                 </Card>
             </form>
             </Form>
@@ -455,7 +472,11 @@ export default function SuperAdminSettingsPage() {
                                 </Link>
                             </div>
                         </CardContent>
-                        <CardFooter className="justify-end"><Button type="submit" disabled={mutation.isPending && homepageForm.formState.isSubmitting}><Save className="mr-2 h-4 w-4" /> Update Homepage</Button></CardFooter>
+                        <CardFooter className="justify-end">
+                            <Button type="submit" disabled={isSubmitting && homepageForm.formState.isSubmitting}>
+                                {isSubmitting && homepageForm.formState.isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : <><Save className="mr-2 h-4 w-4" /> Update Homepage</>}
+                            </Button>
+                        </CardFooter>
                     </Card>
                 </form>
             </Form>
@@ -465,3 +486,5 @@ export default function SuperAdminSettingsPage() {
     </div>
   );
 }
+
+    

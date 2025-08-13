@@ -2,13 +2,13 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-export const dynamic = 'force-dynamic';
-
 export async function PUT(request: Request) {
   try {
     // In a real app, you'd get the user ID from a validated JWT token.
     // Here we'll expect it in the body for simplicity.
     const { userId, fullName, profileImageURL } = await request.json();
+
+    console.log("data: ", userId, fullName, profileImageURL)
 
     if (!userId) {
       return NextResponse.json({ message: 'User not authenticated' }, { status: 401 });

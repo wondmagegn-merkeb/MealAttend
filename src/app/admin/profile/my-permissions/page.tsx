@@ -69,8 +69,6 @@ export default function MyPermissionsPage() {
         { label: 'View Activity Logs', granted: currentUser.canReadActivityLog },
         { label: 'View Users', granted: currentUser.canReadUsers },
         { label: 'Manage Users', granted: currentUser.canWriteUsers },
-        { label: 'View Departments', granted: currentUser.canReadDepartments },
-        { label: 'Manage Departments', granted: currentUser.canWriteDepartments },
         { label: 'Manage Site Settings', granted: currentUser.canManageSiteSettings },
       ],
     },

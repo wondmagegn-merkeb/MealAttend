@@ -7,7 +7,6 @@ import { getAuthFromRequest } from '@/lib/auth';
 import { sendWelcomeEmail } from '@/lib/email';
 
 const saltRounds = 10;
-export const dynamic = 'force-dynamic';
 
 // GET all users
 export async function GET(request: Request) {
@@ -19,11 +18,13 @@ export async function GET(request: Request) {
     }
 
     const whereClause: any = {};
-    if (user.role === 'Admin' || user.role === 'User') {
-      // Admins and Users can only see the users they created
+    // Admins see users they created unless they have the canSeeAllRecords permission. Super Admins see all.
+    if (user.role === 'User' || (user.role === 'Admin' && !user.canSeeAllRecords)) {
       whereClause.createdById = user.id;
+    } else if (user.role === 'User') {
+      // Users should not be able to see other users at all, return empty
+      return NextResponse.json([]);
     }
-    // Super Admins have no whereClause, so they see everyone.
 
     const users = await prisma.user.findMany({
       where: whereClause,
@@ -66,13 +67,14 @@ export async function POST(request: Request) {
     const data = await request.json();
     console.log(data)
     const { 
-        fullName, email, position, role, status, profileImageURL, passwordChangeRequired, createdById,
+        fullName, email, position, role, status, password,
         canReadDashboard, canScanId,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
         canReadAttendance, canExportAttendance,
         canReadActivityLog,
         canReadUsers, canWriteUsers,
-        canManageSiteSettings
+        canManageSiteSettings,
+        canSeeAllRecords,
     } = data;
 
     if (!fullName || !email || !role || !status || !createdById) {
@@ -90,34 +92,34 @@ export async function POST(request: Request) {
     const newUserId = await generateNextId('USER');
 
     const settings = await prisma.appSettings.findUnique({ where: { id: 1 }});
-    const passwordToHash = 'password123'; // Fallback password
-    let passwordForDb = '';
+    let passwordToUse = password;
 
-    if (role === 'User' && settings?.defaultUserPassword) {
-      passwordForDb = settings.defaultUserPassword;
-    } else if (role === 'Admin' && settings?.defaultAdminPassword) {
-      passwordForDb = settings.defaultAdminPassword;
-    } else if (role === 'Super Admin' && settings?.defaultSuperAdminPassword) {
-      passwordForDb = settings.defaultSuperAdminPassword;
+    if (!passwordToUse) {
+        if (role === 'User') passwordToUse = settings?.defaultUserPassword;
+        else if (role === 'Admin') passwordToUse = settings?.defaultAdminPassword;
+        else if (role === 'Super Admin') passwordToUse = settings?.defaultSuperAdminPassword;
     }
     
-    // If no default password is set in DB for the role, use and hash the fallback
-    if (!passwordForDb) {
-        passwordForDb = await hash(passwordToHash, saltRounds);
+    if (!passwordToUse) {
+        passwordToUse = 'password123'; // Ultimate fallback
     }
+
+    const hashedPassword = await hash(passwordToUse, saltRounds);
 
     const newUser = await prisma.user.create({
       data: {
         userId: newUserId,
         fullName,
         email,
-        password: passwordForDb,
+        password: hashedPassword,
         position,
         role,
         status,
-        profileImageURL,
-        passwordChangeRequired: passwordChangeRequired,
-        createdById: createdById, // Use the ID passed from the frontend
+        profileImageURL: null, // Profile images are no longer set at creation
+        passwordChangeRequired: true, // Always force password change on creation
+        createdBy: {
+            connect: { id: creator.id }
+        },
         // Permissions
         canReadDashboard, canScanId,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
@@ -125,6 +127,7 @@ export async function POST(request: Request) {
         canReadActivityLog,
         canReadUsers, canWriteUsers,
         canManageSiteSettings,
+        canSeeAllRecords,
       },
     });
     
@@ -143,12 +146,11 @@ export async function POST(request: Request) {
 
     // Don't return the password in the response
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = newUser;
+    const { password: _, ...userWithoutPassword } = newUser;
 
     return NextResponse.json(userWithoutPassword, { status: 201 });
   } catch (error: any) {
-
-    console.log(error)
+    console.error('Error creating user:', error);
     if ((error as any).code === 'P2002') {
       return NextResponse.json(
         { message: 'A user with this email or ID already exists.', error: (error as any).message },

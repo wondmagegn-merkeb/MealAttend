@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, UserCog } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { logUserActivity } from '@/lib/activityLogger';
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -26,8 +25,6 @@ export default function EditProfilePage() {
             title: "Profile Updated",
             description: "Your profile details have been saved.",
         });
-        // Optional: redirect or stay on page
-        // router.push('/admin/profile');
     } catch (error) {
         // Error toast is handled by useAuth hook
     } finally {

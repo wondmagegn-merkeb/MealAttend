@@ -32,21 +32,17 @@ export function AdminSidebar() {
   ];
 
   const bottomNavItems = [
-     { href: '/admin/super-settings', label: 'Site Settings', icon: ShieldAlert, tooltip: 'Manage Site Settings (Super Admin)', permission: 'Super Admin' },
+     { href: '/admin/super-settings', label: 'Site Settings', icon: ShieldAlert, tooltip: 'Manage Site Settings (Super Admin)', permission: 'canManageSiteSettings' },
      { href: '/admin/profile/my-permissions', label: 'My Permissions', icon: ShieldCheck, tooltip: 'View Your Permissions', permission: true },
      { href: '/admin/settings', label: 'Settings', icon: Settings, tooltip: 'Application Settings', permission: true },
   ];
 
-  const isNavItemVisible = (permission: PermissionKey | 'Super Admin' | boolean) => {
+  const isNavItemVisible = (permission: PermissionKey | boolean) => {
     if (permission === true) return true;
     if (!currentUser) return false;
     
-    // Super Admins see everything.
-    if (currentUser.role === 'Super Admin') return true;
-    
-    // For other roles, check the specific permission string.
+    // Check the specific permission string for all roles.
     if (typeof permission === 'string') {
-        if (permission === 'Super Admin') return false; // Already handled above
         return currentUser[permission] === true;
     }
     

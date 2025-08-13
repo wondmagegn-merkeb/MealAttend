@@ -33,9 +33,8 @@ export interface User {
   canReadActivityLog: boolean;
   canReadUsers: boolean;
   canWriteUsers: boolean;
-  canReadDepartments: boolean;
-  canWriteDepartments: boolean;
   canManageSiteSettings: boolean;
+  canSeeAllRecords: boolean;
 }
 
 export interface UserWithCreator extends User {
@@ -112,9 +111,8 @@ export type PermissionKey =
   | 'canReadActivityLog'
   | 'canReadUsers'
   | 'canWriteUsers'
-  | 'canReadDepartments'
-  | 'canWriteDepartments'
-  | 'canManageSiteSettings';
+  | 'canManageSiteSettings'
+  | 'canSeeAllRecords';
 
 export type TeamMember = PrismaTeamMember;
 export type HomepageFeature = PrismaHomepageFeature;

@@ -5,7 +5,6 @@ import { getAuthFromRequest } from '@/lib/auth';
 import { hash } from 'bcryptjs';
 
 const saltRounds = 10;
-export const dynamic = 'force-dynamic';
 
 interface RouteParams {
   params: {
@@ -53,14 +52,14 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     const data = await request.json();
     const { 
-        fullName, email, position, role, status, profileImageURL, password,
+        position, role, status,
         canReadDashboard, canScanId,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
         canReadAttendance, canExportAttendance,
         canReadActivityLog,
         canReadUsers, canWriteUsers,
-        canReadDepartments, canWriteDepartments,
-        canManageSiteSettings
+        canManageSiteSettings,
+        canSeeAllRecords
     } = data;
     
     // Authorization check
@@ -78,27 +77,19 @@ export async function PUT(request: Request, { params }: RouteParams) {
     }
 
     const dataToUpdate: any = {
-        fullName,
-        email,
         position,
         role,
         status,
-        profileImageURL,
         // Permissions
         canReadDashboard, canScanId,
         canReadStudents, canWriteStudents, canCreateStudents, canDeleteStudents, canExportStudents,
         canReadAttendance, canExportAttendance,
         canReadActivityLog,
         canReadUsers, canWriteUsers,
-        canReadDepartments, canWriteDepartments,
-        canManageSiteSettings
+        canManageSiteSettings,
+        canSeeAllRecords
     };
-
-    if (password) {
-        dataToUpdate.password = await hash(password, saltRounds);
-        dataToUpdate.passwordChangeRequired = true; // Force user to change password on next login
-    }
-
+    
     const updatedUser = await prisma.user.update({
       where: { id: params.id },
       data: dataToUpdate,
@@ -107,6 +98,9 @@ export async function PUT(request: Request, { params }: RouteParams) {
   } catch (error: any) {
     if ((error as any).code === 'P2025') { // Record to update not found
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
+    }
+     if ((error as any).code === 'P2002' && (error as any).meta?.target?.includes('email')) {
+      return NextResponse.json({ message: 'A user with this email already exists.'}, { status: 409 });
     }
     return NextResponse.json(
       { message: 'Failed to update user', error: (error as any).message },

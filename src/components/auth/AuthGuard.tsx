@@ -69,7 +69,8 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
       }
 
       // If the page requires a specific permission and the user doesn't have it, deny access.
-      if (permission && currentUser.role !== 'Super Admin' && !currentUser[permission]) {
+      // This now applies to ALL users, including Super Admins.
+      if (permission && !currentUser[permission]) {
         toast({
           title: "Access Denied",
           description: "You do not have permission to perform this action or view this page.",
@@ -88,13 +89,24 @@ export function AuthGuard({ children, permission, requiredRole }: AuthGuardProps
   } else if (isAuthenticated && currentUser) {
       if (isPasswordChangeRequired && pathname === '/auth/change-password') {
           isReady = true;
-      } else if (!isPasswordChange_requiredRole) {
-          isReady = true;
+      } else if (!isPasswordChangeRequired && !AUTH_FLOW_PATHS.includes(pathname)) {
+          let hasRequiredRole = true;
+          if (requiredRole) {
+            hasRequiredRole = currentUser.role === requiredRole;
+          }
+          
+          let hasRequiredPermission = true;
+          if (permission) {
+            hasRequiredPermission = !!currentUser[permission];
+          }
+
+          isReady = hasRequiredRole && hasRequiredPermission;
       }
+  } else if (AUTH_FLOW_PATHS.includes(pathname)) {
+      isReady = true;
   }
   
-  // Fallback loading state for protected pages
-  if (isAuthenticated === null && !PUBLIC_PATHS.includes(pathname)) {
+  if (isAuthenticated === null || !isReady) {
     return (
       <div className="flex flex-col justify-center items-center h-screen bg-background">
         <div className="text-center space-y-4">

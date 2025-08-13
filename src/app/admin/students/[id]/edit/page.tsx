@@ -13,8 +13,6 @@ import { logUserActivity } from '@/lib/activityLogger';
 import { useAuth } from '@/hooks/useAuth';
 import type { Student } from '@/types';
 
-type ApiStudentUpdateData = Omit<StudentFormData, 'classNumber' | 'classAlphabet'> & { classGrade?: string | null };
-
 const fetchStudent = async (id: string): Promise<Student> => {
     const token = localStorage.getItem('mealAttendAuthToken_v1');
     const response = await fetch(`/api/students/${id}`,{
@@ -27,7 +25,7 @@ const fetchStudent = async (id: string): Promise<Student> => {
     return response.json();
 };
 
-const updateStudent = async ({ id, data }: { id: string, data: ApiStudentUpdateData }): Promise<Student> => {
+const updateStudent = async ({ id, data }: { id: string, data: Partial<StudentFormData> }): Promise<Student> => {
     const response = await fetch(`/api/students/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -73,7 +71,7 @@ export default function EditStudentPage() {
   });
 
 
-  const handleFormSubmit = (data: ApiStudentUpdateData) => {
+  const handleFormSubmit = (data: Partial<StudentFormData>) => {
     if (!studentInternalId) return;
     mutation.mutate({ id: studentInternalId, data });
   };

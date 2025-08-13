@@ -3,8 +3,6 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getAuthFromRequest } from "@/lib/auth";
 
-export const dynamic = 'force-dynamic';
-
 // GET all team members, ordered by displayOrder
 export async function GET() {
   try {
