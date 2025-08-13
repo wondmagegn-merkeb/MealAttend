@@ -18,8 +18,6 @@ export interface User {
   passwordChangeRequired: boolean;
   passwordResetRequested: boolean;
   profileImageURL: string | null;
-  passwordResetToken?: string | null;
-  passwordResetExpires?: string | null;
   createdById: string | null; // ID of the user who created this user
   
   // Permissions

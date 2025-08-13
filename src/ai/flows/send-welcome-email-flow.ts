@@ -12,7 +12,6 @@ import { z } from 'genkit';
 const WelcomeEmailInputSchema = z.object({
   userName: z.string().describe('The full name of the new user.'),
   userEmail: z.string().email().describe('The email address of the new user.'),
-  tempPassword: z.string().describe('The temporary password for the user to log in with.'),
   loginUrl: z.string().url().describe('The URL where the user can log in.'),
 });
 export type WelcomeEmailInput = z.infer<typeof WelcomeEmailInputSchema>;
@@ -38,9 +37,8 @@ The email should be professional, friendly, and clear.
 It must contain the following information:
 1.  A welcome message addressing the user by their name ({{userName}}).
 2.  Their user ID, which is their email address ({{userEmail}}).
-3.  Their temporary password ({{tempPassword}}).
-4.  A clear instruction that they will be required to change this password upon their first login for security.
-5.  The login URL ({{loginUrl}}) where they can access the system.
+3.  A clear instruction that they will be required to change this password upon their first login for security.
+4.  The login URL ({{loginUrl}}) where they can access the system.
 
 Generate a suitable subject line and a full email body.
 Do not use markdown or HTML, only plain text.

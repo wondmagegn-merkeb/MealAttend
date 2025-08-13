@@ -6,6 +6,7 @@ import { compare } from 'bcryptjs';
 export async function POST(request: Request) {
   try {
     const { email, password: inputPassword } = await request.json();
+    console.log("Login API Request:", { email, inputPassword });
 
     if (!email || !inputPassword) {
       return NextResponse.json({ message: 'Email and password are required' }, { status: 400 });
