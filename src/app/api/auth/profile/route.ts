@@ -7,8 +7,7 @@ export async function PUT(request: Request) {
     // In a real app, you'd get the user ID from a validated JWT token.
     // Here we'll expect it in the body for simplicity.
     const { userId, fullName, profileImageURL } = await request.json();
-
-    console.log("data: ", userId, fullName, profileImageURL)
+    console.log("Profile Update API Request:", { userId, fullName, profileImageURL })
 
     if (!userId) {
       return NextResponse.json({ message: 'User not authenticated' }, { status: 401 });
@@ -23,6 +22,11 @@ export async function PUT(request: Request) {
         fullName,
         profileImageURL: profileImageURL,
       },
+       include: { 
+        createdBy: {
+          select: { id: true, userId: true, fullName: true }
+        }
+       },
     });
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

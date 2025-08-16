@@ -32,7 +32,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 export async function PUT(request: Request, { params }: RouteParams) {
   try {
     const data = await request.json();
-    const { name, gender, classGrade } = data;
+    const { name, gender, classGrade, profileImageURL } = data;
 
     const updatedStudent = await prisma.student.update({
       where: { id: params.id },
@@ -40,6 +40,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
         name,
         gender,
         classGrade,
+        profileImageURL,
       },
     });
     return NextResponse.json(updatedStudent);
