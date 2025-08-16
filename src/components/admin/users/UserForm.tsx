@@ -27,7 +27,8 @@ import {
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { Loader2, ShieldCheck, KeyRound, Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import type { User, PermissionKey } from '@/types';
+import type { User } from '@/types';
+import type { PermissionKey } from '@/types/permissions';
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
@@ -62,7 +63,6 @@ const permissionsSchema = {
 
 const profileEditSchema = z.object({
   fullName: z.string().min(1, { message: "Full Name is required." }),
-  position: z.string().optional(),
   profileImageURL: z.string().optional().nullable(),
 });
 
@@ -83,7 +83,7 @@ const userFormSchema = z.object({
 export type UserFormData = z.infer<typeof userFormSchema>;
 
 interface UserFormProps {
-  onSubmit: (data: any) => void; 
+  onSubmit: (data: UserFormData | ProfileEditFormData) => void;
   initialData?: User | null;
   isLoading?: boolean;
   submitButtonText?: string;
@@ -156,9 +156,6 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     }
   }, [initialData, form]);
 
-  useEffect(() => {
-    console.log("form values: ", imagePreview)
-  }, [imagePreview]);
   
   // Effect to automatically set permissions when role changes on a NEW user form.
   useEffect(() => {
@@ -195,12 +192,12 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
   const onFormSubmit = async (data: UserFormData | ProfileEditFormData) => {
     let finalData = { ...data };
     const fileInput = fileInputRef.current;
-
+    
     if (fileInput?.files?.[0]) {
-      const dataUrl = await fileToDataUri(fileInput.files[0]);
-      (finalData as any).profileImageURL = dataUrl;
+        const dataUrl = await fileToDataUri(fileInput.files[0]);
+        (finalData as any).profileImageURL = dataUrl;
     } else if (isProfileEditMode || isEditMode) {
-      (finalData as any).profileImageURL = initialData?.profileImageURL || null;
+        (finalData as any).profileImageURL = initialData?.profileImageURL || null;
     }
     
     onSubmit(finalData);
@@ -275,6 +272,7 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
                                     setImagePreview(previewUrl);
                                   }
                                 }}
+                                accept="image/*"
                               />
                             </FormControl>
                             <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => fileInputRef.current?.click()}>
@@ -466,5 +464,3 @@ export function UserForm({ onSubmit, initialData, isLoading = false, submitButto
     </Form>
   );
 }
-
-    

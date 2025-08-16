@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
-import type { PermissionKey, User } from '@/types';
+import type { PermissionKey } from '@/types/permissions';
 import { toast } from '@/hooks/use-toast';
 import { Logo } from '../shared/Logo';
 

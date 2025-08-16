@@ -1,5 +1,6 @@
 
-import type { User, PermissionKey } from "@/types";
+import type { User } from "@/types";
+import type { PermissionKey } from "@/types/permissions";
 
 interface RouteDefinition {
     path: string;

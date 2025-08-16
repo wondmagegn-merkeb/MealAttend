@@ -12,6 +12,10 @@
 /.next/
 /out/
 
+# firebase
+/.idx/
+/.vscode/
+
 # production
 /build
 

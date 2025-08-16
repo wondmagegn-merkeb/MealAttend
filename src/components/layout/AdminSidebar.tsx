@@ -17,7 +17,7 @@ import {
 import { Logo } from '@/components/shared/Logo';
 import { Button } from '../ui/button';
 import { useAuth } from '@/hooks/useAuth'; 
-import type { PermissionKey } from '@/types';
+import type { PermissionKey } from '@/types/permissions';
 
 export function AdminSidebar() {
   const pathname = usePathname();
