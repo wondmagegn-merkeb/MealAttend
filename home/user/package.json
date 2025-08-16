@@ -11,7 +11,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "postinstall": "cd nextn && npm install && npm run postinstall",
+    "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
