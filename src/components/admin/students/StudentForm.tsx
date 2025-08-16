@@ -168,7 +168,7 @@ export function StudentForm({
                     <AvatarFallback>{initialData?.name?.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
                   </Avatar>
                   <FormControl>
-                    <>
+                    <div>
                       <Input 
                         type="file" 
                         className="hidden" 
@@ -184,7 +184,7 @@ export function StudentForm({
                       <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => fileInputRef.current?.click()}>
                         <Upload className="mr-2 h-4 w-4" /> Upload Image
                       </Button>
-                    </>
+                    </div>
                   </FormControl>
                   <FormMessage />
               </div>
