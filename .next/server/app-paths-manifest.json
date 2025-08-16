@@ -2,8 +2,11 @@
   "/_not-found/page": "app/_not-found/page.js",
   "/admin/profile/edit/page": "app/admin/profile/edit/page.js",
   "/admin/students/new/page": "app/admin/students/new/page.js",
+  "/admin/students/page": "app/admin/students/page.js",
   "/api/features/route": "app/api/features/route.js",
   "/api/settings/route": "app/api/settings/route.js",
+  "/api/students/route": "app/api/students/route.js",
   "/api/team/route": "app/api/team/route.js",
+  "/auth/login/page": "app/auth/login/page.js",
   "/page": "app/page.js"
 }
